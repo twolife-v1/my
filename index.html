@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Waktu Solat — Unified</title>
+  <meta name="theme-color" content="#F6EEE0">
+  <style>
+    :root{
+      --bg:#F6EEE0; --card:#FFF; --muted:#6f604f; --accent:#A67734; --soft:#FFF6EE;
+      --glass: rgba(255,255,255,0.28); --hero-height:360px;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#FFFDF8);color:#2e2a24;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+
+    /* HERO */
+    .hero{position:relative;min-height:var(--hero-height);display:flex;align-items:center;justify-content:center;padding:18px;background-size:cover;background-position:center}
+    .hero::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.02));z-index:0;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
+    .hero-card-bg{position:relative;z-index:2;width:100%;max-width:1100px;border-radius:16px;backdrop-filter: blur(10px);background:var(--glass);padding:16px;box-shadow:0 10px 30px rgba(16,12,8,0.08)}
+    .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .hero-left{display:flex;flex-direction:column;gap:6px}
+    #locationName{font-weight:700;font-size:16px}
+    #heroDate{font-size:13px;color:var(--muted)}
+    .hero-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    #heroTime{font-size:34px;font-weight:700;letter-spacing:0.6px}
+    #countdown{font-size:20px;font-weight:600;color:rgba(255,255,255,0.95)}
+    #heroPrayers{margin-top:12px}
+    #prayerNames,#prayerTimes{display:flex;justify-content:space-between;align-items:center;width:100%;font-weight:700}
+    #prayerNames div,#prayerTimes div{flex:1;text-align:center;font-size:14px;color:var(--muted)}
+    #prayerTimes div{color:#2e2a24}
+
+    /* NAV */
+    .site-nav{position:sticky;top:0;background:var(--accent);z-index:120;padding:10px 0;box-shadow:0 3px 12px rgba(0,0,0,0.08)}
+    .nav-list{list-style:none;margin:0;padding:0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+    .nav-list a{color:#fff;font-weight:700;padding:8px 14px;border-radius:8px;transition:transform .15s,background .15s}
+    .nav-list a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.12)}
+    .nav-list a.active{background:#fff;color:var(--accent)}
+
+    .container{max-width:1100px;margin:14px auto;padding:0 12px}
+
+    main{padding:18px;max-width:1100px;margin:18px auto}
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:14px}
+    .card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 6px 20px rgba(18,15,12,0.06)}
+    .prayer-table table{width:100%;border-collapse:collapse;margin-top:8px}
+    .prayer-table th,.prayer-table td{padding:10px 8px;text-align:left;border-bottom:1px solid #f3f3f3}
+    .current-row{background:linear-gradient(90deg,rgba(166,119,52,0.06),rgba(255,255,255,0));}
+    .btn{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;background:#A67734;color:white;font-weight:600}
+    .btn.ghost{background:#fff;border:1px solid #A67734;color:#A67734}
+    iframe.takwim-frame{width:100%;height:420px;border-radius:12px;border:0;background:#fff}
+    @media (max-width:1100px){ .grid{grid-template-columns:1fr 1fr} }
+    @media (max-width:900px){ .grid{grid-template-columns:1fr} .hero{min-height:260px} #heroTime{font-size:28px} iframe.takwim-frame{height:520px} }
+  </style>
+</head>
+<body>
+  <!-- HERO -->
+  <header class="hero" id="hero" role="banner" aria-label="Prayer hero">
+    <div class="hero-card-bg" id="heroCard">
+      <div class="hero-top">
+        <div class="hero-left">
+          <div id="locationName">—</div>
+          <div id="heroDate">—</div>
+        </div>
+
+        <div class="hero-right">
+          <div id="heroTime">--:--:--</div>
+          <div id="countdown">—</div>
+          <div id="nextPrayer">Next: —</div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:rgba(0,0,0,0.03);margin:10px 0;border-radius:2px" aria-hidden="true"></div>
+
+      <div id="heroPrayers" aria-live="polite">
+        <div id="prayerNames" aria-hidden="false"></div>
+        <div id="prayerTimes" aria-hidden="false"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV (sticky top on scroll) -->
+  <nav class="site-nav" aria-label="Primary">
+    <div class="nav-bar container" style="background:transparent;">
+      <ul class="nav-list" role="menubar" aria-label="Main navigation">
+        <li role="none"><a role="menuitem" href="#prayer" class="active">Prayer</a></li>
+        <li role="none"><a role="menuitem" href="quran.html">Al Quran</a></li>
+        <li role="none"><a role="menuitem" href="qibla.html">Qiblat</a></li>
+        <li role="none"><a role="menuitem" href="#calendar">Takwim</a></li>
+        <li role="none"><a role="menuitem" href="#hadith">Daily Hadis</a></li>
+        <li role="none"><a role="menuitem" href="#about">About</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="grid" id="mainGrid">
+      <!-- LEFT BOX: Prayer Times -->
+      <section>
+        <div class="card prayer-table" id="prayer">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div>
+              <strong id="locationNameSmall">Unknown</strong>
+              <div style="color:var(--muted);font-size:13px">Prayer times today</div>
+            </div>
+            <div style="text-align:right">
+              <div id="worldTime" style="font-weight:700"></div>
+              <div style="color:var(--muted);font-size:12px">Local time</div>
+            </div>
+          </div>
+
+          <div id="tableWrapper" style="margin-top:10px;">
+            <table aria-label="Prayer times table">
+              <thead><tr><th>Prayer</th><th>Time</th></tr></thead>
+              <tbody id="prayerTableBody">
+                <tr id="row-fajr"><td>Fajr</td><td id="pt-fajr">--:--</td></tr>
+                <tr id="row-dhuhr"><td>Dhuhr</td><td id="pt-dhuhr">--:--</td></tr>
+                <tr id="row-asr"><td>Asr</td><td id="pt-asr">--:--</td></tr>
+                <tr id="row-maghrib"><td>Maghrib</td><td id="pt-maghrib">--:--</td></tr>
+                <tr id="row-isha"><td>Isha</td><td id="pt-isha">--:--</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;justify-content:space-between">
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn" id="toggle24">24h: On</button>
+              <button class="btn ghost" id="setLocationBtn">Set Location</button>
+            </div>
+            <div style="color:var(--muted);font-size:13px">Next: <span id="nextPrayerLabel">—</span></div>
+          </div>
+        </div>
+
+        <div class="card" id="hadith" style="margin-top:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><strong>Daily Hadith</strong><div style="color:var(--muted);font-size:13px">Quote image (offline friendly)</div></div>
+          <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+            <canvas id="hadithCanvas" width="160" height="160" style="border-radius:8px;background:linear-gradient(180deg,#fff,#FFF6EE)"></canvas>
+            <div><div id="hadithText" style="font-weight:600">Loading hadith…</div><div style="color:var(--muted);font-size:13px">Source: sample</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT BOX: Takwim (embedded file) -->
+      <aside>
+        <div class="card" id="takwimCard" style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>Takwim & Hijri</strong>
+            <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
+          </div>
+
+          <!-- Embed Takwim-hijri.html as iframe (same folder). H1: auto height inside iframe -->
+          <iframe id="takwimFrame" class="takwim-frame" src="Takwim-hijri.html" title="Takwim Hijri (embedded)"></iframe>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn" id="openTakwimFull">Open Full</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <strong>Qibla Direction</strong>
+          <div style="color:var(--muted);font-size:13px">Compass & angle</div>
+          <div style="margin-top:12px;display:flex;justify-content:center">
+            <div style="position:relative;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #111, #000);display:flex;align-items:center;justify-content:center;border:6px solid #c9a35a;box-shadow:0 10px 30px rgba(0,0,0,0.45)">
+              <div id="needle" style="position:absolute;width:6px;height:80px;background:linear-gradient(#d4b56a,#a77b2f);transform-origin:center 80%;border-radius:4px;transform:rotate(0deg)"></div>
+            </div>
+          </div>
+          <div style="margin-top:8px;text-align:center;color:var(--muted)"><span id="qiblaDegDisplay">—°</span></div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+
+  <footer style="text-align:center;padding:12px;color:var(--muted)">Built with care • Works offline-ish • Customize translations/data</footer>
+
+  <!-- Adhan.js fallback (optional) -->
+  <script src="https://cdn.jsdelivr.net/npm/adhan@4.4.0/dist/Adhan.js"></script>
+
+  <script>
+  /***********************
+   * App state + helpers
+   ***********************/
+  const APP = { name:'Waktu Solat', kaaba:{lat:21.422487,lon:39.826206}, use24:false, location:null };
+  const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){localStorage.setItem(k,JSON.stringify(v))} };
+
+  function isMalaysia(lat, lon){
+    if(typeof lat!=='number' || typeof lon!=='number') return false;
+    return lat >= -1 && lat <= 8 && lon >= 99 && lon <= 119;
+  }
+
+  function formatTimeStr(str){ if(!str) return '--:--'; const hhmm = str.split(' ')[0]; const [hh, mm] = hhmm.split(':').map(n=>parseInt(n,10)); const now = new Date(); now.setHours(hh, mm, 0, 0); return now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: !APP.use24}); }
+  function formatDateTime(dt){ return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24}); }
+
+  /************************
+   * Prayer time functions
+   ************************/
+  async function fetchAlAdhanTimes(date, lat, lon, method=2){
+    try{
+      const ts = Math.floor(date.getTime()/1000);
+      const url = `https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=${method}`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('aladhan http ' + res.status);
+      const json = await res.json();
+      if(json && json.data && json.data.timings) return json.data.timings;
+    }catch(e){ console.warn('AlAdhan error', e); }
+    return null;
+  }
+
+  function computePrayerTimesLocal(date, lat, lon){
+    try{
+      const coords = new adhan.Coordinates(lat, lon);
+      const params = adhan.CalculationMethod.MuslimWorldLeague();
+      params.madhab = adhan.Madhab.Shafi;
+      params.adjustments = { fajr:2, dhuhr:1, asr:1, maghrib:2, isha:2 };
+      const times = new adhan.PrayerTimes(coords, date, params);
+      return { Fajr: times.fajr.toTimeString().slice(0,5), Sunrise: times.sunrise.toTimeString().slice(0,5), Dhuhr: times.dhuhr.toTimeString().slice(0,5), Asr: times.asr.toTimeString().slice(0,5), Maghrib: times.maghrib.toTimeString().slice(0,5), Isha: times.isha.toTimeString().slice(0,5) };
+    }catch(e){
+      console.warn('adhan compute failed', e);
+      return null;
+    }
+  }
+
+  function showPrayerTimesObj(t){
+    if(!t) return;
+    const map = {Fajr:'fajr', Dhuhr:'dhuhr', Asr:'asr', Maghrib:'maghrib', Isha:'isha'};
+    Object.keys(map).forEach(k=>{
+      const el = document.getElementById('pt-'+map[k]);
+      if(el) el.textContent = formatTimeStr(t[k] || t[k.charAt(0).toUpperCase()+k.slice(1)]);
+    });
+  }
+
+  /************************
+   * HERO / countdown
+   ************************/
+  function renderHeroPrayers(t){
+    const namesEl = document.getElementById('prayerNames');
+    const timesEl = document.getElementById('prayerTimes');
+    const order = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+    namesEl.innerHTML = ''; timesEl.innerHTML = '';
+    order.forEach(k=>{
+      const nameDiv = document.createElement('div'); nameDiv.textContent = k;
+      const timeDiv = document.createElement('div'); timeDiv.textContent = formatTimeStr(t[k]);
+      namesEl.appendChild(nameDiv); timesEl.appendChild(timeDiv);
+    });
+  }
+
+  let heroInterval = null;
+  function updateHeroTiming(timings){
+    if(!timings) return;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const entries = ['Fajr','Dhuhr','Asr','Maghrib','Isha'].map(k=>{
+      const hhmm = (timings[k] || '').split(' ')[0];
+      const [hh, mm] = hhmm.split(':').map(n=>parseInt(n,10));
+      const d = new Date(today); d.setHours(isNaN(hh)?0:hh, isNaN(mm)?0:mm,0,0);
+      return {key:k, date:d};
+    });
+
+    let next = entries.find(e => e.date.getTime() > Date.now());
+    if(!next){
+      const d = new Date(entries[0].date.getTime() + 24*3600*1000);
+      next = {key:'Fajr', date:d};
+    }
+
+    const nextKey = next.key;
+    const nextDate = next.date;
+    const preAzanStart = new Date(nextDate.getTime() - 5*60000);
+    const inPrayerEnd = new Date(nextDate.getTime() + 60*60000);
+
+    if(heroInterval){ clearInterval(heroInterval); heroInterval = null; }
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function fmtHMS(ms){
+      const total = Math.max(0, Math.floor(ms/1000));
+      const s = total % 60; const m = Math.floor(total/60)%60; const h = Math.floor(total/3600);
+      return `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    if(Date.now() >= preAzanStart.getTime() && Date.now() < nextDate.getTime()){
+      document.getElementById('heroTime').textContent = nextDate.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:!APP.use24});
+      document.getElementById('countdown').textContent = Math.ceil((nextDate.getTime()-Date.now())/60000)+' min to '+nextKey;
+      document.getElementById('nextPrayer').textContent = 'Soon: '+nextKey;
+    } else if(Date.now() >= nextDate.getTime() && Date.now() < inPrayerEnd.getTime()){
+      const end = inPrayerEnd;
+      document.getElementById('heroTime').textContent = `${nextDate.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:!APP.use24})} — ${end.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:!APP.use24})}`;
+      document.getElementById('countdown').textContent = `${nextKey} is in progress`;
+      document.getElementById('nextPrayer').textContent = `${nextKey}`;
+      const remaining = inPrayerEnd.getTime() - Date.now();
+      heroInterval = setTimeout(()=> runAll(), Math.max(500, remaining));
+    } else {
+      function tick(){
+        const diff = nextDate.getTime() - Date.now();
+        if(diff <= 0){ if(heroInterval){ clearInterval(heroInterval); heroInterval=null } runAll(); return; }
+        document.getElementById('heroTime').textContent = fmtHMS(diff);
+        document.getElementById('countdown').textContent = 'until '+nextKey;
+        document.getElementById('nextPrayer').textContent = 'Next: '+nextKey;
+      }
+      tick(); heroInterval = setInterval(tick, 1000);
+    }
+  }
+
+  /******************************
+   * Azan scheduling + notifications
+   ******************************/
+  let azanTimers = [];
+  function clearAzanTimers(){ azanTimers.forEach(id=>clearTimeout(id)); azanTimers = []; }
+  function scheduleAzanFromTimings(t){
+    clearAzanTimers();
+    if(!t) return;
+    const keys = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+    const now = Date.now();
+    keys.forEach(k=>{
+      const hhmm = (t[k]||'').split(' ')[0];
+      const [hh,mm] = hhmm.split(':').map(n=>parseInt(n,10));
+      if(isNaN(hh)) return;
+      const dt = new Date(); dt.setHours(hh, mm, 0, 0);
+      if(dt.getTime() <= now) return;
+      const preAt = dt.getTime() - 5*60000;
+      if(preAt > now){ azanTimers.push(setTimeout(()=>{ notifyAndMelody(k+' in 5 minutes'); }, preAt - now)); }
+      azanTimers.push(setTimeout(()=>{ notifyAndMelody(k+' — Azan'); }, dt.getTime() - now));
+    });
+  }
+  function notifyAndMelody(msg){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      const notes = [440, 523.25, 659.25];
+      notes.forEach((f,i)=>{
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type='sine'; o.frequency.setValueAtTime(f, now + i*0.35);
+        g.gain.setValueAtTime(0, now + i*0.35); g.gain.linearRampToValueAtTime(0.12, now + i*0.35 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, now + i*0.35 + 0.6);
+        o.connect(g); g.connect(ctx.destination); o.start(now + i*0.35); o.stop(now + i*0.35 + 0.7);
+      });
+    }catch(e){ console.warn('audio fail', e); }
+    if(Notification && Notification.permission === 'granted'){ new Notification(msg); }
+    else if(Notification && Notification.permission !== 'denied'){ Notification.requestPermission().then(p=>{ if(p==='granted') new Notification(msg); }); }
+  }
+
+  /******************************
+   * Qibla needle (simple)
+   ******************************/
+  function deg2rad(d){return d*Math.PI/180;}
+  function rad2deg(r){return r*180/Math.PI;}
+  function calcQibla(lat, lon){
+    const ka = deg2rad(APP.kaaba.lat), kb = deg2rad(APP.kaaba.lon);
+    const phi = deg2rad(lat), lam = deg2rad(lon);
+    const num = Math.sin(kb-lam);
+    const den = Math.cos(phi)*Math.tan(ka) - Math.sin(phi)*Math.cos(kb-lam);
+    const bearing = (rad2deg(Math.atan2(num,den)) + 360) % 360;
+    return Math.round(bearing);
+  }
+  function setQiblaNeedle(bearing){
+    const needle = document.getElementById('needle');
+    needle.style.transform = `rotate(${bearing}deg)`;
+    document.getElementById('qiblaDegDisplay').textContent = bearing + '°';
+  }
+
+  /******************************
+   * Orchestration: JAKIM for Malaysia else AlAdhan -> local adhan
+   ******************************/
+  async function getTimingsForDate(date, lat, lon){
+    if(isMalaysia(lat, lon) && typeof window.JAKIM_ADAPTER === 'function'){
+      try{ const p = await window.JAKIM_ADAPTER(date, {lat, lon}); if(p) return p; }catch(e){ console.warn('JAKIM adapter failed', e); }
+    }
+    const ad = await fetchAlAdhanTimes(date, lat, lon, 2);
+    if(ad) return ad;
+    const local = computePrayerTimesLocal(date, lat, lon);
+    return local;
+  }
+
+  /******************************
+   * PostMessage to Takwim iframe
+   ******************************/
+  const takwimFrame = document.getElementById('takwimFrame');
+  function sendLocationToTakwim(loc, timings){
+    try{
+      const payload = { type:'app.location.update', detail:{ loc, timings } };
+      takwimFrame.contentWindow && takwimFrame.contentWindow.postMessage(payload, '*');
+    }catch(e){ console.warn('postMessage to takwim failed', e); }
+  }
+
+  // allow takwim iframe to request location (message protocol)
+  window.addEventListener('message', (ev)=>{
+    const m = ev.data;
+    if(!m || !m.type) return;
+    if(m.type === 'takwim.request.location'){
+      if(APP.location) sendLocationToTakwim(APP.location, null);
+    }
+  });
+
+  /******************************
+   * Main runAll
+   ******************************/
+  async function runAll(){
+    try{
+      const now = new Date();
+      document.getElementById('heroDate').textContent = now.toDateString();
+      document.getElementById('worldTime').textContent = formatDateTime(now);
+
+      let loc = APP.location || storage.get('loc');
+      if(!loc){
+        if(navigator.geolocation){
+          try{
+            const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, {timeout:10000}));
+            loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name: 'My Location' };
+            APP.location = loc; storage.set('loc', loc);
+          }catch(e){
+            loc = { lat: 3.1390, lon: 101.6869, name: 'Kuala Lumpur (fallback)' };
+            APP.location = loc; storage.set('loc', loc);
+          }
+        } else {
+          loc = { lat: 3.1390, lon: 101.6869, name: 'Kuala Lumpur (fallback)' };
+          APP.location = loc; storage.set('loc', loc);
+        }
+      }
+
+      document.getElementById('locationName').textContent = loc.name || `${loc.lat.toFixed(3)},${loc.lon.toFixed(3)}`;
+      document.getElementById('locationNameSmall').textContent = loc.name || `${loc.lat.toFixed(3)},${loc.lon.toFixed(3)}`;
+
+      const timings = await getTimingsForDate(new Date(), loc.lat, loc.lon);
+      if(timings){
+        showPrayerTimesObj(timings);
+        renderHeroPrayers(timings);
+        updateHeroTiming(timings);
+        scheduleAzanFromTimings(timings);
+        sendLocationToTakwim(loc, timings);
+      } else { console.warn('No timings obtained'); }
+
+      try{
+        const bearing = calcQibla(loc.lat, loc.lon);
+        setQiblaNeedle(bearing);
+      }catch(e){ console.warn(e); }
+
+      document.getElementById('hadithText').textContent = '“The best among you are those who have the best manners and character.”';
+      drawHadith(document.getElementById('hadithText').textContent);
+
+      applyHeroBackground(timings);
+    }catch(e){ console.warn('runAll error', e); }
+  }
+
+  /******************************
+   * Hero background (soft)
+   ******************************/
+  function applyHeroBackground(timings){
+    try{
+      const now = new Date();
+      let bg='linear-gradient(135deg,#FFF6E0,#FFE5B4)';
+      if(timings){
+        const tF = (timings.Fajr||'05:00').split(' ')[0], tD = (timings.Dhuhr||'12:00').split(' ')[0], tA = (timings.Asr||'15:00').split(' ')[0], tM = (timings.Maghrib||'18:00').split(' ')[0], tI = (timings.Isha||'19:30').split(' ')[0];
+        function toDate(hm){ const [h,m]=hm.split(':').map(n=>parseInt(n,10)); const d=new Date(); d.setHours(h,m,0,0); return d; }
+        const F = toDate(tF), D = toDate(tD), A = toDate(tA), M = toDate(tM), I = toDate(tI);
+        if(now >= F && now < D) bg='linear-gradient(135deg,#FFF6E0,#FFD580)';
+        else if(now >= D && now < A) bg='linear-gradient(135deg,#fff7e6,#ffd18a)';
+        else if(now >= A && now < M) bg='linear-gradient(135deg,#ffe5b4,#ffb366)';
+        else if(now >= M && now < I) bg='linear-gradient(135deg,#ffb386,#ff8a66)';
+        else bg='linear-gradient(135deg,#2C3E50,#34495E)';
+      }
+      document.getElementById('hero').style.background = bg;
+    }catch(e){}
+  }
+
+  /******************************
+   * Hadith canvas helper
+   ******************************/
+  function drawHadith(text){
+    try{
+      const c = document.getElementById('hadithCanvas');
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0,0,c.width,c.height);
+      const g = ctx.createLinearGradient(0,0,0,c.height);
+      g.addColorStop(0,'#FFF6EE'); g.addColorStop(1,'#ffffff');
+      ctx.fillStyle = g; ctx.fillRect(0,0,c.width,c.height);
+      ctx.fillStyle = '#6b5a43'; ctx.font = '12px sans-serif';
+      wrapText(ctx, text, 10, 30, 130, 16);
+    }catch(e){}
+  }
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    const words = text.split(' '); let line=''; for(let n=0;n<words.length;n++){
+      const testLine = line + words[n] + ' '; const metrics = ctx.measureText(testLine); const testWidth = metrics.width;
+      if(testWidth>maxWidth && n>0){ ctx.fillText(line,x,y); line = words[n] + ' '; y += lineHeight; } else { line = testLine; }
+    } ctx.fillText(line,x,y);
+  }
+
+  /******************************
+   * UI helpers & bootstrap
+   ******************************/
+  document.getElementById('toggle24').addEventListener('click', ()=>{ APP.use24 = !APP.use24; document.getElementById('toggle24').textContent = '24h: '+(APP.use24?'On':'Off'); runAll(); });
+  document.getElementById('setLocationBtn').addEventListener('click', ()=>{
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(pos=>{
+        APP.location = { lat: pos.coords.latitude, lon: pos.coords.longitude, name:'My Location' };
+        storage.set('loc', APP.location); runAll();
+      }, err=>{ alert('Location denied or unavailable'); }, {timeout:10000});
+    } else alert('Geolocation not supported');
+  });
+
+  document.getElementById('openTakwimFull').addEventListener('click', ()=>{ window.open('Takwim-hijri.html','_blank'); });
+
+  // initial load
+  window.addEventListener('load', async ()=>{
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js').catch(()=>{ console.warn('sw register failed'); });
+    }
+    await runAll();
+    setInterval(runAll, 60*1000);
+    setInterval(()=>{ document.getElementById('worldTime').textContent = formatDateTime(new Date()); }, 1000);
+  });
+  </script>
+</body>
+</html>
