@@ -1,0 +1,186 @@
+<!doctype html>
+
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Al-Quran — Terjemahan Ibn Kathir (placeholder)</title>
+  <style>
+    :root{--bg:#fff;--fg:#222;--muted:#666;--accent:#A67734}
+    [data-theme="dark"]{--bg:#0b0b0c;--fg:#e6e6e6;--muted:#a8a8a8}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    body{background:var(--bg);color:var(--fg);display:flex;flex-direction:column}
+    header{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;gap:12px}
+    .brand{font-weight:700;color:var(--accent)}
+    .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+    .container{display:flex;flex:1;overflow:hidden}
+    nav{width:320px;min-width:220px;border-right:1px solid rgba(0,0,0,0.06);overflow:auto;padding:12px}
+    main{flex:1;padding:16px;overflow:auto}
+    .surah-item{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:6px}
+    .surah-item:hover{background:rgba(0,0,0,0.03)}
+    .ayat{margin-bottom:14px;padding:10px;border-radius:8px;background:rgba(0,0,0,0.02)}
+    .arab{font-size:22px;direction:rtl;font-family: "Scheherazade New", "Amiri", serif;margin-bottom:6px}
+    .trans{font-size:16px;color:var(--muted)}
+    .search{width:320px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
+    footer{padding:10px 12px;border-top:1px solid rgba(0,0,0,0.06);font-size:13px;color:var(--muted)}
+    @media(max-width:800px){nav{display:none}header{padding:10px} .search{width:100%}}
+  </style>
+</head>
+<body data-theme="light">
+  <header>
+    <div class="brand">Al-Quran — Terjemahan Ibn Kathir (placeholder)</div>
+    <div class="controls">
+      <input id="qSearch" class="search" placeholder="Cari surah / ayat / kata..." />
+      <select id="langSel" title="Language" aria-label="language">
+        <option value="ms">Bahasa Melayu</option>
+        <option value="en">English</option>
+      </select>
+      <button id="themeBtn" title="Toggle theme">🌙</button>
+    </div>
+  </header>  <div class="container">
+    <nav id="toc">
+      <h3>Daftar Surah</h3>
+      <div id="surahList">
+        <!-- Surah list will be injected here -->
+      </div>
+      <hr />
+      <div style="font-size:13px;color:var(--muted);margin-top:8px">Tip: Untuk menyematkan terjemahan sebenar, gantikan data JSON di bahagian data atau panggil file JSON luaran.</div>
+    </nav><main>
+  <article id="content">
+    <h2 id="surahTitle">Sila pilih surah</h2>
+    <div id="ayahs"></div>
+  </article>
+</main>
+
+  </div>  <footer>
+    Template HTML siap guna — letakkan teks terjemahan Ibn Kathir anda ke dalam format JSON yang diterangkan di bawah.
+  </footer>  <script>
+    /***************
+     * IMPORTANT:
+     * This file is a template. It does NOT contain the full Ibn Kathir translation text.
+     * You should insert the translation data as a JSON object named `ALQURAN_DATA`
+     * or provide an external JSON file and call loadExternalData(url).
+     *
+     * Expected minimal JSON shape:
+     * {
+     *   "surahs": [
+     *     {"index":1,"name":"Al-Fatihah","ayahs":[{"number":1,"arab":"...","translation_ms":"...","translation_en":"..."}, ... ]},
+     *     ...
+     *   ]
+     * }
+     *
+     * Make sure you have the legal right / license to publish the Ibn Kathir translation you intend to embed.
+     ***************/
+
+    // Sample minimal data (only for demo). Replace or override with real data.
+    const SAMPLE = {
+      surahs:[
+        {index:1,name:'Al-Fatihah',ayahs:[
+          {number:1,arab:'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',translation_ms:'Dengan nama Allah — Yang Maha Pemurah, lagi Maha Penyayang.',translation_en:'In the name of Allah, the Most Gracious, the Most Merciful.'},
+          {number:2,arab:'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',translation_ms:'Segala puji bagi Allah, Tuhan sekalian alam.',translation_en:'All praise is due to Allah, Lord of the worlds.'}
+        ]}
+      ]
+    };
+
+    // If the embedding page (your app) provides ALQURAN_DATA, use it. Otherwise fallback to SAMPLE.
+    const DATA = window.ALQURAN_DATA || SAMPLE;
+
+    const surahListEl = document.getElementById('surahList');
+    const ayahsEl = document.getElementById('ayahs');
+    const surahTitle = document.getElementById('surahTitle');
+    const qSearch = document.getElementById('qSearch');
+    const themeBtn = document.getElementById('themeBtn');
+
+    function renderSurahList(){
+      surahListEl.innerHTML='';
+      DATA.surahs.forEach(s => {
+        const d = document.createElement('div');
+        d.className='surah-item';
+        d.textContent = `${s.index}. ${s.name}`;
+        d.addEventListener('click', ()=>{renderSurah(s.index)});
+        surahListEl.appendChild(d);
+      });
+    }
+
+    function renderSurah(index){
+      const s = DATA.surahs.find(x=>x.index===index);
+      if(!s){surahTitle.textContent='Surah tidak ditemui'; ayahsEl.innerHTML=''; return}
+      surahTitle.textContent = `${s.index}. ${s.name}`;
+      ayahsEl.innerHTML='';
+      s.ayahs.forEach(a=>{
+        const wrap = document.createElement('div'); wrap.className='ayat';
+        const arab = document.createElement('div'); arab.className='arab'; arab.textContent = a.arab;
+        const trans = document.createElement('div'); trans.className='trans'; trans.textContent = (document.getElementById('langSel').value==='ms')? (a.translation_ms||'') : (a.translation_en||'');
+        const meta = document.createElement('div'); meta.style.fontSize='12px'; meta.style.color='var(--muted)'; meta.textContent = `Ayat ${a.number}`;
+        wrap.appendChild(meta); wrap.appendChild(arab); wrap.appendChild(trans);
+        ayahsEl.appendChild(wrap);
+      });
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function search(q){
+      q = q.trim().toLowerCase();
+      if(!q){renderSurahList(); return}
+      // simple search across surah names & translations
+      const results = [];
+      DATA.surahs.forEach(s=>{
+        const matchedAyahs = s.ayahs.filter(a=>{
+          return (s.name.toLowerCase().includes(q)) || (a.arab && a.arab.toLowerCase().includes(q)) || (a.translation_ms && a.translation_ms.toLowerCase().includes(q)) || (a.translation_en && a.translation_en.toLowerCase().includes(q));
+        });
+        if(matchedAyahs.length) results.push({s, ayahs:matchedAyahs});
+      });
+      // show results in main
+      surahTitle.textContent = `Hasil carian: "${q}"`;
+      ayahsEl.innerHTML='';
+      results.forEach(r=>{
+        const h = document.createElement('h3'); h.textContent = `${r.s.index}. ${r.s.name}`; ayahsEl.appendChild(h);
+        r.ayahs.forEach(a=>{
+          const wrap = document.createElement('div'); wrap.className='ayat';
+          const arab = document.createElement('div'); arab.className='arab'; arab.textContent = a.arab;
+          const trans = document.createElement('div'); trans.className='trans'; trans.textContent = (document.getElementById('langSel').value==='ms')? (a.translation_ms||'') : (a.translation_en||'');
+          const meta = document.createElement('div'); meta.style.fontSize='12px'; meta.style.color='var(--muted)'; meta.textContent = `Ayat ${a.number}`;
+          wrap.appendChild(meta); wrap.appendChild(arab); wrap.appendChild(trans);
+          ayahsEl.appendChild(wrap);
+        });
+      });
+    }
+
+    qSearch.addEventListener('input', e=>{search(e.target.value)});
+    document.getElementById('langSel').addEventListener('change', ()=>{
+      // re-render current surah or search results
+      const title = surahTitle.textContent || '';
+      if(title.startsWith('Hasil carian')) search(qSearch.value); else {
+        // try to parse current surah index
+        const m = title.match(/^\s*(\d+)\./);
+        if(m) renderSurah(parseInt(m[1],10));
+      }
+    });
+
+    themeBtn.addEventListener('click', ()=>{
+      const root = document.body;
+      const cur = root.getAttribute('data-theme');
+      root.setAttribute('data-theme', cur==='dark'?'light':'dark');
+      themeBtn.textContent = (root.getAttribute('data-theme')==='dark')? '☀️' : '🌙';
+    });
+
+    // If you want to load external JSON: call loadExternalData('path/to/your/ibn-kathir.json')
+    function loadExternalData(url){
+      fetch(url).then(r=>r.json()).then(json=>{
+        window.ALQURAN_DATA = json; location.reload();
+      }).catch(err=>{console.error('Failed to load JSON',err); alert('Gagal muatkan data: '+err.message)});
+    }
+
+    // initial render
+    renderSurahList();
+  </script>  <!--
+    How to embed into your Waktu Solat app (example):
+    1) Place this HTML file in your app's assets (e.g. assets/quran/alquran-ibn-kathir.html).
+    2) Add a JSON file that matches the expected format and either:
+       - In the HTML, set window.ALQURAN_DATA = /* your json object */ before the template script; OR
+       - Call loadExternalData('/assets/quran/ibn-kathir.json') from the console or app after loading the iframe.
+    3) To embed as an iframe inside your app:
+       <iframe src="/assets/quran/alquran-ibn-kathir.html" style="width:100%;height:100%;border:0"></iframe>
+
+    Licensing note: Make sure you have the right to host/distribute the Ibn Kathir translation you plan to include.
+  --></body>
+</html>

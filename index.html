@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Waktu Solat — PWA (Final)</title>
+  <meta name="theme-color" content="#F6EEE0">
+  <style>
+    :root{
+      --bg:#F6EEE0; --card:#FFF; --muted:#6f604f; --accent:#A67734; --soft:#FFF6EE;
+      --glass: rgba(255,255,255,0.28);
+      --hero-height:360px;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#FFFDF8);color:#2e2a24;-webkit-font-smoothing:antialiased}
+    a{color:inherit}
+
+    /* HERO */
+    .hero{position:relative;min-height:var(--hero-height);display:flex;align-items:center;justify-content:center;padding:18px;background-size:cover;background-position:center}
+    /* gradient defaults (applied by JS) */
+    .hero::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.02));z-index:0}
+    .hero-card-bg{position:relative;z-index:2;width:100%;max-width:980px;border-radius:20px;backdrop-filter: blur(12px);background:var(--glass);padding:16px;box-shadow:0 10px 30px rgba(16,12,8,0.10)}
+    .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .hero-left{display:flex;flex-direction:column;gap:6px}
+    #locationName{font-weight:700;font-size:16px}
+    #heroDate{font-size:13px;color:var(--muted)}
+    .hero-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    #heroTime{font-size:34px;font-weight:700;letter-spacing:0.6px}
+    #nextPrayer{font-size:13px;color:#fff;background:var(--accent);padding:6px 10px;border-radius:12px;font-weight:700}
+    /* small countdown shifted slightly left visually (we'll reduce size) */
+    #countdown{font-size:20px;font-weight:600;color:rgba(255,255,255,0.95)}
+
+    /* bottom prayer two-rows inside hero */
+    #heroPrayers{margin-top:12px}
+    #prayerNames,#prayerTimes{display:flex;justify-content:space-between;align-items:center;width:100%;font-weight:700}
+    #prayerNames div,#prayerTimes div{flex:1;text-align:center;font-size:14px;color:var(--muted)}
+    #prayerTimes div{color:#2e2a24}
+    /* subtle divider */
+    .hero-divider{height:1px;background:rgba(0,0,0,0.03);margin:10px 0;border-radius:2px}
+
+    /* Top sticky nav */
+    .site-nav{position:sticky;top:0;background:var(--accent);z-index:120;padding:10px 0;box-shadow:0 3px 12px rgba(0,0,0,0.08)}
+    .nav-list{list-style:none;margin:0;padding:0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+    .nav-list a{color:#fff;text-decoration:none;font-weight:700;padding:8px 14px;border-radius:8px;transition:transform .15s,background .15s}
+    .nav-list a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.12)}
+    .nav-list a.active{background:#fff;color:var(--accent)}
+
+    .container{max-width:1100px;margin:14px auto;padding:0 12px}
+
+    main{padding:18px;max-width:980px;margin:18px auto}
+    .grid{display:grid;grid-template-columns:1fr 340px;gap:14px}
+    .card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 6px 20px rgba(18,15,12,0.06)}
+    .prayer-table table{width:100%;border-collapse:collapse;margin-top:8px}
+    .prayer-table th,.prayer-table td{padding:10px 8px;text-align:left;border-bottom:1px solid #f3f3f3}
+    .current-row{background:linear-gradient(90deg,rgba(166,119,52,0.06),rgba(255,255,255,0));}
+    .btn{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;background:#A67734;color:white;font-weight:600}
+    .btn.ghost{background:#fff;border:1px solid #A67734;color:#A67734}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}.hero{min-height:300px} #heroTime{font-size:28px}}
+  </style>
+</head>
+<body>
+  <!-- HERO -->
+  <header class="hero" id="hero" role="banner" aria-label="Prayer hero">
+    <div class="hero-card-bg" id="heroCard">
+      <div class="hero-top">
+        <div class="hero-left">
+          <div id="locationName">—</div>
+          <div id="heroDate">—</div>
+        </div>
+
+        <div class="hero-right">
+          <div id="heroTime">--:--:--</div>
+          <div id="countdown">—</div>
+          <div id="nextPrayer">Next: —</div>
+        </div>
+      </div>
+
+      <div class="hero-divider" role="separator" aria-hidden="true"></div>
+
+      <div id="heroPrayers" aria-live="polite">
+        <div id="prayerNames" aria-hidden="false"></div>
+        <div id="prayerTimes" aria-hidden="false"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV (sticky top on scroll) -->
+  <nav class="site-nav" aria-label="Primary">
+    <div class="nav-bar" style="background:transparent;">
+      <ul class="nav-list" role="menubar" aria-label="Main navigation">
+        <li role="none"><a role="menuitem" href="#prayer">Prayer</a></li>
+        <li role="none"><a role="menuitem" href="quran.html">Al Quran</a></li>
+        <li role="none"><a role="menuitem" href="qibla.html">Qiblat</a></li>
+        <li role="none"><a role="menuitem" href="#calendar">Takwim</a></li>
+        <li role="none"><a role="menuitem" href="#hadith">Daily Hadis</a></li>
+        <li role="none"><a role="menuitem" href="#about">About</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+  <div class="grid" style="grid-template-columns:1fr 1fr; gap:16px;">
+    <!-- LEFT BOX: Prayer Times -->
+    <section>
+      <div class="card prayer-table" id="prayer">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <div>
+            <strong id="locationNameSmall">Unknown</strong>
+            <div style="color:var(--muted);font-size:13px">Prayer times today</div>
+          </div>
+          <div style="text-align:right">
+            <div id="worldTime" style="font-weight:700"></div>
+            <div style="color:var(--muted);font-size:12px">Local time</div>
+          </div>
+        </div>
+
+        <div id="tableWrapper" style="margin-top:10px;">
+          <table aria-label="Prayer times table" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr><th>Prayer</th><th>Time</th></tr>
+            </thead>
+            <tbody id="prayerTableBody">
+              <tr id="row-fajr"><td>Fajr</td><td id="pt-fajr">--:--</td></tr>
+              <tr id="row-dhuhr"><td>Dhuhr</td><td id="pt-dhuhr">--:--</td></tr>
+              <tr id="row-asr"><td>Asr</td><td id="pt-asr">--:--</td></tr>
+              <tr id="row-maghrib"><td>Maghrib</td><td id="pt-maghrib">--:--</td></tr>
+              <tr id="row-isha"><td>Isha</td><td id="pt-isha">--:--</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;justify-content:space-between">
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn" id="toggle24">24h: On</button>
+            <button class="btn ghost" id="setLocationBtn">Set Location</button>
+          </div>
+          <div style="color:var(--muted);font-size:13px">Next: <span id="nextPrayerLabel">—</span></div>
+        </div>
+      </div>
+    </section>
+
+<style>
+  .grid > section { display:flex; flex-direction:column; }
+  @media(max-width:900px){ .grid { grid-template-columns:1fr; } }
+</style>
+
+<!-- 3D Premium Qibla Widget Start -->
+<section id="qibla-direction-widget" style="width:220px;height:auto;margin:0 auto;background:#f6eee0;border-radius:16px;box-shadow:0 6px 15px rgba(0,0,0,0.25);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;">
+  <h3 style="font-family:'Inter',sans-serif;color:#d9534f;margin:0 0 8px 0;font-size:1rem;text-align:center;">Qiblat Direction</h3>
+
+  <div class="compass-wrapper" style="position:relative;width:180px;height:180px;perspective:600px;">
+    <div class="compass-container" style="position:absolute;width:100%;height:100%;border-radius:50%;background: radial-gradient(circle at 30% 30%, #ffffff, #e0cfa5);box-shadow: inset -6px -6px 14px rgba(0,0,0,0.25), 6px 6px 12px rgba(0,0,0,0.15);">
+      <div class="compass-circle" style="position:absolute;width:90%;height:90%;border-radius:50%;left:5%;top:5%;border:4px solid #d3a97c;box-shadow: inset -4px -4px 10px rgba(0,0,0,0.25);"></div>
+      <div class="center-dot" style="position:absolute;width:14px;height:14px;background: radial-gradient(circle at 30% 30%, #d3a97c, #a37d5a);border-radius:50%;left:calc(50% - 7px);top:calc(50% - 7px);box-shadow: inset -2px -2px 6px rgba(0,0,0,0.4),2px 2px 6px rgba(0,0,0,0.3);"></div>
+    </div>
+    <div class="needle" id="qibla-needle-widget" style="position:absolute;width:6px;height:45%;top:10%;left:50%;transform-origin:bottom center;border-radius:3px;background: linear-gradient(to bottom, #ff4d4d, #b22222);box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 0 8px rgba(255,77,77,0.4);transition: transform 0.05s linear;">
+      <span style="position:absolute;top:-20px;font-weight:bold;font-size:12px;color:#ff4d4d;text-shadow:1px 1px 2px rgba(0,0,0,0.5);">Qibla</span>
+    </div>
+  </div>
+
+  <div style="margin-top:6px;font-size:0.85rem;color:#333;">
+    <span id="qibla-city-widget">City: KL</span>
+  </div>
+  <div class="info" id="qibla-heading-info-widget" style="margin-top:4px;font-size:0.8rem;color:#333;">Distance: 0 km</div>
+  <div class="status" id="qibla-status-info-widget" style="margin-top:4px;font-size:0.75rem;color:#666;">Status: Waiting...</div>
+
+  <div class="buttons" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+    <button id="qibla-recalibrate" style="padding:4px 8px;border:none;border-radius:5px;background:#d3a97c;color:#fff;font-size:0.8rem;cursor:pointer;">🧭 Recalibrate</button>
+    <button id="qibla-find" style="padding:4px 8px;border:none;border-radius:5px;background:#d9534f;color:#fff;font-size:0.8rem;cursor:pointer;">▶ Find Qibla</button>
+  </div>
+
+  <div class="manual-location" style="margin-top:6px;font-size:0.75rem;color:#666;display:flex;flex-direction:column;align-items:center;">
+    <label style="margin-bottom:2px;">Manual Location (lat,lng)</label>
+    <input type="text" id="qibla-manual-input" placeholder="3.1390,101.6869" style="width:140px;padding:2px 4px;border:1px solid #ccc;border-radius:4px;font-size:0.75rem;text-align:center;">
+  </div>
+</section>
+<!-- 3D Premium Qibla Widget End -->
+
+        <div class="card" id="hadith" style="margin-top:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><strong>Daily Hadith</strong><div style="color:var(--muted);font-size:13px">Quote image (offline friendly)</div></div>
+          <div style="display:flex;gap:10px;margin-top:10px;align-items:center"><canvas id="hadithCanvas" width="160" height="160" style="border-radius:8px;background:linear-gradient(180deg,#fff,#FFF6EE)"></canvas><div><div id="hadithText" style="font-weight:600">Loading hadith…</div><div style="color:var(--muted);font-size:13px">Source: sample</div></div></div>
+        </div>
+
+        <div class="card" id="donate" style="margin-top:14px"><strong>Donate</strong><p style="color:var(--muted)">Support development. You can add your payment links below (WhatsApp/Bank/Gopay etc.)</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn">Donate via WhatsApp</button><button class="btn ghost">Bank Transfer</button></div></div>
+
+        <div class="card" id="about" style="margin-top:14px"><strong>About Us</strong><p style="color:var(--muted);margin-top:6px">This app is designed to be privacy-friendly, work offline, and provide prayer times, qibla direction, Quran reading and a takwim for users.</p></div>
+      </section>
+
+      <aside>
+        <div class="card"><strong>Qibla Direction</strong><div style="color:var(--muted);font-size:13px">Tap Qibla in navigation to open the Qibla page</div><div class="compass" style="margin-top:12px"><div class="dial" id="dial" style="width:220px;height:220px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff,#fff0)"><div style="position:absolute;top:10px;left:10px;color:var(--muted);font-size:12px">N</div><div style="position:absolute;bottom:10px;right:10px;color:var(--muted);font-size:12px">S</div><div class="needle" id="needle" style="position:absolute;width:4px;height:100px;top:20px;background:linear-gradient(180deg,#d33,#a11);border-radius:4px;transform-origin:50% 85%"></div><div style="position:absolute;bottom:8px;font-size:12px;color:var(--muted)" id="qiblaDeg">—°</div></div></div></div>
+
+        <div class="card" style="margin-top:12px" id="calendar"><strong>Calendar & Takwim</strong><div style="color:var(--muted);font-size:13px">Hijri + Public holidays</div><div style="margin-top:10px" id="calendarBox"></div></div>
+
+        <div class="card" style="margin-top:12px"><strong>World Clocks</strong><div style="margin-top:8px" id="worldList"></div></div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>Built with care • Works offline • You can customize translations and data files.</footer>
+
+  <!-- Adhan.js for fallback calculation -->
+  <script src="https://cdn.jsdelivr.net/npm/adhan@4.4.0/dist/Adhan.js"></script>
+
+  <script>
+  /*
+    Full integrated script:
+    - JAKIM (waktusolat.app) for Malaysia (nearest zone) + caching per-day per-zone
+    - AlAdhan for non-Malaysia
+    - Offline caching & fallback to adhan.js compute
+    - Hero background auto-gradient + optional image overlay
+    - Azan: local azan.mp3 if exists else generated melody
+  */
+
+  // App state
+  const APP_STATE = { use24: true, location: null, cached: JSON.parse(localStorage.getItem('cachedTimings') || 'null') };
+  const storageLocal = { get(k){ try{return JSON.parse(localStorage.getItem(k))}catch{ return null } }, set(k,v){ localStorage.setItem(k, JSON.stringify(v)) } };
+
+  // Helper formatting
+  function fmtTime(dateOrStr){ if(!dateOrStr) return '--:--'; const d = (dateOrStr instanceof Date) ? dateOrStr : new Date(dateOrStr); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: !APP_STATE.use24}); }
+  function nowStr(){ const d=new Date(); return d.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short',year:'numeric'}); }
+
+  // world clocks list
+  const worldCities = [ {name:'Kuala Lumpur',tz:'Asia/Kuala_Lumpur'}, {name:'London',tz:'Europe/London'}, {name:'Makkah',tz:'Asia/Riyadh'} ];
+  function renderWorldClocks(){ const el = document.getElementById('worldList'); if(!el) return; el.innerHTML=''; worldCities.forEach(c=>{ const d=new Date(); const item = document.createElement('div'); item.style.marginBottom='8px'; try{ item.innerHTML = `<div style='font-weight:700'>${c.name}</div><div style='color:var(--muted)'>${d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:!APP_STATE.use24,timeZone:c.tz})}</div>` }catch(e){ item.innerHTML = `<div style='font-weight:700'>${c.name}</div><div style='color:var(--muted)'>—</div>` } el.appendChild(item); }); }
+
+  // Qibla function
+  function toRad(d){ return d*Math.PI/180 } function toDeg(r){ return r*180/Math.PI }
+  const KAABA = { lat:21.422487, lon:39.826206 };
+  function qiblaDirection(lat, lon){ const ka = toRad(KAABA.lat), kb = toRad(KAABA.lon), phi = toRad(lat), lam = toRad(lon); const num = Math.sin(kb-lam); const den = Math.cos(phi)*Math.tan(ka) - Math.sin(phi)*Math.cos(kb-lam); return (toDeg(Math.atan2(num,den)) + 360) % 360; }
+
+  // JAKIM helper: fetch zones and solat from waktusolat.app (fast JSON)
+  async function fetchWaktuSolatZones(){
+    try{
+      const res = await fetch('https://api.waktusolat.app/v2/zones.json');
+      if(!res.ok) throw new Error('zones fetch failed');
+      return await res.json();
+    }catch(e){ console.warn('zones fetch failed', e); return null; }
+  }
+  async function fetchWaktuSolatForZone(zoneCode){
+    try{
+      const res = await fetch(`https://api.waktusolat.app/v2/solat/${encodeURIComponent(zoneCode)}`);
+      if(!res.ok) throw new Error('waktu solat fetch failed');
+      return (await res.json());
+    }catch(e){ console.warn('waktu solat for zone failed', e); return null; }
+  }
+
+  // simple nearest-zone using Euclidean distance on lat/lon for speed
+  function nearestZone(lat, lon, zones){
+    let best = null, bestD = Infinity;
+    zones.forEach(z => {
+      const d = Math.hypot(lat - z.lat, lon - z.lon);
+      if(d < bestD){ bestD = d; best = z; }
+    });
+    return best;
+  }
+
+  // parse HH:MM string to Date object for today
+  function parseHHMMToDate(hhmm, baseDate = new Date()){
+    if(!hhmm) return null;
+    const parts = hhmm.split(':').map(n=>parseInt(n,10));
+    const d = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), parts[0]||0, parts[1]||0, 0, 0);
+    return d;
+  }
+
+  // Local adhan.js compute fallback
+  function computePrayerTimesAdhan(date, lat, lon){
+    try{
+      const coords = new adhan.Coordinates(lat, lon);
+      const params = adhan.CalculationMethod.MuslimWorldLeague();
+      params.madhab = adhan.Madhab.Shafi;
+      params.adjustments = { fajr:2, dhuhr:1, asr:1, maghrib:2, isha:2 };
+      const t = new adhan.PrayerTimes(coords, date, params);
+      return { fajr: t.fajr, sunrise: t.sunrise, dhuhr: t.dhuhr, asr: t.asr, maghrib: t.maghrib, isha: t.isha };
+    }catch(e){ console.warn('adhan compute fail', e); return null; }
+  }
+
+  // localStorage cache helpers (jakimCache_v1 per zone/day)
+  function saveJakimCache(zoneCode, date, obj){
+    try{
+      const k = 'jakimCache_v1';
+      const c = JSON.parse(localStorage.getItem(k) || '{}');
+      const dayKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      c[zoneCode] = c[zoneCode] || {};
+      c[zoneCode][dayKey] = obj;
+      localStorage.setItem(k, JSON.stringify(c));
+    }catch(e){ console.warn('saveJakimCache err', e); }
+  }
+  function loadJakimCache(zoneCode, date){
+    try{
+      const k = 'jakimCache_v1';
+      const c = JSON.parse(localStorage.getItem(k) || '{}');
+      const dayKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      return (c[zoneCode] && c[zoneCode][dayKey]) ? c[zoneCode][dayKey] : null;
+    }catch(e){ return null; }
+  }
+
+  // Obtain JAKIM-style times for location (cached -> online -> compute & cache)
+  async function getJakimTimesForLocation(date, lat, lon){
+    const zones = await fetchWaktuSolatZones();
+    if(!zones) throw new Error('No zones available');
+    const nz = nearestZone(lat, lon, zones);
+    if(!nz) throw new Error('No nearest zone');
+    const zoneCode = nz.zone;
+
+    // try cached
+    const cached = loadJakimCache(zoneCode, date);
+    if(cached){
+      // return converted Date objects
+      return {
+        fajr: parseHHMMToDate(cached.fajr, date),
+        sunrise: parseHHMMToDate(cached.sunrise, date),
+        dhuhr: parseHHMMToDate(cached.dhuhr, date),
+        asr: parseHHMMToDate(cached.asr, date),
+        maghrib: parseHHMMToDate(cached.maghrib, date),
+        isha: parseHHMMToDate(cached.isyak || cached.isha, date),
+        source: 'JAKIM-CACHE ' + zoneCode
+      };
+    }
+
+    // try online provider for that zone
+    try{
+      const js = await fetchWaktuSolatForZone(zoneCode);
+      if(js && js.prayer_times){
+        // normalize
+        const p = js.prayer_times;
+        // save raw strings to cache for offline use
+        const saved = { fajr: p.fajr, dhuhr: p.dhuhr, asr: p.asr, maghrib: p.maghrib, isyak: p.isha || p.isyak, sunrise: p.sunrise };
+        saveJakimCache(zoneCode, date, saved);
+        return {
+          fajr: parseHHMMToDate(saved.fajr, date),
+          sunrise: parseHHMMToDate(saved.sunrise, date),
+          dhuhr: parseHHMMToDate(saved.dhuhr, date),
+          asr: parseHHMMToDate(saved.asr, date),
+          maghrib: parseHHMMToDate(saved.maghrib, date),
+          isha: parseHHMMToDate(saved.isyak || saved.isha, date),
+          source: 'JAKIM-REMOTE ' + zoneCode
+        };
+      }
+    }catch(e){ console.warn('fetch JAKIM remote failed', e); }
+
+    // fallback: compute locally and cache
+    const computed = computePrayerTimesAdhan(date, lat, lon);
+    if(!computed) throw new Error('Compute fallback failed');
+    const fmt = d => d ? `${String(new Date(d).getHours()).padStart(2,'0')}:${String(new Date(d).getMinutes()).padStart(2,'0')}` : null;
+    const raw = { fajr: fmt(computed.fajr), dhuhr: fmt(computed.dhuhr), asr: fmt(computed.asr), maghrib: fmt(computed.maghrib), isyak: fmt(computed.isha), sunrise: fmt(computed.sunrise) };
+    saveJakimCache(zoneCode, date, raw);
+    return {
+      fajr: parseHHMMToDate(raw.fajr, date),
+      sunrise: parseHHMMToDate(raw.sunrise, date),
+      dhuhr: parseHHMMToDate(raw.dhuhr, date),
+      asr: parseHHMMToDate(raw.asr, date),
+      maghrib: parseHHMMToDate(raw.maghrib, date),
+      isha: parseHHMMToDate(raw.isyak || raw.isha, date),
+      source: 'JAKIM-COMPUTED ' + zoneCode
+    };
+  }
+
+  // Fetch AlAdhan times (global)
+  async function getAlAdhanTimes(date, lat, lon){
+    try{
+      const ts = Math.floor(date.getTime()/1000);
+      const url = `https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=2`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('aladhan error ' + res.status);
+      const js = await res.json();
+      const t = js.data.timings;
+      return {
+        fajr: t.Fajr,
+        sunrise: t.Sunrise,
+        dhuhr: t.Dhuhr,
+        asr: t.Asr,
+        maghrib: t.Maghrib,
+        isha: t.Isha,
+        source: 'AlAdhan'
+      };
+    }catch(e){ console.warn('aladhan fetch failed', e); return null; }
+  }
+
+  // Unified get-prayer-times: JAKIM for Malaysia (cached), AlAdhan otherwise, fallback compute
+  async function getPrayerTimesForLocation(date, lat, lon){
+    // rough Malaysia bounding box (cover peninsula + east)
+    const inMY = (lat >= -1 && lat <= 8 && lon >= 98.5 && lon <= 119.5);
+
+    if(inMY){
+      try{
+        const j = await getJakimTimesForLocation(date, lat, lon);
+        if(j) return j;
+      }catch(e){ console.warn('jakim path failed', e); }
+    }
+
+    // try AlAdhan
+    const a = await getAlAdhanTimes(date, lat, lon);
+    if(a) return {
+      fajr: parseHHMMToDate(a.fajr, date) || parseHHMMToDate(a.Fajr, date),
+      sunrise: parseHHMMToDate(a.sunrise, date),
+      dhuhr: parseHHMMToDate(a.dhuhr, date),
+      asr: parseHHMMToDate(a.asr, date),
+      maghrib: parseHHMMToDate(a.maghrib, date),
+      isha: parseHHMMToDate(a.isha, date),
+      source: a.source
+    };
+
+    // final fallback adhan.js compute
+    const local = computePrayerTimesAdhan(date, lat, lon);
+    if(local) return local;
+    return null;
+  }
+
+  // show prayer times in table + hero two-rows + highlight current prayer (1 hour)
+  function showPrayerTimes(times){
+    // table cells
+    const map = { fajr:'pt-fajr', dhuhr:'pt-dhuhr', asr:'pt-asr', maghrib:'pt-maghrib', isha:'pt-isha' };
+    for(const k of Object.keys(map)){ const el = document.getElementById(map[k]); if(el) el.textContent = fmtTime(times[k]); }
+    /// highlight current
+    ['fajr','dhuhr','asr','maghrib','isha'].forEach(k => { const r = document.getElementById('row-'+k); if(r) r.classList.remove('current-row'); });
+    const now = new Date();
+    for(const k of ['fajr','dhuhr','asr','maghrib','isha']){
+      if(!times[k]) continue;
+      const start = new Date(times[k]);
+      const end = new Date(start.getTime() + 60*60000);
+      if(now >= start && now < end){
+        const row = document.getElementById('row-'+k); if(row) row.classList.add('current-row');
+        break;
+      }
+    }
+    // hero two rows
+    const namesEl = document.getElementById('prayerNames'), timesEl = document.getElementById('prayerTimes');
+    if(namesEl && timesEl){
+      namesEl.innerHTML = `<div>Subuh</div><div>Zohor</div><div>Asar</div><div>Maghrib</div><div>Isyak</div>`;
+      const tf = t => t ? (t instanceof Date ? t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:!APP_STATE.use24}) : new Date(t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:!APP_STATE.use24})) : '--:--';
+      timesEl.innerHTML = `<div>${tf(times.fajr)}</div><div>${tf(times.dhuhr)}</div><div>${tf(times.asr)}</div><div>${tf(times.maghrib)}</div><div>${tf(times.isha)}</div>`;
+    }
+  }
+
+  // update hero visuals: background gradient or image overlay + keep countdown & next label
+  const HERO_CONFIG = { imageOverlay: true, imagePath: '/images/sunset.jpg' }; // image overlay path (put your hero image here)
+  let heroTimer = null;
+  async function updateHero(times){
+    try{
+      // background: gradient by period
+      const hero = document.getElementById('hero');
+      function toDateObj(v){ return v instanceof Date ? v : (typeof v === 'string' ? parseHHMMToDate(v) : new Date(v)); }
+      const fajr = toDateObj(times.fajr), dhuhr = toDateObj(times.dhuhr), asr = toDateObj(times.asr), maghrib = toDateObj(times.maghrib), isha = toDateObj(times.isha);
+      const now = new Date();
+      let grad = 'linear-gradient(135deg,#2C3E50,#34495E)';
+      if(fajr && dhuhr && now >= fajr && now < dhuhr) grad = 'linear-gradient(135deg,#FFFAF0,#FFE5B4)';
+      else if(dhuhr && asr && now >= dhuhr && now < asr) grad = 'linear-gradient(135deg,#FFF6E0,#FFD580)';
+      else if(asr && maghrib && now >= asr && now < maghrib) grad = 'linear-gradient(135deg,#FFE5B4,#FFA500)';
+      else if(maghrib && isha && now >= maghrib && now < isha) grad = 'linear-gradient(135deg,#FF8C42,#FF4500)';
+
+      if(HERO_CONFIG.imageOverlay){
+        // if image exists (attempt to preload)
+        const img = new Image();
+        img.src = HERO_CONFIG.imagePath;
+        img.onload = () => {
+          document.getElementById('hero').style.background = `${grad}, url('${HERO_CONFIG.imagePath}') center/cover no-repeat`;
+        };
+        img.onerror = () => {
+          document.getElementById('hero').style.background = grad;
+        };
+      } else {
+        document.getElementById('hero').style.background = grad;
+      }
+
+      // countdown & next
+      if(heroTimer) { clearInterval(heroTimer); heroTimer = null; }
+      function computeNext(){
+        const keys = ['fajr','dhuhr','asr','maghrib','isha'];
+        const now = new Date();
+        for(const k of keys){
+          if(!times[k]) continue;
+          const t = new Date(times[k]);
+          if(t > now) return { key:k, time:t };
+        }
+        // next day fajr fallback
+        const tomorrowFajr = times.fajr ? new Date(times.fajr.getTime() + 24*3600*1000) : new Date(now.getTime() + 3600*1000);
+        return { key:'fajr', time:tomorrowFajr };
+      }
+      function pad(n){ return String(n).padStart(2,'0'); }
+      function formatHMS(ms){
+        const s = Math.max(0, Math.floor(ms/1000));
+        const hh = Math.floor(s/3600); const mm = Math.floor((s%3600)/60); const ss = s%60;
+        return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+      }
+      const nxt = computeNext();
+      document.getElementById('nextPrayer').textContent = `Next: ${nxt.key ? nxt.key.toUpperCase() : '—'}`;
+      function tick(){
+        const diff = nxt.time.getTime() - Date.now();
+        if(diff <= 0){ clearInterval(heroTimer); heroTimer=null; runAll(); return; }
+        document.getElementById('countdown').textContent = formatHMS(diff);
+        // small hero time shown on right
+        document.getElementById('heroTime').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit', hour12: !APP_STATE.use24});
+      }
+      tick(); heroTimer = setInterval(tick, 1000);
+    }catch(e){ console.warn('updateHero err', e); }
+  }
+
+  // Azan play: local azan.mp3 if exists else generated melody
+  async function playAzanAudio(){
+    try{
+      // try local file
+      const localUrl = './azan.mp3';
+      const r = await fetch(localUrl, { method:'HEAD' }).catch(()=>null);
+      if(r && r.ok){
+        const a = new Audio(localUrl);
+        a.volume = 0.9;
+        try{ await a.play(); }catch(e){ console.warn('audio play blocked', e); }
+        return;
+      }
+    }catch(e){ /* ignore */ }
+
+    // fallback generated melody
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      const notes = [440,523.25,659.25,880];
+      let t = 0;
+      notes.forEach((f)=> {
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(f, now + t);
+        g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.12, now + t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, now + t + 0.6);
+        o.connect(g); g.connect(ctx.destination); o.start(now+t); o.stop(now+t+0.7);
+        t += 0.45;
+      });
+    }catch(e){ console.warn('playAzanAudio failed', e); }
+  }
+
+  // Notifications & schedule azan
+  let azanTimers = [];
+  function clearAzanTimers(){ azanTimers.forEach(id=>clearTimeout(id)); azanTimers=[]; }
+  function scheduleAzan(times){
+    clearAzanTimers();
+    const keys = ['fajr','dhuhr','asr','maghrib','isha'];
+    const now = Date.now();
+    keys.forEach(k=>{
+      if(!times[k]) return;
+      const at = new Date(times[k]).getTime();
+      if(at <= now) return;
+      const pre = at - 5*60000; // 5 min before pre-azan
+      if(pre > now){
+        azanTimers.push(setTimeout(()=>{ notifyUser(`${k.toUpperCase()} in 5 minutes`, 'Prepare for Azan'); playAzanAudio(); }, pre - now));
+      }
+      azanTimers.push(setTimeout(()=>{ notifyUser(`${k.toUpperCase()} — Azan`, `Time for ${k}`); playAzanAudio(); }, at - now));
+    });
+  }
+  function notifyUser(title, body){
+    if(!('Notification' in window)) return;
+    if(Notification.permission === 'granted'){ new Notification(title, { body }) }
+    else if(Notification.permission !== 'denied'){ Notification.requestPermission().then(p=>{ if(p === 'granted') new Notification(title, { body }); }) }
+  }
+
+  // display hadith
+  function drawHadith(text){
+    try{
+      const c = document.getElementById('hadithCanvas'); if(!c) return;
+      const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+      const g = ctx.createLinearGradient(0,0,0,c.height); g.addColorStop(0,'#FFF6EE'); g.addColorStop(1,'#ffffff');
+      ctx.fillStyle = g; ctx.fillRect(0,0,c.width,c.height); ctx.fillStyle = '#6b5a43'; ctx.font = '12px sans-serif';
+      wrapText(ctx, text, 10, 30, 130, 16);
+    }catch(e){/* ignore */ }
+  }
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    const words = text.split(' '); let line = '';
+    for(let n=0;n<words.length;n++){
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      if(testWidth > maxWidth && n > 0){ ctx.fillText(line, x, y); line = words[n] + ' '; y += lineHeight; } else { line = testLine; }
+    }
+    ctx.fillText(line, x, y);
+  }
+
+  // main orchestrator: determine location, choose source, update UI, schedule azan
+  async function runAll(){
+    try{
+      // update world time display & hero date
+      document.getElementById('worldTime').textContent = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', hour12: !APP_STATE.use24 });
+      document.getElementById('heroDate').textContent = nowStr();
+
+      // hadith sample
+      const sample = '“The best among you are those who have the best manners and character.” — sample.';
+      const ht = document.getElementById('hadithText'); if(ht) ht.textContent = sample; drawHadith(sample);
+
+      // location
+      let loc = APP_STATE.location || storageLocal.get('loc');
+      if(!loc){
+        try{
+          const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout:8000 }));
+          loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name: 'My Location' };
+        }catch(e){
+          loc = { lat: 3.1390, lon: 101.6869, name: 'Kuala Lumpur (fallback)' };
+        }
+        APP_STATE.location = loc; storageLocal.set('loc', loc);
+      }
+
+      // UI location labels
+      const locEl = document.getElementById('locationName'); const locSmall = document.getElementById('locationNameSmall');
+      if(locEl) locEl.textContent = loc.name || `${loc.lat.toFixed(3)},${loc.lon.toFixed(3)}`;
+      if(locSmall) locSmall.textContent = loc.name || `${loc.lat.toFixed(3)},${loc.lon.toFixed(3)}`;
+
+      // choose source & get times
+      let times = null;
+      try{
+        times = await getPrayerTimesForLocation(new Date(), loc.lat, loc.lon);
+      }catch(e){ console.warn('getPrayerTimesForLocation failed', e); }
+
+      if(!times){
+        // try cached fallback (global cache)
+        const cache = JSON.parse(localStorage.getItem('cachedTimings') || 'null');
+        if(cache && cache.times) times = cache.times;
+      }
+
+      if(!times){
+        // last resort adhan compute
+        times = computePrayerTimesAdhan(new Date(), loc.lat, loc.lon);
+      }
+
+      if(!times) return;
+
+      // ensure Date objects
+      ['fajr','sunrise','dhuhr','asr','maghrib','isha'].forEach(k=>{
+        if(times[k] && !(times[k] instanceof Date)) times[k] = new Date(times[k]);
+      });
+
+      // Save into global cachedTimings for offline use (store simple HH:MM strings)
+      try{
+        const store = { ts: Date.now(), times: {
+          fajr: `${String(times.fajr.getHours()).padStart(2,'0')}:${String(times.fajr.getMinutes()).padStart(2,'0')}`,
+          dhuhr: `${String(times.dhuhr.getHours()).padStart(2,'0')}:${String(times.dhuhr.getMinutes()).padStart(2,'0')}`,
+          asr: `${String(times.asr.getHours()).padStart(2,'0')}:${String(times.asr.getMinutes()).padStart(2,'0')}`,
+          maghrib: `${String(times.maghrib.getHours()).padStart(2,'0')}:${String(times.maghrib.getMinutes()).padStart(2,'0')}`,
+          isha: `${String(times.isha.getHours()).padStart(2,'0')}:${String(times.isha.getMinutes()).padStart(2,'0')}`
+        } };
+        localStorage.setItem('cachedTimings', JSON.stringify(store));
+      }catch(e){ /* ignore */ }
+
+      showPrayerTimes(times);
+      updateHero(times);
+
+      // next label
+      const keys = ['fajr','dhuhr','asr','maghrib','isha'];
+      const nextKey = keys.find(k => times[k] && new Date(times[k]) > new Date());
+      document.getElementById('nextPrayerLabel').textContent = nextKey ? nextKey.toUpperCase() : '—';
+      document.getElementById('nextPrayer').textContent = nextKey ? `Next: ${nextKey.toUpperCase()}` : 'Next: —';
+
+      // qibla
+      const deg = Math.round(qiblaDirection(loc.lat, loc.lon));
+      const needle = document.getElementById('needle'); if(needle) needle.style.transform = `rotate(${deg}deg)`;
+      const qdeg = document.getElementById('qiblaDeg'); if(qdeg) qdeg.textContent = deg + '°';
+
+      // schedule azan
+      scheduleAzan(times);
+
+    }catch(e){ console.warn('runAll err', e); }
+  }
+
+  // small "Enable Azan" floating button
+  (function createEnableButton(){
+    const btn = document.createElement('button');
+    btn.textContent = 'Enable Azan Alerts';
+    Object.assign(btn.style,{position:'fixed',right:'14px',bottom:'14px',padding:'10px 12px',borderRadius:'10px',background:'#A67734',color:'#fff',border:'none',zIndex:9999,cursor:'pointer'});
+    document.body.appendChild(btn);
+    btn.addEventListener('click', async ()=>{
+      if(!('Notification' in window)) return alert('Notifications not supported');
+      if(Notification.permission !== 'granted'){ const p = await Notification.requestPermission(); if(p !== 'granted') return alert('Please allow notifications'); }
+      alert('Azan alerts enabled (melody will play)'); 
+    });
+  })();
+
+  // events & boot
+  window.addEventListener('load', ()=>{
+    const saved = storageLocal.get('loc'); if(saved) APP_STATE.location = saved;
+    const t24 = document.getElementById('toggle24'); if(t24) t24.addEventListener('click', ()=>{ APP_STATE.use24 = !APP_STATE.use24; t24.textContent = '24h: ' + (APP_STATE.use24 ? 'On' : 'Off'); runAll(); });
+    const setBtn = document.getElementById('setLocationBtn'); if(setBtn) setBtn.addEventListener('click', ()=>{
+      if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(pos=>{ APP_STATE.location = { lat: pos.coords.latitude, lon: pos.coords.longitude, name:'My Location' }; storageLocal.set('loc', APP_STATE.location); runAll(); }, ()=>{ APP_STATE.location = { lat:3.1390, lon:101.6869, name:'Kuala Lumpur (fallback)'}; storageLocal.set('loc', APP_STATE.location); runAll(); }) } else { APP_STATE.location = { lat:3.1390, lon:101.6869, name:'Kuala Lumpur (fallback)'}; storageLocal.set('loc', APP_STATE.location); runAll(); } });
+    renderWorldClocks(); runAll();
+    setInterval(()=>{ renderWorldClocks(); document.getElementById('heroDate').textContent = nowStr(); }, 30*1000);
+    setInterval(runAll, 60*1000);
+  });
+
+
+
+constentListener('offline',()=>statusInfo.textContent="Offline – manual location needed");
+
+<!-- 3D Embedded Qibla Widget with GPS -->
+<section id="qibla-widget" style="width:220px;height:auto;margin:0 auto;background:#f6eee0;border-radius:16px;box-shadow:0 6px 15px rgba(0,0,0,0.25);display:flex;flex-direction:column;align-items:center;padding:10px;">
+  <h3 style="font-family:'Inter',sans-serif;color:#d9534f;margin:0 0 8px 0;font-size:1rem;text-align:center;">Qiblat Direction</h3>
+
+  <div class="compass-wrapper" style="position:relative;width:180px;height:180px;perspective:600px;">
+    <div class="compass-container" style="position:absolute;width:100%;height:100%;border-radius:50%;background: radial-gradient(circle at 30% 30%, #ffffff, #e0cfa5);box-shadow: inset -6px -6px 14px rgba(0,0,0,0.25), 6px 6px 12px rgba(0,0,0,0.15);">
+      <div class="compass-circle" style="position:absolute;width:90%;height:90%;border-radius:50%;left:5%;top:5%;border:4px solid #d3a97c;box-shadow: inset -4px -4px 10px rgba(0,0,0,0.25);"></div>
+      <div class="center-dot" style="position:absolute;width:14px;height:14px;background: radial-gradient(circle at 30% 30%, #d3a97c, #a37d5a);border-radius:50%;left:calc(50% - 7px);top:calc(50% - 7px);box-shadow: inset -2px -2px 6px rgba(0,0,0,0.4),2px 2px 6px rgba(0,0,0,0.3);"></div>
+    </div>
+    <div class="needle" id="qibla-needle-widget" style="position:absolute;width:6px;height:45%;top:10%;left:50%;transform-origin:bottom center;border-radius:3px;background: linear-gradient(to bottom, #ff4d4d, #b22222);box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 0 8px rgba(255,77,77,0.4);transition: transform 0.05s linear;">
+      <span style="position:absolute;top:-20px;font-weight:bold;font-size:12px;color:#ff4d4d;text-shadow:1px 1px 2px rgba(0,0,0,0.5);">Qibla</span>
+    </div>
+  </div>
+
+  <div style="margin-top:6px;font-size:0.85rem;color:#333;">
+    <span id="qibla-city-widget">City: KL</span>
+  </div>
+  <div class="info" id="qibla-heading-info-widget" style="margin-top:4px;font-size:0.8rem;color:#333;">Distance: 0 km</div>
+  <div class="status" id="qibla-status-info-widget" style="margin-top:4px;font-size:0.75rem;color:#666;">Status: Waiting...</div>
+
+  <div class="buttons" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+    <button id="qibla-recalibrate" style="padding:4px 8px;border:none;border-radius:5px;background:#d3a97c;color:#fff;font-size:0.8rem;cursor:pointer;">🧭 Recalibrate</button>
+    <button id="qibla-find" style="padding:4px 8px;border:none;border-radius:5px;background:#d9534f;color:#fff;font-size:0.8rem;cursor:pointer;">▶ Find Qibla</button>
+  </div>
+
+  <div class="manual-location" style="margin-top:6px;font-size:0.75rem;color:#666;display:flex;flex-direction:column;align-items:center;">
+    <label style="margin-bottom:2px;">Manual Location (lat,lng)</label>
+    <input type="text" id="qibla-manual-input" placeholder="3.1390,101.6869" style="width:140px;padding:2px 4px;border:1px solid #ccc;border-radius:4px;font-size:0.75rem;text-align:center;">
+  </div>
+</section>
+
+<script>
+(function(){
+  const KAABA_LAT=21.4225, KAABA_LON=39.8262;
+  let userLat=null, userLon=null, qiblaBearing=0, heading=0, calibrationOffset=0;
+
+  const needle=document.getElementById("qibla-needle-widget");
+  const cityElem=document.getElementById("qibla-city-widget");
+  const distElem=document.getElementById("qibla-heading-info-widget");
+  const statusElem=document.getElementById("qibla-status-info-widget");
+  const btnCal=document.getElementById("qibla-recalibrate");
+  const btnFind=document.getElementById("qibla-find");
+  const manualInput=document.getElementById("qibla-manual-input");
+
+  function deg2rad(d){return d*Math.PI/180;}
+  function rad2deg(r){return r*180/Math.PI;}
+  function calcQibla(lat,lon){
+    const φ1=deg2rad(lat), φ2=deg2rad(KAABA_LAT), Δλ=deg2rad(KAABA_LON-lon);
+    const y=Math.sin(Δλ)*Math.cos(φ2);
+    const x=Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+    return (rad2deg(Math.atan2(y,x))+360)%360;
+  }
+  function calcDistance(lat,lon){
+    const R=6371,dLat=deg2rad(KAABA_LAT-lat),dLon=deg2rad(KAABA_LON-lon);
+    const a=Math.sin(dLat/2)**2+Math.cos(deg2rad(lat))*Math.cos(deg2rad(KAABA_LAT))*Math.sin(dLon/2)**2;
+    return (R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))).toFixed(2);
+  }
+  function rotateNeedle(target){
+    const current=needle._angle||0;
+    let diff=target-current;
+    if(diff>180) diff-=360;
+    if(diff<-180) diff+=360;
+    needle._angle=current+diff*0.15;
+    needle.style.transform=`rotate(${needle._angle}deg)`;
+  }
+
+  function updateQibla(){
+    if(userLat!=null && userLon!=null){
+      qiblaBearing=calcQibla(userLat,userLon);
+      const distanceKm=calcDistance(userLat,userLon);
+      const relative=(qiblaBearing-(heading+calibrationOffset)+360)%360;
+      rotateNeedle(relative);
+      distElem.textContent=`Distance: ${distanceKm} km`;
+    }
+  }
+
+  function setManual(){
+    const val=manualInput.value.split(",");
+    if(val.length===2){
+      const lat=parseFloat(val[0]), lon=parseFloat(val[1]);
+      if(!isNaN(lat)&&!isNaN(lon)){
+        userLat=lat; userLon=lon;
+        cityElem.textContent="City: Manual";
+        statusElem.textContent="Manual location used";
+        updateQibla();
+      }
+    }
+  }
+
+  function getLocation(){
+    statusElem.textContent="Getting GPS...";
+    if("geolocation" in navigator){
+      navigator.geolocation.getCurrentPosition(pos=>{
+        userLat=pos.coords.latitude;
+        userLon=pos.coords.longitude;
+        cityElem.textContent="City: Your Location";
+        statusElem.textContent="GPS detected";
+        updateQibla();
+      }, err=>{
+        statusElem.textContent="GPS unavailable – use manual input";
+      }, { enableHighAccuracy:true, timeout:20000, maximumAge:0 });
+    } else {
+      statusElem.textContent="Geolocation unsupported – use manual input";
+    }
+  }
+
+  function handleOrientation(evt){
+    let alpha=evt.alpha;
+    if(typeof evt.webkitCompassHeading==="number") alpha=evt.webkitCompassHeading;
+    if(alpha==null) return;
+    heading=alpha;
+    updateQibla();
+  }
+
+  function startCompass(){
+    getLocation();
+
+    if(typeof DeviceOrientationEvent!=="undefined" &&
+       typeof DeviceOrientationEvent.requestPermission==="function"){
+      DeviceOrientationEvent.requestPermission().then(resp=>{
+        if(resp==="granted"){
+          window.addEventListener("deviceorientation", handleOrientation, true);
+          statusElem.textContent="Compass active with GPS";
+        } else {
+          statusElem.textContent="Permission denied – static Qibla";
+          updateQibla();
+        }
+      }).catch(()=>{ statusElem.textContent="Orientation error – static Qibla"; updateQibla(); });
+    } else if("DeviceOrientationEvent" in window){
+      window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+      window.addEventListener("deviceorientation", handleOrientation, true);
+    } else {
+      statusElem.textContent="No orientation – static Qibla";
+      updateQibla();
+    }
+  }
+
+  btnCal.addEventListener("click", ()=>{calibrationOffset=heading; statusElem.textContent="Calibration done";});
+  btnFind.addEventListener("click", ()=>{startCompass(); setManual();});
+  manualInput.addEventListener("change", ()=>{setManual();});
+
+  document.addEventListener("DOMContentLoaded", ()=>{startCompass();});
+
+})();
+</script>
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accurate Qibla Compass</title>
+<style>
+body {margin:0;font-family:'Inter',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#f6eee0;}
+.compass-wrapper {position:relative;width:340px;height:340px;margin-bottom:16px;}
+.compass-container {position:absolute;width:100%;height:100%;border-radius:50%;background: radial-gradient(circle at 30% 30%, #ffffff, #e0cfa5);box-shadow: inset -6px -6px 20px rgba(0,0,0,0.15), 6px 6px 15px rgba(0,0,0,0.1);}
+.compass-circle {position:absolute;width:90%;height:90%;border-radius:50%;left:5%;top:5%;border:4px solid #d3a97c;box-shadow: inset -3px -3px 10px rgba(0,0,0,0.2);}
+.needle {position:absolute;width:8px;height:42%;top:10%;left:50%;transform-origin:bottom center;display:flex;justify-content:center;align-items:flex-start;transition: transform 0.05s linear;border-radius:4px;background: linear-gradient(to bottom, #d9534f, #a93226);}
+.needle span{position:absolute;top:-24px;font-weight:bold;font-size:14px;color:#d9534f;text-shadow:1px 1px 2px rgba(0,0,0,0.3);}
+.center-dot{position:absolute;width:20px;height:20px;background: radial-gradient(circle at 30% 30%, #d3a97c, #a37d5a);border-radius:50%;left:calc(50% - 10px);top:calc(50% - 10px);box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3), 2px 2px 4px rgba(0,0,0,0.2);z-index:4;}
+.info{text-align:center;font-size:1rem;margin-bottom:12px;color:#333;}
+.controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:10px;}
+input[type="number"], input[type="text"]{width:100px;padding:5px;border-radius:5px;border:1px solid #ccc;}
+button{padding:5px 12px;cursor:pointer;border:none;border-radius:5px;background-color:#d3a97c;color:#fff;transition:0.3s;}
+button:hover{background-color:#c48c58;}
+.status{margin-top:8px;font-size:0.9rem;color:#666;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="compass-wrapper">
+  <div class="compass-container">
+    <div class="compass-circle"></div>
+    <div class="center-dot"></div>
+  </div>
+  <div class="needle" id="qibla-needle"><span>Qibla</span></div>
+</div>
+
+<div class="info" id="heading-info">Distance: 0 km</div>
+<div class="status" id="status-info">Status: Waiting...</div>
+
+<div class="controls">
+  <button onclick="startQiblaCompass()">▶ Start Qibla Compass</button>
+  <button onclick="manualCalibrate()">🧭 Calibrate</button>
+  <input type="number" id="lat-input" placeholder="Latitude" step="0.0001">
+  <input type="number" id="lon-input" placeholder="Longitude" step="0.0001">
+  <button onclick="setManualLocation()">Set Location</button>
+  <input type="text" id="city-input" placeholder="City Name">
+  <button onclick="setCityLocation()">Set City</button>
+</div>
+
+<script>
+const KAABA_LAT=21.4225, KAABA_LON=39.8262;
+let userLat=null, userLon=null, qiblaBearing=0, heading=0, calibrationOffset=0;
+
+const cityDB={
+  "Kuala Lumpur": {lat:3.1390, lon:101.6869},
+  "Jakarta": {lat:-6.2088, lon:106.8456},
+  "New York": {lat:40.7128, lon:-74.0060},
+  "London": {lat:51.5074, lon:-0.1278},
+  "Tokyo": {lat:35.6895, lon:139.6917},
+  "Cairo": {lat:30.0444, lon:31.2357}
+};
+
+const qiblaNeedle=document.getElementById('qibla-needle');
+const headingInfo=document.getElementById('heading-info');
+const statusInfo=document.getElementById('status-info');
+
+function deg2rad(d){return d*Math.PI/180;}
+function rad2deg(r){return r*180/Math.PI;}
+
+function calculateQibla(lat,lon){
+  const φ1=deg2rad(lat), φ2=deg2rad(KAABA_LAT), Δλ=deg2rad(KAABA_LON-lon);
+  const y=Math.sin(Δλ)*Math.cos(φ2);
+  const x=Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+  return (rad2deg(Math.atan2(y,x))+360)%360;
+}
+
+function calculateDistance(lat,lon){
+  const R=6371,dLat=deg2rad(KAABA_LAT-lat),dLon=deg2rad(KAABA_LON-lon);
+  const a=Math.sin(dLat/2)**2+Math.cos(deg2rad(lat))*Math.cos(deg2rad(KAABA_LAT))*Math.sin(dLon/2)**2;
+  return (R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))).toFixed(2);
+}
+
+function rotateNeedle(needle,target){
+  const current=needle._angle||0;
+  let diff=target-current;
+  if(diff>180) diff-=360;
+  if(diff<-180) diff+=360;
+  needle._angle=current+diff*0.15;
+  needle.style.transform=`rotate(${needle._angle}deg)`;
+}
+
+function updateQibla(){
+  if(userLat!=null && userLon!=null){
+    qiblaBearing=calculateQibla(userLat,userLon);
+    const distanceKm=calculateDistance(userLat,userLon);
+    const relativeAngle=(qiblaBearing-(heading+calibrationOffset)+360)%360;
+    rotateNeedle(qiblaNeedle,relativeAngle);
+    headingInfo.textContent=`Distance: ${distanceKm} km`;
+  }
+}
+
+function tryGetLocation(){
+  if("geolocation" in navigator){
+    statusInfo.textContent="Getting location…";
+    navigator.geolocation.getCurrentPosition(pos=>{
+      userLat=pos.coords.latitude; userLon=pos.coords.longitude;
+      statusInfo.textContent=`Location fetched (${userLat.toFixed(4)},${userLon.toFixed(4)})`;
+      updateQibla();
+    },err=>{
+      statusInfo.textContent="GPS unavailable – using default location";
+      setDefaultLocation();
+    },{enableHighAccuracy:true,timeout:10000});
+  }else{ setDefaultLocation(); statusInfo.textContent="Geolocation unsupported – using default location"; }
+}
+
+function setDefaultLocation(){ userLat=3.1390; userLon=101.6869; updateQibla(); statusInfo.textContent+=" | Default location used (KL)"; }
+function setManualLocation(){ const lat=parseFloat(document.getElementById('lat-input').value); const lon=parseFloat(document.getElementById('lon-input').value); if(!isNaN(lat)&&!isNaN(lon)){userLat=lat; userLon=lon; statusInfo.textContent=`Manual location set (${lat.toFixed(4)},${lon.toFixed(4)})`; updateQibla(); }else alert("Enter valid latitude & longitude"); }
+function setCityLocation(){ const city=document.getElementById('city-input').value.trim(); if(cityDB[city]){userLat=cityDB[city].lat; userLon=cityDB[city].lon; statusInfo.textContent=`City set: ${city} (${userLat.toFixed(4)}, ${userLon.toFixed(4)})`; updateQibla(); }else alert("City not found in offline database"); }
+
+function handleOrientation(event){
+  let alpha=event.alpha;
+  if(typeof event.webkitCompassHeading==="number") alpha=event.webkitCompassHeading;
+  if(alpha==null) return;
+  heading=alpha;
+  updateQibla();
+}
+
+// Manual calibration: user aligns phone north manually
+function manualCalibrate(){
+  calibrationOffset=heading;
+  statusInfo.textContent="Calibration done. Qibla needle corrected!";
+}
+
+function startQiblaCompass(){
+  tryGetLocation();
+
+  if(typeof DeviceOrientationEvent!=="undefined" && typeof DeviceOrientationEvent.requestPermission==="function"){
+    DeviceOrientationEvent.requestPermission().then(resp=>{
+      if(resp==="granted"){window.addEventListener("deviceorientation",handleOrientation,true); statusInfo.textContent="Compass active";}
+      else{ statusInfo.textContent="Permission denied – static Qibla"; setInterval(updateQibla,100);}
+    }).catch(()=>{ statusInfo.textContent="Orientation error – static Qibla"; setInterval(updateQibla,100); });
+  }else if("DeviceOrientationEvent" in window){window.addEventListener("deviceorientationabsolute",handleOrientation,true); window.addEventListener("deviceorientation",handleOrientation,true);}
+  else{statusInfo.textContent="No orientation – static Qibla"; setInterval(updateQibla,100);}
+}
+
+window.addEventListener('online',()=>tryGetLocation());
+window.addEventListener('offline',()=>statusInfo.textContent="Offline – manual location needed");
+
+</script>
+</body>
+</html>
