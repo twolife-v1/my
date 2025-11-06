@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Waktu Solat — Unified</title>
   <meta name="theme-color" content="#F6EEE0">
-
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/Images/icon-192.png">
-
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="Images/icon-192.png">
   <style>
     :root{
       --bg:#F6EEE0; --card:#FFF; --muted:#6f604f; --accent:#A67734; --soft:#FFF6EE;
@@ -30,6 +28,7 @@
       background-size: cover;
       background-position: center;
       transition: background 1s ease;
+      background-repeat: no-repeat;
     }
     .hero::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.02));z-index:0;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
     .hero-card-bg{position:relative;z-index:2;width:100%;max-width:1100px;border-radius:16px;backdrop-filter: blur(10px);background:var(--glass);padding:16px;box-shadow:0 10px 30px rgba(16,12,8,0.08)}
@@ -53,50 +52,32 @@
     .nav-list a.active{background:#fff;color:var(--accent)}
 
     .container{max-width:1100px;margin:14px auto;padding:0 12px}
+
     main{padding:18px;max-width:1100px;margin:18px auto}
     .grid{display:grid;grid-template-columns:1fr 420px;gap:14px}
     .card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 6px 20px rgba(18,15,12,0.06)}
     .prayer-table table{width:100%;border-collapse:collapse;margin-top:8px}
     .prayer-table th,.prayer-table td{padding:10px 8px;text-align:left;border-bottom:1px solid #f3f3f3}
-
+    .current-row{background:linear-gradient(90deg,rgba(166,119,52,0.06),rgba(255,255,255,0));}
     .btn{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;background:#A67734;color:white;font-weight:600}
     .btn.ghost{background:#fff;border:1px solid #A67734;color:#A67734}
     iframe.takwim-frame{width:100%;height:420px;border-radius:12px;border:0;background:#fff}
     @media (max-width:1100px){ .grid{grid-template-columns:1fr 1fr} }
     @media (max-width:900px){ .grid{grid-template-columns:1fr} .hero{min-height:260px} #heroTime{font-size:28px} iframe.takwim-frame{height:520px} }
 
-    /* compact qibla wrapper (iframe scaled) */
-    #qiblaWrapper { margin-top:12px; display:flex; justify-content:center; overflow:hidden; width:100%; height:300px; cursor:pointer; align-items:center;}
-    #qiblatFrame { width:400px; height:400px; transform:scale(0.6); transform-origin: top center; border:none; }
+    /* small qibla iframe style (if used) */
+    iframe.qiblat-frame { width: 180px; height: 180px; border-radius:50%; border:2px solid #A67734; display:block; overflow:hidden; }
 
     /* PWA Install Popup */
-    .pwa-install {
-      position: fixed;
-      bottom: -200px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 280px;
-      background: #ffffff;
-      color: #2b2b2b;
-      border-radius: 12px;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.25);
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 9999;
-      opacity: 0;
-      transition: all 0.45s ease-in-out;
-      font-family: inherit;
-    }
+    .pwa-install { position: fixed; bottom: -200px; left: 50%; transform: translateX(-50%); width: 320px; background: #ffffff; color: #2b2b2b; border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,0.25); padding: 12px; display: flex; align-items: center; gap: 12px; z-index: 9999; opacity: 0; transition: all 0.45s ease-in-out; font-family: inherit; }
     .pwa-install.show { bottom: 25px; opacity: 1; }
     .pwa-install.hidden { display: none !important; }
-    .pwa-inner { display: flex; align-items: center; gap: 10px; }
-    .pwa-icon { width: 48px; height: 48px; border-radius: 10px; }
-    .pwa-text { flex: 1; font-size: 14px; line-height: 1.2em; }
-    .pwa-buttons { display:flex; flex-direction: column; gap:4px; }
-    .pwa-install-btn { background: #0a7cff; color:#fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:13px; }
-    .pwa-close-btn { background:transparent; color:#777; border:none; padding:4px 6px; cursor:pointer; font-size:11px; }
+    .pwa-inner { display:flex; align-items:center; gap:10px; }
+    .pwa-icon { width:56px; height:56px; border-radius:12px; }
+    .pwa-text { flex:1; font-size:14px; line-height:1.2em; }
+    .pwa-buttons { display:flex; flex-direction:column; gap:6px; }
+    .pwa-install-btn { background:#0a7cff; color:#fff; border:none; padding:8px 10px; border-radius:8px; cursor:pointer; font-size:13px; }
+    .pwa-close-btn { background:transparent; color:#777; border:none; padding:6px 6px; cursor:pointer; font-size:12px; }
   </style>
 </head>
 <body>
@@ -126,7 +107,7 @@
     </div>
   </header>
 
-  <!-- NAV -->
+  <!-- NAV (sticky top on scroll) -->
   <nav class="site-nav" aria-label="Primary">
     <div class="nav-bar container" style="background:transparent;">
       <ul class="nav-list" role="menubar" aria-label="Main navigation">
@@ -142,7 +123,7 @@
 
   <main class="container">
     <div class="grid" id="mainGrid">
-      <!-- LEFT BOX -->
+      <!-- LEFT BOX: Prayer Times -->
       <section>
         <div class="card prayer-table" id="prayer">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
@@ -187,34 +168,40 @@
         </div>
       </section>
 
-      <!-- RIGHT BOX -->
+      <!-- RIGHT BOX: Qibla -->
       <aside>
         <div class="card" style="margin-top:14px;">
-          <div id="qiblaWrapper">
-            <iframe id="qiblatFrame" src="qiblat.html" title="Qiblat (embedded)" aria-hidden="true"></iframe>
+          <!-- Qibla iframe: we scale to fit and postMessage to request recalibration -->
+          <div id="qiblaWrapper" style="margin-top:12px; display:flex; justify-content:center; overflow:hidden; width:100%; height:300px; cursor:pointer;">
+            <iframe id="qiblatFrame" src="qiblat.html" style="width:400px; height:400px; transform:scale(0.6); transform-origin: top center; border:none;"></iframe>
           </div>
-          <div style="margin-top:8px;text-align:center;color:var(--muted)"><span id="qiblaDegDisplay">—°</span></div>
-        </div>
-
-        <div class="card" id="takwimCard" style="margin-top:14px;display:flex;flex-direction:column;gap:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <strong>Takwim & Hijri</strong>
-            <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
-          </div>
-
-          <iframe id="takwimFrame" class="takwim-frame" src="Takwim-hijri.html" title="Takwim Hijri (embedded)"></iframe>
-
-          <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button class="btn" id="openTakwimFull">Open Full</button>
+          <div style="margin-top:8px;text-align:center;color:var(--muted)">
+            <span id="qiblaDegDisplay">—°</span>
           </div>
         </div>
       </aside>
+
+      <!-- Takwim / Hijri -->
+      <div class="card" id="takwimCard" style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Takwim & Hijri</strong>
+          <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
+        </div>
+
+        <!-- Embedded file (same folder) -->
+        <iframe id="takwimFrame" class="takwim-frame" src="Takwim-hijri.html" title="Takwim Hijri (embedded)"></iframe>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" id="openTakwimFull">Open Full</button>
+        </div>
+      </div>
+
     </div>
 
     <!-- PWA Install Popup -->
-    <div id="pwaInstallPrompt" class="pwa-install hidden" role="dialog" aria-label="Install app">
+    <div id="pwaInstallPrompt" class="pwa-install hidden" role="dialog" aria-modal="false">
       <div class="pwa-inner">
-        <img src="./Images/icon-192.png" alt="App Icon" class="pwa-icon">
+        <img src="Images/icon-192.png" alt="App Icon" class="pwa-icon">
         <div class="pwa-text">
           <strong>Install Waktu Solat Lite</strong><br>
           <small>Fast access • Offline support • Lightweight</small>
@@ -230,9 +217,376 @@
 
   <footer style="text-align:center;padding:12px;color:var(--muted)">Built with care • Works offline-ish • Customize translations/data</footer>
 
-  <!-- load adhan then app.js -->
+  <!-- optional adhan fallback -->
   <script src="https://cdn.jsdelivr.net/npm/adhan@4.1.2/dist/adhan.min.js"></script>
-  <script defer src="./app.js"></script>
-  
+
+  <!-- MAIN SCRIPT (merged & fixed) -->
+  <script>
+  /***********************
+   * Waktu Solat — Unified (merged + fixes)
+   ***********************/
+  const APP = {
+    name: 'Waktu Solat',
+    kaaba: { lat: 21.422487, lon: 39.826206 },
+    use24: false,
+    location: null
+  };
+
+  const storage = {
+    get(k){ try { return JSON.parse(localStorage.getItem(k)) } catch(e){ return null } },
+    set(k,v){ localStorage.setItem(k, JSON.stringify(v)) }
+  };
+
+  function formatTimeStr(str){
+    if(!str) return '--:--';
+    const parts = (''+str).split(':').map(n=>parseInt(n,10));
+    if(parts.length<2 || isNaN(parts[0])) return '--:--';
+    const now = new Date();
+    now.setHours(parts[0], parts[1], 0, 0);
+    return now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: !APP.use24});
+  }
+  function formatDateTime(dt){
+    return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
+  }
+
+  // location helper: try cached -> geolocation -> fallback
+  async function getLocation(){
+    let loc = storage.get('loc') || APP.location;
+    if(loc && loc.lat && loc.lon) { APP.location = loc; return loc; }
+
+    // if geolocation unsupported, fallback immediately
+    if(!('geolocation' in navigator)){
+      loc = { lat:3.1390, lon:101.6869, name:'Kuala Lumpur (fallback)' };
+      APP.location = loc;
+      storage.set('loc', loc);
+      return loc;
+    }
+
+    try {
+      const pos = await new Promise((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout:12000, enableHighAccuracy:true })
+      );
+      loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name:'My Location' };
+      APP.location = loc;
+      storage.set('loc', loc);
+    } catch(err){
+      // permission denied or timeout -> fallback
+      loc = { lat:3.1390, lon:101.6869, name:'Kuala Lumpur (fallback)' };
+      APP.location = loc;
+      storage.set('loc', loc);
+    }
+    return loc;
+  }
+
+  // Prayer timings (API then adhan fallback)
+  async function getTimingsForDate(date, lat, lon){
+    try {
+      const ts = Math.floor(date.getTime()/1000);
+      const url = `https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=2`;
+      const res = await fetch(url);
+      if(res.ok){
+        const json = await res.json();
+        if(json && json.data && json.data.timings) return json.data.timings;
+      }
+    } catch(e){ console.warn('Aladhan API failed', e); }
+
+    // fallback compute locally using adhan.js if available
+    try {
+      if(window.adhan){
+        const coords = new adhan.Coordinates(lat, lon);
+        const params = adhan.CalculationMethod.MuslimWorldLeague();
+        params.madhab = adhan.Madhab.Shafi;
+        params.adjustments = { fajr:2, dhuhr:1, asr:1, maghrib:2, isha:2 };
+        const times = new adhan.PrayerTimes(coords, date, params);
+        return {
+          Fajr: times.fajr.toTimeString().slice(0,5),
+          Sunrise: times.sunrise.toTimeString().slice(0,5),
+          Dhuhr: times.dhuhr.toTimeString().slice(0,5),
+          Asr: times.asr.toTimeString().slice(0,5),
+          Maghrib: times.maghrib.toTimeString().slice(0,5),
+          Isha: times.isha.toTimeString().slice(0,5)
+        };
+      }
+    } catch(e){ console.warn('Adhan compute failed', e); }
+    return null;
+  }
+
+  function showPrayerTimesObj(t){
+    if(!t) return;
+    const map = {Fajr:'fajr', Dhuhr:'dhuhr', Asr:'asr', Maghrib:'maghrib', Isha:'isha'};
+    Object.keys(map).forEach(k=>{
+      const el = document.getElementById('pt-'+map[k]);
+      if(el) {
+        const val = t[k] || t[k.charAt(0).toUpperCase()+k.slice(1)];
+        el.textContent = formatTimeStr(val);
+      }
+    });
+  }
+
+  // HERO
+  let heroInterval = null;
+  const prayerBackgrounds = {
+    Fajr:"Images/sunset.jpg", Dhuhr:"Images/sunset.jpg", Asr:"Images/sunset.jpg",
+    Maghrib:"Images/sunset.jpg", Isha:"Images/sunset.jpg"
+  };
+  function renderHeroPrayers(timings){
+    const prayerOrder = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+    const namesDiv = document.getElementById('prayerNames');
+    const timesDiv = document.getElementById('prayerTimes');
+    if(!namesDiv || !timesDiv) return;
+    namesDiv.innerHTML = '';
+    timesDiv.innerHTML = '';
+    prayerOrder.forEach(p=>{
+      const nameEl = document.createElement('div'); nameEl.textContent = p; namesDiv.appendChild(nameEl);
+      const timeEl = document.createElement('div'); timeEl.textContent = formatTimeStr(timings[p]||''); timesDiv.appendChild(timeEl);
+    });
+  }
+
+  function getNextPrayerKey(timings){
+    const order = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+    const now = new Date();
+    for(const p of order){
+      if(!timings[p]) continue;
+      const parts = (timings[p]||'00:00').split(':').map(n=>parseInt(n,10));
+      if(parts.length<2 || Number.isNaN(parts[0])) continue;
+      const t = new Date(); t.setHours(parts[0], parts[1], 0, 0);
+      if(t > now) return p;
+    }
+    return 'Fajr';
+  }
+
+  function updateHeroTiming(timings){
+    if(heroInterval) clearInterval(heroInterval);
+    heroInterval = setInterval(()=>{
+      try {
+        const nextPrayer = getNextPrayerKey(timings);
+        let countdownStr = '--:--:--';
+        if(timings[nextPrayer]){
+          const tParts = timings[nextPrayer].split(':').map(n=>parseInt(n,10));
+          let tDate = new Date();
+          tDate.setHours(tParts[0]||0, tParts[1]||0, 0, 0);
+          if(nextPrayer === 'Fajr' && tDate <= new Date()) tDate.setDate(tDate.getDate()+1);
+          const diffMs = Math.max(0, tDate - new Date());
+          const hours = Math.floor(diffMs / 1000 / 60 / 60);
+          const minutes = Math.floor((diffMs / 1000 / 60) % 60);
+          const seconds = Math.floor((diffMs / 1000) % 60);
+          countdownStr = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        }
+        const nextLabel = document.getElementById('nextPrayer');
+        const cdEl = document.getElementById('countdown');
+        const heroTimeEl = document.getElementById('heroTime');
+        if(nextLabel) nextLabel.textContent = 'Next: ' + nextPrayer;
+        if(cdEl) cdEl.textContent = countdownStr;
+        if(heroTimeEl) heroTimeEl.textContent = formatDateTime(new Date());
+        if(nextPrayer && prayerBackgrounds[nextPrayer]){
+          const heroEl = document.getElementById('hero');
+          if(heroEl) heroEl.style.backgroundImage = `url(${prayerBackgrounds[nextPrayer]})`;
+        }
+      } catch(err){ console.warn('hero interval error', err); }
+    }, 1000);
+  }
+
+  // QIBLA: compute + init orientation in iframe or here (we send postMessage)
+  function calcQibla(lat, lon){
+    const toRad = Math.PI/180, toDeg = 180/Math.PI;
+    const lat1 = lat*toRad, lon1 = lon*toRad, lat2 = APP.kaaba.lat*toRad, lon2 = APP.kaaba.lon*toRad;
+    const y = Math.sin(lon2-lon1)*Math.cos(lat2);
+    const x = Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1);
+    return (Math.atan2(y,x)*toDeg+360)%360;
+  }
+
+  // Send location & timings to takwim iframe
+  function sendLocationToTakwim(loc, timings){
+    const f = document.getElementById('takwimFrame');
+    try { f && f.contentWindow && f.contentWindow.postMessage({type:'app.location.update', detail:{ loc, timings }}, '*'); }
+    catch(e){ /* silent */ }
+  }
+
+  // hadith canvas
+  function drawHadith(text){
+    const canvas = document.getElementById('hadithCanvas'); if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#2e2a24'; ctx.font='14px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    const words = (text||'').split(' '); let line=''; let lines=[];
+    words.forEach(w=>{
+      const testLine = (line + ' ' + w).trim();
+      const metrics = ctx.measureText(testLine);
+      if(metrics.width > canvas.width - 10){ if(line) lines.push(line.trim()); line = w; } else { line = testLine; }
+    });
+    if(line) lines.push(line.trim());
+    const startY = canvas.height/2 - (lines.length-1)*10;
+    lines.forEach((l,i)=>ctx.fillText(l, canvas.width/2, startY + i*20));
+  }
+    // MAIN runner
+  async function runAll(){
+    try {
+      const now = new Date();
+      const heroDateEl = document.getElementById('heroDate');
+      const worldTimeEl = document.getElementById('worldTime');
+      if(heroDateEl) heroDateEl.textContent = now.toDateString();
+      if(worldTimeEl) worldTimeEl.textContent = formatDateTime(now);
+
+      const loc = await getLocation();
+      if(loc){
+        const locNameEl = document.getElementById('locationName');
+        const locSmallEl = document.getElementById('locationNameSmall');
+        if(locNameEl) locNameEl.textContent = loc.name || `${loc.lat.toFixed(3)},${loc.lon.toFixed(3)}`;
+        if(locSmallEl) locSmallEl.textContent = loc.name || `${loc.lat.toFixed(3)},${loc.lon.toFixed(3)}`;
+      }
+
+      const timings = await getTimingsForDate(new Date(), APP.location.lat, APP.location.lon) || {
+        Fajr:'05:45', Dhuhr:'13:00', Asr:'16:30', Maghrib:'19:00', Isha:'20:15'
+      };
+
+      renderHeroPrayers(timings);
+      showPrayerTimesObj(timings);
+      updateHeroTiming(timings);
+
+      // always show takwim even if location failed
+      sendLocationToTakwim(APP.location, timings);
+
+      // Qibla: send a message to qiblat iframe to init bearing if it listens
+      const deg = calcQibla(APP.location.lat, APP.location.lon);
+      // send to iframe so its internal needle can align (if it uses deviceorientation inside iframe)
+      const qf = document.getElementById('qiblatFrame');
+      try { qf && qf.contentWindow && qf.contentWindow.postMessage({type:'app.qibla.update', bearing: deg, location: APP.location}, '*'); } catch(e){}
+
+      // local needle fallback (if we show local mini needle instead of iframe)
+      const hadithText = '“The best among you are those who have the best manners and character.”';
+      const hadithEl = document.getElementById('hadithText');
+      if(hadithEl) hadithEl.textContent = hadithText;
+      drawHadith(hadithText);
+
+    } catch(e){ console.warn('runAll error', e); }
+  }
+
+  // UI events
+  document.getElementById('toggle24')?.addEventListener('click', ()=>{
+    APP.use24 = !APP.use24;
+    document.getElementById('toggle24').textContent = '24h: ' + (APP.use24 ? 'On' : 'Off');
+    runAll();
+  });
+
+  document.getElementById('setLocationBtn')?.addEventListener('click', async ()=>{
+    const lat = prompt('Enter latitude:', APP.location?.lat || 3.1390);
+    const lon = prompt('Enter longitude:', APP.location?.lon || 101.6869);
+    const name = prompt('Enter location name:', APP.location?.name || 'Custom');
+    if(lat && lon){
+      APP.location = { lat: parseFloat(lat), lon: parseFloat(lon), name: name || 'Custom' };
+      storage.set('loc', APP.location);
+      await runAll();
+    }
+  });
+
+  document.getElementById('openTakwimFull')?.addEventListener('click', ()=>{
+    window.open('Takwim-hijri.html','_blank');
+  });
+
+  // Listen for messages from iframes (qibla/takwim)
+  window.addEventListener('message', (ev)=>{
+    const m = ev.data;
+    if(!m || !m.type) return;
+    if(m.type === 'takwim.request.location'){
+      if(APP.location) sendLocationToTakwim(APP.location, null);
+    }
+    if(m.type === 'qibla.update'){
+      // iframe sends qibla update bearing
+      const degEl = document.getElementById('qiblaDegDisplay');
+      if(degEl && typeof m.bearing === 'number') degEl.textContent = `${Math.round(m.bearing)}°`;
+    }
+  });
+
+  // register service worker - relative path (service-worker.js in same folder)
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('service-worker.js').then(reg=>{
+        console.log('SW registered', reg.scope);
+        reg.onupdatefound = ()=>{
+          const newWorker = reg.installing;
+          newWorker.onstatechange = ()=>{
+            if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+              // new content available
+              console.log('New SW installed');
+            }
+          };
+        };
+      }).catch(err => console.warn('SW register failed', err));
+    });
+  }
+
+  // Run on load
+  window.addEventListener('DOMContentLoaded', async ()=>{
+    await runAll();
+    setInterval(()=> {
+      const heroTime = document.getElementById('heroTime');
+      if(heroTime) heroTime.textContent = formatDateTime(new Date());
+    },1000);
+  });
+
+  /* ---------------------------
+     PWA install prompt handling
+     --------------------------- */
+  let deferredPrompt = null;
+  const installPopup = document.getElementById('pwaInstallPrompt');
+  const installBtn = document.getElementById('installBtn');
+  const closeInstall = document.getElementById('closeInstall');
+  const PWA_SEEN = 'pwa_install_shown';
+
+  function isiOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  // beforeinstallprompt (Chrome, Edge)
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    // only show if not seen/dismissed and not iOS
+    if(!localStorage.getItem(PWA_SEEN) && !isiOS()){
+      setTimeout(()=> {
+        installPopup.classList.remove('hidden');
+        installPopup.classList.add('show');
+      }, 1500);
+    }
+  });
+
+  // Show iOS manual instruction if iOS and not in standalone
+  window.addEventListener('load', ()=>{
+    if(isiOS() && !window.matchMedia('(display-mode: standalone)').matches && !localStorage.getItem(PWA_SEEN)){
+      // show a simple iOS install hint inside the popup area
+      installPopup.querySelector('.pwa-text').innerHTML =
+        '<strong>Install Waktu Solat Lite</strong><br><small>Tap Share → Add to Home Screen</small>';
+      installPopup.classList.remove('hidden');
+      installPopup.classList.add('show');
+    }
+  });
+
+  installBtn?.addEventListener('click', async ()=>{
+    installPopup.classList.remove('show');
+    localStorage.setItem(PWA_SEEN, 'yes');
+
+    if(!deferredPrompt){
+      // if iOS: nothing to prompt, popup acted as tutorial
+      return;
+    }
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if(choice.outcome === 'accepted') console.log('User accepted install');
+    else console.log('User dismissed install');
+    deferredPrompt = null;
+  });
+
+  closeInstall?.addEventListener('click', ()=>{
+    installPopup.classList.remove('show');
+    localStorage.setItem(PWA_SEEN, 'yes');
+  });
+
+  window.addEventListener('appinstalled', ()=>{
+    console.log('PWA installed');
+    installPopup.remove();
+    localStorage.setItem(PWA_SEEN, 'yes');
+  });
+
+  </script>
 </body>
 </html>
