@@ -1,69 +1,70 @@
-// service-worker.js (put at site root)
+// service-worker.js - simple cache-first with network update
 const CACHE_NAME = 'waktu-solat-v1';
 const ASSETS = [
-  '/', 
-  '/index.html',
-  '/manifest.json',
-  '/Images/icon-192.png',
-  '/Images/icon-512.png',
-  '/Images/sunset.jpg', // optional - remove if you don't have it
-  '/Takwim-hijri.html',
-  '/qiblat.html'
+  './',
+  './index.html',
+  './app.js',
+  './manifest.json',
+  './Images/icon-192.png',
+  './Images/icon-512.png',
+  // add any other local resources you rely on (takwim-hijri.html, qiblat.html, CSS images etc)
 ];
 
-// Install: pre-cache basic assets
-self.addEventListener('install', (evt) => {
+// install
+self.addEventListener('install', event => {
   self.skipWaiting();
-  evt.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS).catch(()=>{}))
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(()=>{}))
   );
 });
 
-// Activate: clean old caches
-self.addEventListener('activate', (evt) => {
-  evt.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.map(k => (k !== CACHE_NAME) ? caches.delete(k) : Promise.resolve())
-    ))
+// activate - cleanup old caches
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.map(k => {
+      if(k !== CACHE_NAME) return caches.delete(k);
+    })))
   );
   self.clients.claim();
 });
 
-// Fetch: navigation -> index.html fallback, for other GET requests prefer cache then network and cache it
-self.addEventListener('fetch', (evt) => {
-  const req = evt.request;
-  if (req.method !== 'GET') return;
-  // navigation requests -> try network then fallback to cache index.html
-  if (req.mode === 'navigate') {
-    evt.respondWith(
-      fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy));
-        return res;
-      }).catch(() => caches.match('/index.html'))
+// fetch - navigation: network-first fallback to cached index; other GET: cache-first then fetch and update cache
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // navigation => try network then fallback to cache (index)
+  if(req.mode === 'navigate'){
+    event.respondWith(
+      fetch(req).then(response => {
+        // update cache copy
+        caches.open(CACHE_NAME).then(cache => cache.put(req, response.clone()).catch(()=>{}));
+        return response;
+      }).catch(()=> caches.match('./index.html'))
     );
     return;
   }
-  // for same-origin assets: try cache first
-  evt.respondWith(
-    caches.match(req).then(cached => {
-      if (cached) return cached;
-      return fetch(req).then(networkRes => {
-        // cache same-origin GET assets
-        if (networkRes && networkRes.status === 200 && networkRes.type !== 'opaque' && new URL(req.url).origin === location.origin) {
-          const copy = networkRes.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-        }
-        return networkRes;
-      }).catch(()=> cached || new Response('', {status:504}));
-    })
-  );
-});
 
-// Listen for skipWaiting message
-self.addEventListener('message', (evt) => {
-  if (evt.data && evt.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+  // for same-origin GETs, try cache then network and update cache
+  if(req.method === 'GET' && url.origin === self.location.origin){
+    event.respondWith(
+      caches.match(req).then(cached => {
+        if(cached) {
+          // fetch in background to update cache
+          fetch(req).then(resp => {
+            if(resp && resp.ok) caches.open(CACHE_NAME).then(cache => cache.put(req, resp.clone()).catch(()=>{}));
+          }).catch(()=>{});
+          return cached;
+        }
+        return fetch(req).then(response => {
+          if(response && response.ok) caches.open(CACHE_NAME).then(cache => cache.put(req, response.clone()).catch(()=>{}));
+          return response;
+        }).catch(()=> new Response('', {status:504}));
+      })
+    );
+    return;
   }
+
+  // fallback for everything else
+  event.respondWith(fetch(req).catch(()=> caches.match(req)));
 });
