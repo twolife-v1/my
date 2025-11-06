@@ -1,51 +1,68 @@
-// service-worker.js
-const CACHE_NAME = "waktusolatlite-v1";
-const APP_SHELL = [
-  "/",                // root
-  "/index.html",
-  "/manifest.webmanifest",
-  "/styles.css",
-  "/app.js",
-  "/Images/icon-192.png",
-  "/Images/icon-512.png",
-  "/Images/icon-1024.png",
-  // Add other static assets you want offline...
+// service-worker.js (put at site root)
+const CACHE_NAME = 'waktu-solat-v1';
+const ASSETS = [
+  '/', '/index.html',
+  '/manifest.json',
+  '/Images/icon-192.png',
+  '/Images/icon-512.png',
+  '/Images/hero-default.jpg', // optional - remove if you don't have it
+  '/Takwim-hijri.html',
+  '/qiblat.html'
 ];
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(APP_SHELL);
-    })
-  );
+// Install: pre-cache basic assets
+self.addEventListener('install', (evt) => {
   self.skipWaiting();
+  evt.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS).catch(()=>{}))
+  );
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+// Activate: clean old caches
+self.addEventListener('activate', (evt) => {
+  evt.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.map(k => (k !== CACHE_NAME) ? caches.delete(k) : Promise.resolve())
+    ))
   );
   self.clients.claim();
 });
 
-// Network → cache fallback
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then(res => {
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+// Fetch: navigation -> index.html fallback, for other GET requests prefer cache then network and cache it
+self.addEventListener('fetch', (evt) => {
+  const req = evt.request;
+  if (req.method !== 'GET') return;
+  // navigation requests -> try network then fallback to cache index.html
+  if (req.mode === 'navigate') {
+    evt.respondWith(
+      fetch(req).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy));
         return res;
-      })
-      .catch(() => caches.match(event.request))
+      }).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+  // for same-origin assets: try cache first
+  evt.respondWith(
+    caches.match(req).then(cached => {
+      if (cached) return cached;
+      return fetch(req).then(networkRes => {
+        // cache same-origin GET assets
+        if (networkRes && networkRes.status === 200 && networkRes.type !== 'opaque' && new URL(req.url).origin === location.origin) {
+          const copy = networkRes.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+        }
+        return networkRes;
+      }).catch(()=> cached || new Response('', {status:504}));
+    })
   );
 });
 
-// 🔄 Auto-reload when new SW installed
-self.addEventListener("message", (event) => {
-  if (event.data === "skipWaiting") {
+// Listen for skipWaiting message
+self.addEventListener('message', (evt) => {
+  if (evt.data && evt.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
