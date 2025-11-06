@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Waktu Solat — Unified</title>
   <meta name="theme-color" content="#F6EEE0">
-  <style>
-    :root{
-      --bg:#F6EEE0; --card:#FFF; --muted:#6f604f; --accent:#A67734; --soft:#FFF6EE;
-      --glass: rgba(255,255,255,0.28); --hero-height:360px;
-      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#FFFDF8);color:#2e2a24;-webkit-font-smoothing:antialiased}
-    a{color:inherit;text-decoration:none}
+ <style>
+:root{
+  --bg:#F6EEE0; --card:#FFF; --muted:#6f604f; --accent:#A67734; --soft:#FFF6EE;
+  --glass: rgba(255,255,255,0.28); --hero-height:360px;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#FFFDF8);color:#2e2a24;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
 
-    /* HERO */
-  .hero {
+/* HERO */
+.hero {
   position: relative;
   min-height: var(--hero-height);
   display: flex;
@@ -25,42 +25,77 @@
   padding: 18px;
   background-size: cover;
   background-position: center;
-  transition: background 1s ease; /* Smooth transition */
+  transition: background 1s ease;
 }
-     .hero::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.02));z-index:0;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
-    .hero-card-bg{position:relative;z-index:2;width:100%;max-width:1100px;border-radius:16px;backdrop-filter: blur(10px);background:var(--glass);padding:16px;box-shadow:0 10px 30px rgba(16,12,8,0.08)}
-    .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-    .hero-left{display:flex;flex-direction:column;gap:6px}
-    #locationName{font-weight:700;font-size:16px}
-    #heroDate{font-size:13px;color:var(--muted)}
-    .hero-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-    #heroTime{font-size:34px;font-weight:700;letter-spacing:0.6px}
-    #countdown{font-size:20px;font-weight:600;color:var(--muted)}
-    #heroPrayers{margin-top:12px}
-    #prayerNames,#prayerTimes{display:flex;justify-content:space-between;align-items:center;width:100%;font-weight:700}
-    #prayerNames div,#prayerTimes div{flex:1;text-align:center;font-size:14px;color:var(--muted)}
-    #prayerTimes div{color:#2e2a24}
+.hero::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.02));
+  z-index:0;
+  border-bottom-left-radius:20px;
+  border-bottom-right-radius:20px;
+}
+.hero-card-bg{
+  position:relative;
+  z-index:2;
+  width:100%;
+  max-width:1100px;
+  border-radius:16px;
+  backdrop-filter: blur(10px);
+  background:var(--glass);
+  padding:16px;
+  box-shadow:0 10px 30px rgba(16,12,8,0.08);
+}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.hero-left{display:flex;flex-direction:column;gap:6px}
+#locationName{font-weight:700;font-size:16px}
+#heroDate{font-size:13px;color:var(--muted)}
+.hero-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+#heroTime{font-size:34px;font-weight:700;letter-spacing:0.6px}
+#countdown{font-size:20px;font-weight:600;color:var(--muted)}
+#heroPrayers{margin-top:12px}
+#prayerNames,#prayerTimes{display:flex;justify-content:space-between;align-items:center;width:100%;font-weight:700}
+#prayerNames div,#prayerTimes div{flex:1;text-align:center;font-size:14px;color:var(--muted)}
+#prayerTimes div{color:#2e2a24}
 
-    /* NAV */
-    .site-nav{position:sticky;top:0;background:var(--accent);z-index:120;padding:10px 0;box-shadow:0 3px 12px rgba(0,0,0,0.08)}
-    .nav-list{list-style:none;margin:0;padding:0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
-    .nav-list a{color:#fff;font-weight:700;padding:8px 14px;border-radius:8px;transition:transform .15s,background .15s}
-    .nav-list a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.12)}
-    .nav-list a.active{background:#fff;color:var(--accent)}
+/* Hero prayer current highlight */
+.hero-prayer-current{
+  color: var(--accent);
+  font-weight:800;
+  background: rgba(166,119,52,0.1);
+  border-radius:6px;
+  padding:2px 4px;
+  transition: all 0.3s;
+}
 
-    .container{max-width:1100px;margin:14px auto;padding:0 12px}
+/* NAV */
+.site-nav{position:sticky;top:0;background:var(--accent);z-index:120;padding:10px 0;box-shadow:0 3px 12px rgba(0,0,0,0.08)}
+.nav-list{list-style:none;margin:0;padding:0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+.nav-list a{color:#fff;font-weight:700;padding:8px 14px;border-radius:8px;transition:transform .15s,background .15s}
+.nav-list a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.12)}
+.nav-list a.active{background:#fff;color:var(--accent)}
 
-    main{padding:18px;max-width:1100px;margin:18px auto}
-    .grid{display:grid;grid-template-columns:1fr 420px;gap:14px}
-    .card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 6px 20px rgba(18,15,12,0.06)}
-    .prayer-table table{width:100%;border-collapse:collapse;margin-top:8px}
-    .prayer-table th,.prayer-table td{padding:10px 8px;text-align:left;border-bottom:1px solid #f3f3f3}
-    .current-row{background:linear-gradient(90deg,rgba(166,119,52,0.06),rgba(255,255,255,0));}
-    .btn{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;background:#A67734;color:white;font-weight:600}
-    .btn.ghost{background:#fff;border:1px solid #A67734;color:#A67734}
-    iframe.takwim-frame{width:100%;height:420px;border-radius:12px;border:0;background:#fff}
-    @media (max-width:1100px){ .grid{grid-template-columns:1fr 1fr} }
-    @media (max-width:900px){ .grid{grid-template-columns:1fr} .hero{min-height:260px} #heroTime{font-size:28px} iframe.takwim-frame{height:520px} }
+.container{max-width:1100px;margin:14px auto;padding:0 12px}
+main{padding:18px;max-width:1100px;margin:18px auto}
+.grid{display:grid;grid-template-columns:1fr 420px;gap:14px}
+.card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 6px 20px rgba(18,15,12,0.06)}
+.prayer-table table{width:100%;border-collapse:collapse;margin-top:8px}
+.prayer-table th,.prayer-table td{padding:10px 8px;text-align:left;border-bottom:1px solid #f3f3f3}
+
+/* Table row current highlight */
+.current-row{
+  background: linear-gradient(90deg, rgba(166,119,52,0.06), rgba(255,255,255,0));
+  transition: background 0.3s;
+}
+
+.btn{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;background:#A67734;color:white;font-weight:600}
+.btn.ghost{background:#fff;border:1px solid #A67734;color:#A67734}
+iframe.takwim-frame{width:100%;height:420px;border-radius:12px;border:0;background:#fff}
+
+@media (max-width:1100px){ .grid{grid-template-columns:1fr 1fr} }
+@media (max-width:900px){ .grid{grid-template-columns:1fr} .hero{min-height:260px} #heroTime{font-size:28px} iframe.takwim-frame{height:520px} }
+
 iframe.qiblat-frame {
   width: 180px;
   height: 180px;
@@ -69,12 +104,12 @@ iframe.qiblat-frame {
   display: block;
   overflow: hidden; /* hide scroll */
 }
-  </style>
+</style>
 </head>
 <body>
 
   <!-- HERO -->
-    <header class="hero" id="hero" role="banner" aria-label="Prayer hero">
+  <header class="hero" id="hero" role="banner" aria-label="Prayer hero">
     <div class="hero-card-bg" id="heroCard">
       <div class="hero-top">
         <div class="hero-left">
@@ -114,6 +149,7 @@ iframe.qiblat-frame {
 
   <main class="container">
     <div class="grid" id="mainGrid">
+
       <!-- LEFT BOX: Prayer Times -->
       <section>
         <div class="card prayer-table" id="prayer">
@@ -149,65 +185,56 @@ iframe.qiblat-frame {
             <div style="color:var(--muted);font-size:13px">Next: <span id="nextPrayerLabel">—</span></div>
           </div>
         </div>
-      <!-- RIGHT BOX: Takwim (embedded file) -->
+      </section>
+
+      <!-- RIGHT BOX: Qibla -->
       <aside>
-<div class="card" style="margin-top:14px;">
-  <strong>Qibla Compass</strong>
-  <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Direction & distance</div>
-
-  <div id="qiblaWrapper" style="width:100%; height:220px; display:flex; justify-content:center; overflow:hidden; cursor:pointer;">
-    <iframe id="qiblaIframe"
-            src="qiblat.html"
-            style="width:400px; height:400px; transform:scale(0.55); transform-origin: top center; border:none;">
-    </iframe>
-  </div>
-
-  <div style="margin-top:8px;text-align:center;color:var(--muted)">
-    <span id="qiblaDegDisplay">—°</span>
-  </div>
-</div>
-
-<script>
-const qiblaWrapper = document.getElementById('qiblaWrapper');
-const qiblaIframe = document.getElementById('qiblaIframe');
-
-// Clicking the iframe triggers recalibration
-qiblaWrapper.addEventListener('click', () => {
-  qiblaIframe.contentWindow.postMessage({ type: 'recalibrate' }, '*');
-});
-
-// Listen for updated bearing from iframe
-window.addEventListener('message', (event) => {
-  const data = event.data;
-  if (!data) return;
-  if (data.type === 'qibla.update') {
-    document.getElementById('qiblaDegDisplay').textContent = `${data.bearing.toFixed(0)}°`;
-  }
-});
-</script>
-      </aside>
-      <div class="card" id="takwimCard" style="display:flex;flex-direction:column;gap:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <strong>Takwim & Hijri</strong>
-            <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
+        <div class="card" style="margin-top:14px;">
+          <div id="qiblaWrapper" style="margin-top:12px; display:flex; justify-content:center; overflow:hidden; width:100%; height:300px; cursor:pointer;">
+            <iframe id="qiblatFrame"
+                    src="qiblat.html"
+                    style="width:400px; height:400px; transform:scale(0.6); transform-origin: top center; border:none;">
+            </iframe>
           </div>
-
-          <!-- Embed Takwim-hijri.html as iframe (same folder). H1: auto height inside iframe -->
-          <iframe id="takwimFrame" class="takwim-frame" src="takwim-hijri.html" title="Takwim Hijri (embedded)"></iframe>
-
-          <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button class="btn" id="openTakwimFull">Open Full</button>
+          <div style="margin-top:8px;text-align:center;color:var(--muted)">
+            <span id="qiblaDegDisplay">—°</span>
           </div>
         </div>
-</div>
+      </aside>
+
+      <!-- Takwim / Hijri -->
+      <div class="card" id="takwimCard" style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Takwim & Hijri</strong>
+          <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
+        </div>
+
+        <iframe id="takwimFrame" class="takwim-frame" src="takwim-hijri.html" title="Takwim Hijri (embedded)"></iframe>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" id="openTakwimFull">Open Full</button>
+        </div>
+      </div>
+
+      <!-- Hadith -->
+      <div class="card" id="hadith" style="margin-top:12px;">
+        <div><strong>Daily Hadith</strong></div>
+        <canvas id="hadithCanvas" width="300" height="100"></canvas>
+        <div id="hadithText" style="display:none;"></div>
+      </div>
+
     </div>
-    
   </main>
 
-  <footer style="text-align:center;padding:12px;color:var(--muted)">Built with care • Works offline-ish • Customize translations/data</footer>
+  <footer style="text-align:center;padding:12px;color:var(--muted)">
+    Built with care • Works offline-ish • Customize translations/data
+  </footer>
 
   <!-- Adhan.js fallback (optional) -->
-  <script src="https://cdn.jsdelivr.net/npm/adhan@4.4.0/dist/Adhan.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/adhan@4.1.2/dist/adhan.min.js"></script>
+
+</body>
+  <script src="https://cdn.jsdelivr.net/npm/adhan@4.1.2/dist/adhan.min.js"></script>
 
 <script>
 /***********************
@@ -220,13 +247,11 @@ const APP = {
   location: null
 };
 
-// LocalStorage helper
 const storage = {
   get(k){ try { return JSON.parse(localStorage.getItem(k)) } catch(e){ return null } },
   set(k,v){ localStorage.setItem(k, JSON.stringify(v)) }
 };
 
-// Format time string
 function formatTimeStr(str){
   if(!str) return '--:--';
   const [hh, mm] = str.split(':').map(n => parseInt(n,10));
@@ -235,24 +260,27 @@ function formatTimeStr(str){
   return now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: !APP.use24});
 }
 
-// Format date/time with seconds
 function formatDateTime(dt){
   return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
 }
 
-// Get user location (geolocation + fallback)
+/***********************
+ * Location
+ ***********************/
 async function getLocation(){
   let loc = storage.get('loc') || APP.location;
   if(!loc && navigator.geolocation){
     try {
       const pos = await new Promise((res, rej) =>
-        navigator.geolocation.getCurrentPosition(res, rej, { timeout:10000 })
+        navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy:true, timeout:15000 })
       );
-      loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name:'My Location' };
+      loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name:'Current Location' };
       storage.set('loc', loc);
     } catch(e){
       loc = { lat:3.1390, lon:101.6869, name:'Kuala Lumpur (fallback)' };
     }
+  } else if(!loc){
+    loc = { lat:3.1390, lon:101.6869, name:'Kuala Lumpur (fallback)' };
   }
   APP.location = loc;
   return loc;
@@ -262,7 +290,6 @@ async function getLocation(){
  * Prayer Times
  ***********************/
 async function getTimingsForDate(date, lat, lon){
-  // Aladhan API
   try {
     const ts = Math.floor(date.getTime()/1000);
     const url = `https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=2`;
@@ -273,7 +300,6 @@ async function getTimingsForDate(date, lat, lon){
     }
   } catch(e){ console.warn('Aladhan API failed', e); }
 
-  // Fallback with adhan.js
   try {
     const coords = new adhan.Coordinates(lat, lon);
     const params = adhan.CalculationMethod.MuslimWorldLeague();
@@ -289,6 +315,7 @@ async function getTimingsForDate(date, lat, lon){
       Isha: times.isha.toTimeString().slice(0,5)
     };
   } catch(e){ console.warn('Adhan compute failed', e); }
+
   return null;
 }
 
@@ -302,7 +329,7 @@ function showPrayerTimesObj(t){
 }
 
 /***********************
- * Hero section
+ * Hero Section
  ***********************/
 let heroInterval = null;
 
@@ -312,55 +339,111 @@ function renderHeroPrayers(timings){
   const timesDiv = document.getElementById('prayerTimes');
   namesDiv.innerHTML = '';
   timesDiv.innerHTML = '';
-  prayerOrder.forEach(p => {
-    const nameEl = document.createElement('div'); nameEl.textContent = p; namesDiv.appendChild(nameEl);
-    const timeEl = document.createElement('div'); timeEl.textContent = formatTimeStr(timings[p]); timesDiv.appendChild(timeEl);
+
+  prayerOrder.forEach(p=>{
+    const nameEl = document.createElement('div'); 
+    nameEl.textContent = p; 
+    nameEl.id = `heroName-${p}`;
+    namesDiv.appendChild(nameEl);
+
+    const timeEl = document.createElement('div'); 
+    timeEl.textContent = formatTimeStr(timings[p]); 
+    timeEl.id = `heroTime-${p}`;
+    timesDiv.appendChild(timeEl);
   });
 }
+
 const prayerBackgrounds = {
-  Fajr:   "Images/fajr.jpg",
-  Dhuhr:  "Images/dhuhr.jpg",
-  Asr:    "Images/asr.jpg",
-  Maghrib:"Images/maghrib.jpg",
-  Isha:   "Images/isha.jpg"
+  Fajr:"Images/fajr.jpg", 
+  Dhuhr:"Images/dhuhr.jpg", 
+  Asr:"Images/asr.jpg",
+  Maghrib:"Images/maghrib.jpg", 
+  Isha:"Images/isha.jpg"
 };
 
-// Preload all images
+// Preload images
 const preloadImages = [];
 for(const key in prayerBackgrounds){
   const img = new Image();
   img.src = prayerBackgrounds[key];
   preloadImages.push(img);
 }
+
+// Update hero background
+function updateHeroBackground(nextPrayer){
+  const hero = document.getElementById('hero');
+  if(nextPrayer && prayerBackgrounds[nextPrayer]){
+    hero.style.backgroundImage = `url('${prayerBackgrounds[nextPrayer]}')`;
+    hero.style.transition = 'background-image 1s ease-in-out';
+  }
+}
+
+// Highlight current/upcoming prayer
+function highlightCurrentPrayer(nextPrayer){
+  const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  prayers.forEach(p=>{
+    const nameEl = document.getElementById(`heroName-${p}`);
+    const timeEl = document.getElementById(`heroTime-${p}`);
+    if(nameEl && timeEl){
+      if(p === nextPrayer){
+        nameEl.style.color = '#A67734';
+        nameEl.style.fontWeight = '800';
+        timeEl.style.color = '#A67734';
+        timeEl.style.fontWeight = '800';
+      } else {
+        nameEl.style.color = '#6f604f';
+        nameEl.style.fontWeight = '600';
+        timeEl.style.color = '#2e2a24';
+        timeEl.style.fontWeight = '700';
+      }
+    }
+  });
+}
+
+// Helper: get next prayer considering midnight
+function getNextPrayer(timings){
+  const now = new Date();
+  const prayerOrder = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+
+  for(const p of prayerOrder){
+    const tParts = timings[p].split(':');
+    const tDate = new Date();
+    tDate.setHours(parseInt(tParts[0]), parseInt(tParts[1]),0,0);
+    if(tDate > now) return p;
+  }
+  // If none left today, return Fajr for next day
+  return 'Fajr';
+}
+
 function updateHeroTiming(timings){
   if(heroInterval) clearInterval(heroInterval);
 
   heroInterval = setInterval(()=>{
     const now = new Date();
-    let nextPrayer = '';
+    let nextPrayer = getNextPrayer(timings);
     let countdownStr = '--:--:--';
 
-    for(const p of ['Fajr','Dhuhr','Asr','Maghrib','Isha']){
-      const tParts = timings[p].split(':');
-      const tDate = new Date();
-      tDate.setHours(parseInt(tParts[0]), parseInt(tParts[1]),0,0);
-
-      if(tDate > now){
-        nextPrayer = p;
-        const diffMs = tDate - now;
-
-        const hours = Math.floor(diffMs / 1000 / 60 / 60);
-        const minutes = Math.floor((diffMs / 1000 / 60) % 60);
-        const seconds = Math.floor((diffMs / 1000) % 60);
-
-        countdownStr = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-        break;
-      }
+    // Calculate countdown
+    const tParts = timings[nextPrayer].split(':');
+    let tDate = new Date();
+    tDate.setHours(parseInt(tParts[0]), parseInt(tParts[1]),0,0);
+    // If next prayer is Fajr of next day
+    if(nextPrayer === 'Fajr' && tDate < now){
+      tDate.setDate(tDate.getDate() + 1);
     }
+    const diffMs = tDate - now;
+    const hours = Math.floor(diffMs / 1000 / 60 / 60);
+    const minutes = Math.floor((diffMs / 1000 / 60) % 60);
+    const seconds = Math.floor((diffMs / 1000) % 60);
+    countdownStr = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
 
+    // Update DOM
     document.getElementById('nextPrayer').textContent = 'Next: ' + nextPrayer;
     document.getElementById('countdown').textContent = countdownStr;
-    document.getElementById('heroTime').textContent = formatDateTime(new Date());
+    document.getElementById('heroTime').textContent = formatDateTime(now);
+
+    updateHeroBackground(nextPrayer);
+    highlightCurrentPrayer(nextPrayer);
   },1000);
 }
 
@@ -373,13 +456,10 @@ function sendLocationToTakwim(loc, timings){
 }
 
 function calcQibla(lat, lon){
-  // simple bearing formula
   const toRad = Math.PI/180;
   const toDeg = 180/Math.PI;
-  const lat1 = lat*toRad;
-  const lon1 = lon*toRad;
-  const lat2 = APP.kaaba.lat*toRad;
-  const lon2 = APP.kaaba.lon*toRad;
+  const lat1 = lat*toRad, lon1=lon*toRad;
+  const lat2=APP.kaaba.lat*toRad, lon2=APP.kaaba.lon*toRad;
   const y = Math.sin(lon2-lon1)*Math.cos(lat2);
   const x = Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1);
   return (Math.atan2(y,x)*toDeg+360)%360;
@@ -388,21 +468,20 @@ function calcQibla(lat, lon){
 function setQiblaNeedle(deg){
   const qEl = document.getElementById('qiblaDegDisplay');
   if(qEl) qEl.textContent = `${Math.round(deg)}°`;
-  // optionally send to iframe
   const f = document.getElementById('qiblatFrame');
   f.contentWindow && f.contentWindow.postMessage({type:'app.location.update', detail:APP.location},'*');
 }
 
 /***********************
- * Hadith canvas
+ * Hadith Canvas
  ***********************/
 function drawHadith(text){
   const canvas = document.getElementById('hadithCanvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#2e2a24'; ctx.font='14px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  const words = text.split(' '); let line=''; let lines=[]; 
+  ctx.fillStyle='#2e2a24'; ctx.font='14px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const words = text.split(' '); let line=''; let lines=[];
   words.forEach(w=>{
     const testLine = line+' '+w;
     const metrics = ctx.measureText(testLine);
@@ -414,7 +493,7 @@ function drawHadith(text){
 }
 
 /***********************
- * Main
+ * Main runner
  ***********************/
 async function runAll(){
   try{
@@ -465,7 +544,9 @@ document.getElementById('setLocationBtn')?.addEventListener('click', async ()=>{
   const lon = prompt('Enter longitude:', APP.location?.lon || 101.6869);
   const name = prompt('Enter location name:', APP.location?.name || 'Custom');
   if(lat && lon){
-    APP.location={lat:parseFloat(lat),lon:parseFloat(lon),name:name}; storage.set('loc', APP.location); runAll();
+    APP.location={lat:parseFloat(lat),lon:parseFloat(lon),name:name};
+    storage.set('loc', APP.location);
+    runAll();
   }
 });
 
@@ -482,42 +563,20 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     document.getElementById('heroTime').textContent=formatDateTime(new Date());
   },1000);
 });
-</script>
-  <script>
+
+/***********************
+ * Qibla iframe events
+ ***********************/
 const qiblaWrapper = document.getElementById('qiblaWrapper');
 const qiblaIframe = document.getElementById('qiblatFrame');
 
-// Click on iframe area triggers recalibration
 qiblaWrapper.addEventListener('click', () => {
-  qiblaIframe.contentWindow.postMessage({ type: 'recalibrate' }, '*');
+  qiblaIframe.contentWindow?.postMessage({ type: 'recalibrate' }, '*');
 });
 
-// Listen for updated bearing from iframe
 window.addEventListener('message', (event) => {
   const data = event.data;
   if (!data) return;
-
-  if (data.type === 'qibla.update') {
-    document.getElementById('qiblaDegDisplay').textContent = `${data.bearing.toFixed(0)}°`;
-  }
-});
-</script>
-<script>
-const qiblaWrapper = document.getElementById('qiblaWrapper');
-const qiblaIframe = document.getElementById('qiblatFrame');
-
-// Click on iframe area triggers recalibration in qiblat.html
-qiblaWrapper.addEventListener('click', () => {
-  if(qiblaIframe.contentWindow) {
-    qiblaIframe.contentWindow.postMessage({ type: 'recalibrate' }, '*');
-  }
-});
-
-// Listen for updated bearing from iframe
-window.addEventListener('message', (event) => {
-  const data = event.data;
-  if (!data) return;
-
   if (data.type === 'qibla.update') {
     document.getElementById('qiblaDegDisplay').textContent = `${data.bearing.toFixed(0)}°`;
   }
