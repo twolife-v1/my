@@ -425,7 +425,15 @@ function initDeviceOrientation(bearing){
 document.getElementById('qiblaRecalibrate')?.addEventListener('click', ()=>{
   if(APP.location) initDeviceOrientation(calcQibla(APP.location.lat, APP.location.lon));
 });
-  
+
+/***********************
+ * Takwim iframe
+ ***********************/
+function sendLocationToTakwim(loc, timings){
+  const f = document.getElementById('takwimFrame');
+  f.contentWindow && f.contentWindow.postMessage({type:'app.location.update', detail:{ loc, timings }}, '*');
+}
+
 /***********************
  * Hadith canvas
  ***********************/
