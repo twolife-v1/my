@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Waktu Solat — Unified</title>
   <meta name="theme-color" content="#F6EEE0">
-  <link rel="manifest" href="my/manifest.json" />
-  <link rel="apple-touch-icon" href="my/Images/icon-192.png" />
+  <link rel="manifest" href="/my/manifest.json" />
+  <link rel="apple-touch-icon" href="/my/Images/icon-192.png" />
   <style>
     :root{
       --bg:#F6EEE0; --card:#FFF; --muted:#6f604f; --accent:#A67734; --soft:#FFF6EE;
@@ -173,7 +173,7 @@
           <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
         </div>
 
-        <iframe id="takwimFrame" class="takwim-frame" src="my/Takwim-hijri.html" title="Takwim Hijri (embedded)"></iframe>
+        <iframe id="takwimFrame" class="takwim-frame" src="/my/Takwim-hijri.html" title="Takwim Hijri"></iframe>
 
         <div style="display:flex;gap:8px;justify-content:flex-end">
           <button class="btn" id="openTakwimFull">Open Full</button>
@@ -194,7 +194,7 @@
     <!-- PWA Install Popup -->
     <div id="pwaInstallPrompt" class="pwa-install hidden" role="dialog" aria-hidden="true">
       <div class="pwa-inner">
-        <img src="my/Images/icon-192.png" alt="App Icon" class="pwa-icon">
+        <img src="/my/Images/icon-192.png" alt="App Icon" class="pwa-icon">
         <div class="pwa-text">
           <strong>Install Waktu Solat Lite</strong><br>
           <small>Fast access • Offline support • Lightweight</small>
@@ -213,7 +213,7 @@
   <!-- adhan fallback (optional) -->
   <script src="https://cdn.jsdelivr.net/npm/adhan@4.1.2/dist/adhan.min.js"></script>
 
-  <!-- MAIN SCRIPT (copy/paste as-is) -->
+  <!-- MAIN SCRIPT -->
   <script>
   (function(){
     'use strict';
@@ -270,7 +270,7 @@
             if(done) return; done=true;
             console.warn('Geolocation error', err && err.code ? err.code : err);
             // fallback to stored or KL
-            const fb = storage.get('loc') || { lat:3.1390, lon:101.6869, name:'Kuala Lumpur (fallback)' };
+            const fb = storage.get('loc') || { lat:3.1390, lon:101.6869, name:'Kuala Lumpur (fback)' };
             APP.location = fb;
             resolve(fb);
           };
@@ -323,7 +323,7 @@
 
     // hero rendering + countdown
     let heroInterval = null;
-    const defaultBackground = 'my/Images/sunset.jpg'; // optional default
+    const defaultBackground = '/my/Images/sunset.jpg'; // optional default
     const prayerBackgrounds = { Fajr:defaultBackground, Dhuhr:defaultBackground, Asr:defaultBackground, Maghrib:defaultBackground, Isha:defaultBackground };
 
     function renderHeroPrayers(timings){
@@ -494,7 +494,7 @@
           await runAll();
         }
       });
-      document.getElementById('openTakwimFull')?.addEventListener('click', ()=> window.open('/Takwim-hijri.html','_blank'));
+      document.getElementById('openTakwimFull')?.addEventListener('click', ()=> window.open('/my/Takwim-hijri.html','_blank'));
 
       // qibla actions
       document.getElementById('qiblaRecalibrate')?.addEventListener('click', async ()=>{
