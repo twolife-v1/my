@@ -1,14 +1,14 @@
 // service-worker.js (put at site root)
 const CACHE_NAME = 'waktu-solat-v1';
 const ASSETS = [
-  '/my/', 
-  '/my/index.html',
-  '/my/manifest.json',
-  '/my/Images/icon-192.png',
-  '/my/Images/icon-512.png',
-  '/my/Images/sunset.jpg', // optional - remove if you don't have it
-  '/my/Takwim-hijri.html',
-  '/my/qiblat.html'
+  '/', 
+  '/index.html',
+  '/manifest.json',
+  '/Images/icon-192.png',
+  '/Images/icon-512.png',
+  '/Images/sunset.jpg', // optional - remove if you don't have it
+  '/Takwim-hijri.html',
+  '/qiblat.html'
 ];
 
 // Install: pre-cache basic assets
@@ -41,7 +41,7 @@ self.addEventListener('fetch', (evt) => {
         const copy = res.clone();
         caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy));
         return res;
-      }).catch(() => caches.match('/my/index.html'))
+      }).catch(() => caches.match('/index.html'))
     );
     return;
   }
