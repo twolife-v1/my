@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Waktu Solat — Unified</title>
+  <title>Waktu Solat Lite 🕌</title>
   <meta name="theme-color" content="#F6EEE0">
  <style>
 :root{
@@ -209,7 +209,7 @@ iframe.qiblat-frame {
           <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
         </div>
 
-        <iframe id="takwimFrame" class="takwim-frame" src="takwim-hijri.html" title="Takwim Hijri (embedded)"></iframe>
+        <iframe id="takwimFrame" class="takwim-frame" src="Takwim-hijri.html" title="Takwim Hijri (embedded)"></iframe>
 
         <div style="display:flex;gap:8px;justify-content:flex-end">
           <button class="btn" id="openTakwimFull">Open Full</button>
@@ -328,8 +328,8 @@ function showPrayerTimesObj(t){
  ***********************/
 let heroInterval = null;
 const prayerBackgrounds = {
-  Fajr:"Images/fajr.jpg", Dhuhr:"Images/dhuhr.jpg", Asr:"Images/asr.jpg",
-  Maghrib:"Images/maghrib.jpg", Isha:"Images/isha.jpg"
+  Fajr:"Images/sunset.jpg", Dhuhr:"Images/sunset.jpg", Asr:"Images/sunset.jpg",
+  Maghrib:"Images/sunset.jpg", Isha:"Images/sunset.jpg"
 };
 const preloadImages = [];
 for(const key in prayerBackgrounds){
