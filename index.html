@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Waktu Solat — Unified</title>
   <meta name="theme-color" content="#F6EEE0">
- <style>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="Images/icon-192.png">
+
+  <style>
 :root{
   --bg:#F6EEE0; --card:#FFF; --muted:#6f604f; --accent:#A67734; --soft:#FFF6EE;
   --glass: rgba(255,255,255,0.28); --hero-height:360px;
@@ -104,7 +107,8 @@ iframe.qiblat-frame {
   display: block;
   overflow: hidden; /* hide scroll */
 }
-/* PWA Install Popup */
+
+/* PWA Install Popup (your CSS) */
 .pwa-install {
   position: fixed;
   bottom: -200px;
@@ -176,7 +180,7 @@ iframe.qiblat-frame {
   cursor: pointer;
   font-size: 11px;
 }
-</style>
+  </style>
 </head>
 <body>
 
@@ -260,11 +264,13 @@ iframe.qiblat-frame {
       </section>
 
       <!-- RIGHT BOX: Qibla -->
-        <aside>
+      <aside>
         <div class="card" style="margin-top:14px;">
           <div id="qiblaWrapper" style="margin-top:12px; display:flex; justify-content:center; overflow:hidden; width:100%; height:300px; cursor:pointer;">
+            <!-- allow sensor + geolocation for iframe -->
             <iframe id="qiblatFrame"
                     src="qiblat.html"
+                    allow="geolocation; accelerometer; magnetometer; gyroscope"
                     style="width:400px; height:400px; transform:scale(0.6); transform-origin: top center; border:none;">
             </iframe>
           </div>
@@ -296,33 +302,39 @@ iframe.qiblat-frame {
       </div>
 
     </div>
-<!-- PWA Install Popup -->
-<div id="pwaInstallPrompt" class="pwa-install hidden">
-  <div class="pwa-inner">
-    <img src="Images/icon-192.png" alt="App Icon" class="pwa-icon">
-    <div class="pwa-text">
-      <strong>Install Waktu Solat Lite</strong><br>
-      <small>Fast access • Offline support • Lightweight</small>
+
+    <!-- PWA Install Popup -->
+    <div id="pwaInstallPrompt" class="pwa-install hidden" role="dialog" aria-hidden="true">
+      <div class="pwa-inner">
+        <img src="Images/icon-192.png" alt="App Icon" class="pwa-icon">
+        <div class="pwa-text">
+          <strong>Install Waktu Solat Lite</strong><br>
+          <small>Fast access • Offline support • Lightweight</small>
+        </div>
+        <div class="pwa-buttons">
+          <button id="installBtn" class="pwa-install-btn">Install</button>
+          <button id="closeInstall" class="pwa-close-btn">Later</button>
+        </div>
+      </div>
     </div>
-    <div class="pwa-buttons">
-      <button id="installBtn" class="pwa-install-btn">Install</button>
-      <button id="closeInstall" class="pwa-close-btn">Later</button>
-    </div>
-  </div>
-</div>
+
   </main>
 
   <footer style="text-align:center;padding:12px;color:var(--muted)">
     Built with care • Works offline-ish • Customize translations/data
   </footer>
-<script src="https://cdn.jsdelivr.net/npm/adhan@4.1.2/dist/adhan.min.js"></script>
+
+  <!-- adhan.js fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/adhan@4.1.2/dist/adhan.min.js"></script>
+
+  <!-- Main merged script -->
   <script>
-/* ---------- Waktu Solat — Unified (merged & fixed) ---------- */
+/* ---------- Waktu Solat — Unified (merged & fixed; PWA show after user interaction) ---------- */
 (function(){
   'use strict';
 
   // Config
-  const SW_PATH = '/service-worker.js'; // change if your SW file name differs
+  const SW_PATH = '/service-worker.js';
   const PWA_SEEN_KEY = 'waktu_pwa_seen_v1';
 
   // App state
@@ -356,22 +368,18 @@ iframe.qiblat-frame {
   async function getLocation(){
     // previously saved location
     let loc = storage.get('loc') || APP.location;
-    // If we already have valid coords use them
-    if(loc && typeof loc.lat === 'number' && typeof loc.lon === 'number') {
+    if(loc && typeof loc.lat === 'number' && typeof loc.lon === 'number'){
       APP.location = loc;
       return loc;
     }
 
-    // Only try geolocation if available and page is secure or on localhost
     if('geolocation' in navigator){
-      // Wrap getCurrentPosition into a promise with timeout
       const tryGet = (timeoutMs=10000) => new Promise((resolve)=>{
         let done = false;
         const onSuccess = pos => { if(done) return; done = true; resolve({ ok:true, pos }); };
         const onErr = err => { if(done) return; done = true; resolve({ ok:false, err }); };
         navigator.geolocation.getCurrentPosition(onSuccess, onErr, { enableHighAccuracy:true, timeout: timeoutMs });
-        // safety timeout (in case browser hangs)
-        setTimeout(()=>{ if(done) return; done=true; resolve({ ok:false, err: { code:3, message:'timeout' } }); }, timeoutMs+2000);
+        setTimeout(()=>{ if(done) return; done = true; resolve({ ok:false, err: { code:3, message:'timeout' } }); }, timeoutMs+1500);
       });
 
       try {
@@ -384,9 +392,7 @@ iframe.qiblat-frame {
           console.log('Location obtained:', loc);
           return loc;
         } else {
-          console.warn('Geolocation error:', res.err && res.err.message ? res.err.message : res.err);
-          // if permission denied, we will not repeatedly request automatically
-          // fall back to storage or KL
+          console.warn('Geolocation error or denied', res.err && res.err.message ? res.err.message : res.err);
         }
       } catch(e){
         console.warn('Geolocation attempt failed', e);
@@ -403,7 +409,6 @@ iframe.qiblat-frame {
 
   /* ========== Prayer times (API + adhan fallback) ========== */
   async function getTimingsForDate(date, lat, lon){
-    // try API first
     try {
       const ts = Math.floor(date.getTime()/1000);
       const url = `https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=2`;
@@ -416,7 +421,6 @@ iframe.qiblat-frame {
       }
     } catch(e){ console.warn('Aladhan API failed', e); }
 
-    // fallback to adhan.js (if included)
     try {
       if(typeof adhan !== 'undefined' && adhan.Coordinates){
         const coords = new adhan.Coordinates(lat, lon);
@@ -449,13 +453,12 @@ iframe.qiblat-frame {
     });
   }
 
-  /* ======= Hero functions (render + countdown) ======= */
+  /* ======= Hero functions ======= */
   let heroInterval = null;
   const prayerBackgrounds = {
     Fajr:"Images/sunset.jpg", Dhuhr:"Images/sunset.jpg", Asr:"Images/sunset.jpg",
     Maghrib:"Images/sunset.jpg", Isha:"Images/sunset.jpg"
   };
-  // Preload
   Object.values(prayerBackgrounds).forEach(src => { const i=new Image(); i.src=src; });
 
   function renderHeroPrayers(timings){
@@ -509,17 +512,14 @@ iframe.qiblat-frame {
         if(nextLabel) nextLabel.textContent = 'Next: ' + nextPrayer;
         if(cdEl) cdEl.textContent = countdownStr;
         if(heroTimeEl) heroTimeEl.textContent = formatDateTime(new Date());
-        // update hero background
         if(nextPrayer && prayerBackgrounds[nextPrayer]){
           const heroEl = document.getElementById('hero');
           if(heroEl) heroEl.style.backgroundImage = `url(${prayerBackgrounds[nextPrayer]})`;
         }
-      } catch(err){
-        console.warn('hero interval error', err);
-      }
+      } catch(err){ console.warn('hero interval error', err); }
     }, 1000);
   }
-/* ======= Qibla compass functions ======= */
+/* ======= Qibla functions ======= */
   function calcQibla(lat, lon){
     const toRad = Math.PI/180, toDeg = 180/Math.PI;
     const lat1 = lat*toRad, lon1 = lon*toRad, lat2 = APP.kaaba.lat*toRad, lon2 = APP.kaaba.lon*toRad;
@@ -527,7 +527,6 @@ iframe.qiblat-frame {
     const x = Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1);
     return (Math.atan2(y,x)*toDeg+360)%360;
   }
-
   function updateQiblaNeedle(deg, alpha = 0){
     const needle = document.getElementById('qiblaNeedle');
     if(!needle) return;
@@ -536,7 +535,6 @@ iframe.qiblat-frame {
     const degDisplay = document.getElementById('qiblaDegDisplay');
     if(degDisplay) degDisplay.textContent = `${Math.round(deg)}°`;
   }
-
   function initDeviceOrientation(bearing){
     function handleOrientation(event){
       const alpha = (typeof event.alpha === 'number') ? event.alpha : (event.webkitCompassHeading || 0);
@@ -544,9 +542,6 @@ iframe.qiblat-frame {
     }
     try {
       if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
-        // iOS requires user gesture — we'll request permission when user clicks the qibla area
-        // Do NOT auto-call requestPermission here to avoid blocking
-        // But we attach a click handler to prompt user when they want to enable it
         const qWrap = document.getElementById('qiblaWrapper');
         if(qWrap){
           qWrap.addEventListener('click', async () => {
@@ -565,14 +560,12 @@ iframe.qiblat-frame {
     } catch(e){ console.warn('orientation init failed', e); }
   }
 
-  /* ======= Takwim iframe messaging ======= */
+  /* ======= Takwim messaging & hadith draw ======= */
   function sendLocationToTakwim(loc, timings){
     const f = document.getElementById('takwimFrame');
     try { f && f.contentWindow && f.contentWindow.postMessage({type:'app.location.update', detail:{ loc, timings }}, '*'); }
-    catch(e){ /* silent */ }
+    catch(e){ }
   }
-
-  /* ======= Hadith canvas (unchanged) ======= */
   function drawHadith(text){
     const canvas = document.getElementById('hadithCanvas'); if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -616,12 +609,10 @@ iframe.qiblat-frame {
 
       sendLocationToTakwim(APP.location, timings);
 
-      // Qibla: compute bearing and set needle; init device orientation
       const deg = calcQibla(APP.location.lat, APP.location.lon);
       updateQiblaNeedle(deg, 0);
       initDeviceOrientation(deg);
 
-      // hadith
       const hadithText = '“The best among you are those who have the best manners and character.”';
       const hadithEl = document.getElementById('hadithText');
       if(hadithEl) hadithEl.textContent = hadithText;
@@ -630,12 +621,11 @@ iframe.qiblat-frame {
     } catch(e){ console.warn('runAll error', e); }
   }
 
-  /* ======= Message listener: qiblat iframe -> parent updates ======= */
+  /* ======= Message listener (iframe -> parent) ======= */
   window.addEventListener('message', (ev) => {
     const m = ev.data;
     if(!m || !m.type) return;
     if(m.type === 'qibla.update' && typeof m.bearing === 'number'){
-      // qiblat.html can post {type:'qibla.update', bearing: 123.4}
       const el = document.getElementById('qiblaDegDisplay');
       if(el) el.textContent = `${Math.round(m.bearing)}°`;
     }
@@ -644,26 +634,19 @@ iframe.qiblat-frame {
     }
   });
 
-  /* ======= Service Worker registration (single) ======= */
+  /* ======= Service Worker registration (single, root) ======= */
   function registerServiceWorker(){
     if('serviceWorker' in navigator){
-      // register once after load
       window.addEventListener('load', async () => {
         try {
           const reg = await navigator.serviceWorker.register(SW_PATH);
           console.log('SW registered at', SW_PATH);
-
-          // updatefound handler
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             newWorker.addEventListener('statechange', () => {
               if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
-                // new SW installed while old is controlling
-                // Inform user and allow skipWaiting
                 const doReload = confirm('New version available. Reload to update?');
-                if(doReload){
-                  newWorker.postMessage({type:'SKIP_WAITING'});
-                }
+                if(doReload) newWorker.postMessage({type:'SKIP_WAITING'});
               }
             });
           });
@@ -674,72 +657,91 @@ iframe.qiblat-frame {
     }
   }
 
-  /* ======= PWA install popup (guarded) ======= */
+  /* ======= PWA popup logic (show after user interaction) ======= */
   function setupPwaPopup(){
     let deferredPrompt = null;
     const installPopup = document.getElementById('pwaInstallPrompt');
     const installBtn = document.getElementById('installBtn');
     const closeInstall = document.getElementById('closeInstall');
 
-    if(!installPopup || !installBtn || !closeInstall){
-      // DOM not available — nothing to bind
-      return;
-    }
+    if(!installPopup || !installBtn || !closeInstall) return;
 
-    // show only if not shown before AND not installed
-    function showPopup(){
-      try {
-        if(!installPopup.classList.contains('show')){
-          installPopup.classList.remove('hidden');
-          installPopup.classList.add('show');
-        }
-      } catch(e){}
+    let deferredReady = false; // whether beforeinstallprompt fired
+    let userGestureSeen = false; // whether we got a first gesture
+
+    // show helper
+    function showPopupNow(){
+      const seen = localStorage.getItem(PWA_SEEN_KEY);
+      if(seen === 'yes') return;
+      installPopup.classList.remove('hidden');
+      installPopup.classList.add('show');
+      installPopup.setAttribute('aria-hidden','false');
+    }
+    function hidePopupNow(){
+      installPopup.classList.remove('show');
+      installPopup.classList.add('hidden');
+      installPopup.setAttribute('aria-hidden','true');
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
-      // prevent default mini-infobar
       e.preventDefault();
       deferredPrompt = e;
+      deferredReady = true;
+      console.log('beforeinstallprompt received');
 
-      // if user installed or we dismissed before, don't show
-      const seen = localStorage.getItem(PWA_SEEN_KEY);
-      if(seen === 'yes') return;
-
-      // show after short delay
-      setTimeout(()=> showPopup(), 2500);
+      // If user already interacted, show immediately; otherwise wait for first touch/scroll/click
+      if(userGestureSeen){
+        setTimeout(showPopupNow, 600);
+      }
     });
 
-    installBtn.addEventListener('click', async () => {
-      try {
-        installPopup.classList.remove('show');
-      } catch(e){}
-      if(!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if(choice.outcome === 'accepted'){
-        console.log('PWA installed');
-        localStorage.setItem(PWA_SEEN_KEY, 'yes');
-      } else {
-        console.log('PWA install dismissed');
+    // first user gesture handler (works for Brave)
+    function onFirstGesture(){
+      userGestureSeen = true;
+      // show popup only if beforeinstallprompt already fired and not shown before
+      if(deferredReady && !localStorage.getItem(PWA_SEEN_KEY)){
+        setTimeout(showPopupNow, 600);
       }
+      removeGestureListeners();
+    }
+    function removeGestureListeners(){
+      window.removeEventListener('scroll', onFirstGesture);
+      window.removeEventListener('pointerdown', onFirstGesture);
+      window.removeEventListener('touchstart', onFirstGesture);
+    }
+    window.addEventListener('scroll', onFirstGesture, { passive:true });
+    window.addEventListener('pointerdown', onFirstGesture, { passive:true });
+    window.addEventListener('touchstart', onFirstGesture, { passive:true });
+
+    installBtn.addEventListener('click', async () => {
+      hidePopupNow();
+      if(!deferredPrompt) return;
+      try {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if(choice.outcome === 'accepted'){
+          console.log('PWA installed');
+          localStorage.setItem(PWA_SEEN_KEY,'yes');
+        } else {
+          console.log('PWA install dismissed');
+        }
+      } catch(err){ console.warn('install prompt error', err); }
       deferredPrompt = null;
     });
 
     closeInstall.addEventListener('click', () => {
-      try { installPopup.classList.remove('show'); } catch(e){}
-      // mark dismissed for this browser (show once per browser)
-      localStorage.setItem(PWA_SEEN_KEY, 'yes');
+      hidePopupNow();
+      localStorage.setItem(PWA_SEEN_KEY,'yes');
     });
 
     window.addEventListener('appinstalled', () => {
       try { installPopup.remove(); } catch(e){}
-      localStorage.setItem(PWA_SEEN_KEY, 'yes');
+      localStorage.setItem(PWA_SEEN_KEY,'yes');
     });
   }
 
-  /* ======= UI bindings & helpers ======= */
+  /* ======= UI bindings ======= */
   function bindUi(){
-    // toggle 24h
     document.getElementById('toggle24')?.addEventListener('click', ()=>{
       APP.use24 = !APP.use24;
       const btn = document.getElementById('toggle24');
@@ -747,7 +749,6 @@ iframe.qiblat-frame {
       runAll();
     });
 
-    // set location manual (keeps existing)
     document.getElementById('setLocationBtn')?.addEventListener('click', async ()=>{
       const lat = prompt('Enter latitude:', APP.location?.lat || 3.1390);
       const lon = prompt('Enter longitude:', APP.location?.lon || 101.6869);
@@ -759,18 +760,15 @@ iframe.qiblat-frame {
       }
     });
 
-    // open takwim
     document.getElementById('openTakwimFull')?.addEventListener('click', ()=>{
       window.open('takwim-hijri.html','_blank');
     });
 
-    // click qibla wrapper as gesture to re-request location + sensor permission
+    // qibla area gesture: re-request location & notify iframe
     const qWrap = document.getElementById('qiblaWrapper');
     if(qWrap){
-      qWrap.addEventListener('click', async (ev) => {
-        // request location again explicitly
+      qWrap.addEventListener('click', async () => {
         try {
-          // attempt to get a fresh position and update app
           const pos = await new Promise((res, rej) =>
             navigator.geolocation.getCurrentPosition(res, rej, { timeout:10000, enableHighAccuracy:true })
           );
@@ -780,53 +778,34 @@ iframe.qiblat-frame {
           await runAll();
         } catch(err){
           console.warn('Re-request location failed', err);
-          alert('Unable to get location. Check browser/site location permission or use Set Location.');
+          alert('Unable to get location. Check browser/site permissions or use Set Location.');
         }
 
-        // also send a message to iframe to recalibrate if available
         const iframe = document.getElementById('qiblatFrame');
         if(iframe && iframe.contentWindow) iframe.contentWindow.postMessage({type:'recalibrate'}, '*');
       });
     }
-
-    // listen for qiblat iframe messages and update display
-    window.addEventListener('message', (ev) => {
-      const m = ev.data;
-      if(!m || !m.type) return;
-      if(m.type === 'qibla.update' && typeof m.bearing === 'number'){
-        const el = document.getElementById('qiblaDegDisplay');
-        if(el) el.textContent = `${Math.round(m.bearing)}°`;
-      }
-    });
   }
 
-  /* ======= Initialize everything after DOM ready ======= */
+  /* ======= Init after DOM loaded ======= */
   document.addEventListener('DOMContentLoaded', async () => {
     try {
       bindUi();
       setupPwaPopup();
       registerServiceWorker();
       await runAll();
-
-      // keep hero clock ticking
       setInterval(()=> {
         const heroTime = document.getElementById('heroTime');
         if(heroTime) heroTime.textContent = formatDateTime(new Date());
       }, 1000);
-
     } catch(e){ console.warn('init error', e); }
   });
 
-  /* ======= Expose a small API to window (optional) ======= */
-  window.WAKTU_SOLAT = {
-    runAll,
-    getLocation: () => APP.location
-  };
+  // expose small API
+  window.WAKTU_SOLAT = { runAll, getLocation: () => APP.location };
 
 })();
   </script>
-  <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F6EEE0">
-<link rel="apple-touch-icon" href="Images/icon-192.png">
+
 </body>
 </html>
