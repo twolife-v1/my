@@ -689,7 +689,7 @@ window.addEventListener("appinstalled", () => {
 });
 
   if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("my/service-worker.js").then(reg => {
+  navigator.serviceWorker.register("/service-worker.js").then(reg => {
 
     // Detect new SW
     reg.onupdatefound = () => {
