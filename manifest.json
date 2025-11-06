@@ -1,20 +1,14 @@
 {
   "name": "Waktu Solat Lite",
-  "short_name": "Solat Lite",
-  "start_url": "index.html",
+  "short_name": "WaktuSolat",
+  "description": "Prayer times, Qibla and Takwim — lightweight PWA",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#F6EEE0",
-  "theme_color": "#A67734",
+  "theme_color": "#F6EEE0",
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "/Images/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/Images/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
