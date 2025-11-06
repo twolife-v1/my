@@ -9,8 +9,7 @@ const ASSETS = [
   './service-worker.js',
   './Images/icon-192.png',
   './Images/icon-512.png',
-  // Add more assets you want precached:
-  './apps/takwim-mini.js',
+  // Add more assets you want precached: 
   './apps/your-other-script.js'
 ];
 
