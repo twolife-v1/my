@@ -602,7 +602,7 @@ async function runAll(){
  ***********************/
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("service-worker.js")
+    navigator.serviceWorker.register("my/service-worker.js")
       .then(() => console.log("SW registered"))
       .catch(err => console.warn("SW failed", err));
   });
@@ -629,7 +629,7 @@ document.getElementById('setLocationBtn')?.addEventListener('click', async ()=>{
 });
 
 document.getElementById('openTakwimFull')?.addEventListener('click', ()=>{
-  window.open('takwim-hijri.html','_blank');
+  window.open('Takwim-hijri.html','_blank');
 });
 
 /***********************
@@ -689,7 +689,7 @@ window.addEventListener("appinstalled", () => {
 });
 
   if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js").then(reg => {
+  navigator.serviceWorker.register("my/service-worker.js").then(reg => {
 
     // Detect new SW
     reg.onupdatefound = () => {
