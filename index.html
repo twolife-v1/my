@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <link rel="apple-touch-icon" href="images/icon.png">
-  <link rel="manifest" href="/my/manifest.json">
+  <link rel="manifest" href="manifest.json">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Waktu Solat — Unified</title>
@@ -532,26 +532,7 @@ let wsolatInstallReady = false;
 let wsolatIsInstalled = false;
 let wsolatAppName = "Waktu Solat Lite"; // fallback name
 
-// 🟤 Auto-load manifest for name & colors
-(async () => {
-  const link = document.querySelector('link[rel="manifest"]');
-  if (link) {
-    try {
-      const res = await fetch(link.href);
-      const manifest = await res.json();
-      if (manifest.name) wsolatAppName = manifest.name;
-      if (manifest.theme_color) {
-        document.documentElement.style.setProperty('--popup-border', manifest.theme_color);
-      }
-      if (manifest.background_color) {
-        const bg = manifest.background_color + "E6"; // add transparency
-        document.documentElement.style.setProperty('--popup-bg', bg);
-      }
-    } catch (err) {
-      console.warn("Manifest fetch failed:", err);
-    }
-  }
-})();
+
 
 // ✅ Detect if already installed
 window.addEventListener("appinstalled", () => {
