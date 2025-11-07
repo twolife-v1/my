@@ -1,7 +1,8 @@
 {
   "name": "Waktu Solat Lite",
   "short_name": "SolatLite",
-  "start_url": "/",
+  "start_url": "/my/index.html",
+  "scope": "/my/",
   "display": "standalone",
   "background_color": "#F6EEE0",
   "theme_color": "#F6EEE0",
