@@ -465,13 +465,6 @@ window.addEventListener('message', (ev)=>{
   }
 });
 
-// Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
-    .then(() => console.log('✅ Service Worker Registered'))
-    .catch(err => console.error('❌ Service Worker Failed', err));
-}
-
 // Run on load
 window.addEventListener('DOMContentLoaded', async ()=>{
   await runAll();
@@ -528,43 +521,43 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   <span class="closeBtn" onclick="closeSolatPopup()">×</span>
   <p id="solatInstallText"></p>
 </div>
-
 <script>
+// ------------------- Install Popup -------------------
 let deferredPrompt = null;
 let installReady = false;
 let isInstalled = false;
 
-// ✅ Detect if app already installed
+// Detect if already installed
 window.addEventListener("appinstalled", () => {
   isInstalled = true;
   localStorage.setItem("solatInstalled", "true");
   closeSolatPopup();
 });
 
-// Check if already installed
 if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getItem("solatInstalled") === "true") {
   isInstalled = true;
 }
 
-// ✅ Catch browser install prompt
+// Catch install prompt event
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
   installReady = true;
+  updateInstallText();
 });
 
-// ✅ Update popup text based on device & availability
+// Update popup text & click behavior
 function updateInstallText() {
   const text = document.getElementById("solatInstallText");
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
   if (isIOS) {
     text.textContent = "Add to Homescreen ⬇️";
-    text.onclick = null; // iOS users must use Safari menu
+    text.onclick = () => alert("On iOS, open Safari menu and tap 'Add to Homescreen'.");
   } else if (installReady && deferredPrompt) {
     text.textContent = "Install Waktu Solat Lite now";
     text.onclick = async () => {
-      deferredPrompt.prompt();
+      deferredPrompt.prompt();  // Show the prompt
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") {
         console.log("PWA Installed!");
@@ -579,7 +572,7 @@ function updateInstallText() {
   }
 }
 
-// ✅ Show popup after 5 seconds if not installed
+// Show popup after 5s if not installed
 window.addEventListener("load", () => {
   if (!isInstalled) {
     setTimeout(() => {
@@ -591,11 +584,20 @@ window.addEventListener("load", () => {
   }
 });
 
-// ✅ Close popup function
+// Close popup
 function closeSolatPopup() {
   const popup = document.getElementById("solatInstallPopup");
   popup.classList.remove("show");
   setTimeout(() => popup.style.display = "none", 400);
+}
+
+// ------------------- Service Worker Registration -------------------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('Service Worker registered:', reg.scope))
+      .catch(err => console.error('Service Worker registration failed:', err));
+  });
 }
 </script>
 </body>
