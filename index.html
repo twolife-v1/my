@@ -482,65 +482,139 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 });
 </script>
 <!-- Waktu Solat Lite Install Popup -->
-<div id="solat-lite-popup" style="display:none; position:fixed; bottom:20px; right:20px; background:#F6EEE0; padding:15px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2); z-index:9999; max-width:280px;">
-  <p id="solat-lite-popup-text" style="margin:0 0 10px 0; font-weight:600;">Install Waktu Solat Lite</p>
-  <button id="solat-lite-install-btn" style="background:#d4a373; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer;">Install</button>
-  <button onclick="closeSolatLitePopup()" style="margin-left:10px; background:#aaa; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer;">Close</button>
+  <style>
+  /* Popup styles */
+  #wsolatInstallPopup {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--popup-bg, #F6EEE0);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    border: 2px solid var(--popup-border, #d4a373);
+    max-width: 280px;
+    z-index: 9999;
+    font-family: sans-serif;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    transform: translateY(50px);
+  }
+  #wsolatInstallPopup.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  #wsolatInstallText {
+    margin: 0 0 10px 0;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  #wsolatInstallClose {
+    background: #aaa;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    float: right;
+  }
+  </style>
+<!-- Install Popup HTML -->
+<div id="wsolatInstallPopup">
+  <p id="wsolatInstallText">Install Waktu Solat Lite</p>
+  <button id="wsolatInstallClose" onclick="closeWSolatPopup()">Close</button>
 </div>
 
 <script>
-let deferredPrompt = null;
+let wsolatDeferredPrompt = null;
+let wsolatInstallReady = false;
+let wsolatIsInstalled = false;
+let wsolatAppName = "Waktu Solat Lite"; // fallback name
 
-// Detect iOS
-const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
-
-// Show popup function
-function showSolatLitePopup(text, showInstallButton = true) {
-  const popup = document.getElementById('solat-lite-popup');
-  const btn = document.getElementById('solat-lite-install-btn');
-  document.getElementById('solat-lite-popup-text').textContent = text;
-  btn.style.display = showInstallButton ? 'inline-block' : 'none';
-  popup.style.display = 'block';
-}
-
-// Close popup
-function closeSolatLitePopup() {
-  document.getElementById('solat-lite-popup').style.display = 'none';
-}
-
-// Chrome / Edge: beforeinstallprompt
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  showSolatLitePopup("Install Waktu Solat Lite for faster access!");
-});
-
-// Install button click
-document.getElementById('solat-lite-install-btn').addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-    if (choice.outcome === 'accepted') {
-      localStorage.setItem('solatLiteInstalled', 'true');
-      closeSolatLitePopup();
+// Auto-load manifest for name & colors
+(async () => {
+  const link = document.querySelector('link[rel="manifest"]');
+  if (link) {
+    try {
+      const res = await fetch(link.href);
+      const manifest = await res.json();
+      if (manifest.name) wsolatAppName = manifest.name;
+      if (manifest.theme_color) {
+        document.documentElement.style.setProperty('--popup-border', manifest.theme_color);
+      }
+      if (manifest.background_color) {
+        const bg = manifest.background_color + "E6"; // add transparency
+        document.documentElement.style.setProperty('--popup-bg', bg);
+      }
+    } catch (err) {
+      console.warn("Manifest fetch failed:", err);
     }
-    deferredPrompt = null;
+  }
+})();
+
+// Detect if already installed
+window.addEventListener("appinstalled", () => {
+  wsolatIsInstalled = true;
+  localStorage.setItem("wsolatInstalled", "true");
+  closeWSolatPopup();
+});
+if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getItem("wsolatInstalled") === "true") {
+  wsolatIsInstalled = true;
+}
+
+// Catch browser install prompt
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  wsolatDeferredPrompt = e;
+  wsolatInstallReady = true;
+});
+
+// Update popup text and click behavior
+function updateWSolatText() {
+  const textEl = document.getElementById("wsolatInstallText");
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  if (isIOS) {
+    textEl.textContent = `Add ${wsolatAppName} to Homescreen ⬇️`;
+    textEl.onclick = null;
+  } else if (wsolatInstallReady && wsolatDeferredPrompt) {
+    textEl.textContent = `Install ${wsolatAppName} now`;
+    textEl.onclick = async () => {
+      wsolatDeferredPrompt.prompt();
+      const { outcome } = await wsolatDeferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        console.log(`${wsolatAppName} Installed!`);
+        localStorage.setItem("wsolatInstalled", "true");
+      }
+      wsolatDeferredPrompt = null;
+      closeWSolatPopup();
+    };
+  } else {
+    textEl.textContent = `Install ${wsolatAppName} now`;
+    textEl.onclick = () => alert(`Use Chrome, Edge, or Brave to install ${wsolatAppName}.`);
+  }
+}
+
+// Show popup after 5s if not installed
+window.addEventListener("load", () => {
+  if (!wsolatIsInstalled) {
+    setTimeout(() => {
+      const popup = document.getElementById("wsolatInstallPopup");
+      updateWSolatText();
+      popup.style.display = "block";
+      setTimeout(() => popup.classList.add("show"), 50);
+    }, 5000);
   }
 });
 
-// Detect actual install
-window.addEventListener('appinstalled', () => {
-  localStorage.setItem('solatLiteInstalled', 'true');
-  closeSolatLitePopup();
-});
-
-// iOS Safari: show manual instructions if not installed
-window.addEventListener('load', () => {
-  if (isIos && !isInStandaloneMode && !localStorage.getItem('solatLiteInstalled')) {
-    showSolatLitePopup("To install Waktu Solat Lite: Tap Share → Add to Home Screen", false);
-  }
-});
+// Close popup function
+function closeWSolatPopup() {
+  const popup = document.getElementById("wsolatInstallPopup");
+  popup.classList.remove("show");
+  setTimeout(() => popup.style.display = "none", 400);
+}
 </script>
 </body>
 </html>
