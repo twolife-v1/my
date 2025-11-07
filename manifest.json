@@ -2,7 +2,7 @@
   "name": "Waktu Solat Lite",
   "short_name": "WaktuSolatLite",
   "description": "Check accurate prayer times and Takwim in Malaysia.",
-  "start_url": "/my/index.html",
+  "start_url": "/my/",
   "scope": "/my/",
   "display": "standalone",
   "background_color": "#fff8f0",
