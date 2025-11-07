@@ -6,8 +6,9 @@ const ASSETS = [
   '/index.html',
 '/manifest.json',
   '/service-worker.js',   // SW itself
-  './icons/icon-192.jpg',
-  './icons/icon-512.jpg',
+  './Images/icon-192.png',
+  './Images/icon-512.png',
+  './Images/icon-1080.png',
   '/Takwim-hijri.html', // Any extra JS
   // Pre-cache the install popup HTML/CSS/JS if external files
   // If popup is inline, no need, already in main HTML/JS
