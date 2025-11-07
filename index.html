@@ -523,6 +523,9 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   <p id="solatInstallText"></p>
 </div>
 <script>
+  window.addEventListener("beforeinstallprompt", (e) => {
+  console.log("✅ beforeinstallprompt fired");
+});
 // ------------------- Install Popup -------------------
 let deferredPrompt = null;
 let installReady = false;
