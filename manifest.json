@@ -1,6 +1,6 @@
 {
   "name": "Waktu Solat Lite",
-  "short_name": "Waktu Solat",
+  "short_name": "wsolat",
   "description": "Prayer times, Qibla direction & daily hadith 🌙",
   "start_url": "/index.html",
   "scope": "/",
