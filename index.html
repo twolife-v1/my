@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" href="images/icon.png">
+  <link rel="apple-touch-icon" href="Images/icon.png">
   <link rel="manifest" href="manifest.json">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -483,7 +483,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 <!-- 🌟 Waktu Solat Lite Install Suggestion Popup -->
 <style>
-#wsolatInstallPopup {
+#solatInstallPopup {
   position: fixed;
   bottom: -70px;
   left: 50%;
@@ -500,18 +500,21 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   transition: bottom .4s ease, opacity .4s ease;
   opacity: 0;
 }
-#wsolatInstallPopup.show {
+
+#solatInstallPopup.show {
   display: block;
   bottom: 20px;
   opacity: 1;
 }
-#wsolatInstallPopup p {
+
+#solatInstallPopup p {
   color: var(--primary,#A67734);
   font-weight: 600;
   margin: 0;
   cursor: pointer;
 }
-#wsolatInstallPopup .closeBtn {
+
+#solatInstallPopup .closeBtn {
   position: absolute;
   top: 2px;
   right: 8px;
@@ -520,10 +523,12 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   cursor: pointer;
 }
 </style>
-<div id="wsolatInstallPopup">
-  <p id="wsolatInstallText">Install Waktu Solat Lite</p>
-  <span class="closeBtn" onclick="closeWSolatPopup()">×</span>
+
+<div id="solatInstallPopup">
+  <span class="closeBtn" onclick="closeSolatPopup()">×</span>
+  <p id="solatInstallText"></p>
 </div>
+
 <script>
 let deferredPrompt = null;
 let installReady = false;
@@ -536,6 +541,7 @@ window.addEventListener("appinstalled", () => {
   closeSolatPopup();
 });
 
+// Check if already installed
 if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getItem("solatInstalled") === "true") {
   isInstalled = true;
 }
@@ -580,7 +586,7 @@ window.addEventListener("load", () => {
       const popup = document.getElementById("solatInstallPopup");
       updateInstallText();
       popup.style.display = "block";
-      setTimeout(() => popup.style.bottom = "20px", 50);
+      setTimeout(() => popup.classList.add("show"), 50);
     }, 5000);
   }
 });
@@ -588,10 +594,9 @@ window.addEventListener("load", () => {
 // ✅ Close popup function
 function closeSolatPopup() {
   const popup = document.getElementById("solatInstallPopup");
-  popup.style.bottom = "-80px";
+  popup.classList.remove("show");
   setTimeout(() => popup.style.display = "none", 400);
 }
 </script>
-
 </body>
 </html>
