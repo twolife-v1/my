@@ -1,70 +1,61 @@
-// service-worker.js for Waktu Solat Lite PWA
-
+// ✅ FIXED service-worker.js for Waktu Solat Lite PWA
 const CACHE_NAME = 'waktu-solat-lite-v1';
+
 const ASSETS = [
-  '/',
-  '/index.html',
-'/manifest.json',
-  '/service-worker.js',   // SW itself
-  './Images/icon-192.png',
-  './Images/icon-512.png',
-  './Images/icon-1080.png',
-  '/Takwim-hijri.html', // Any extra JS
-  // Pre-cache the install popup HTML/CSS/JS if external files
-  // If popup is inline, no need, already in main HTML/JS
+  '/my/',
+  '/my/index.html',
+  '/my/manifest.json',
+  '/my/service-worker.js',
+  '/my/Images/icon-192.png',
+  '/my/Images/icon-512.png',
+  '/my/Images/icon-1080.png',
+  '/my/Takwim-hijri.html'
 ];
 
-// Install: precache assets
+// Install
 self.addEventListener('install', event => {
   console.log('[SW] Installing...');
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('[SW] Caching all assets');
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
 });
 
-// Activate: clean up old caches
+// Activate
 self.addEventListener('activate', event => {
   console.log('[SW] Activating...');
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            console.log('[SW] Removing old cache', key);
-            return caches.delete(key);
-          }
-        })
-      )
+      Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
     )
   );
 });
 
-// Fetch: serve cached assets first, fallback to network
+// Fetch
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) return cachedResponse;
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
 
       return fetch(event.request)
-        .then(networkResponse => {
-          // Optionally cache new requests dynamically
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
+        .then(response => {
+          if (response &&
+              response.ok &&
+              event.request.method === 'GET' &&
+              event.request.url.startsWith(self.location.origin)) {
+
+            caches.open(CACHE_NAME).then(cache =>
+              cache.put(event.request, response.clone())
+            );
+          }
+          return response;
         })
         .catch(() => {
-          // Offline fallback for navigation requests
+          // Offline fallback
           if (event.request.destination === 'document') {
-            return caches.match('/index.html');
+            return caches.match('/my/index.html');
           }
         });
     })
   );
 });
-
-// Optional: listen to push notifications, sync events, etc.
