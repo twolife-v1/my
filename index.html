@@ -481,50 +481,48 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   },1000);
 });
 </script>
-<!-- Waktu Solat Lite Install Popup -->
-  <style>
-  /* Popup styles */
-  #wsolatInstallPopup {
-    display: none;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--popup-bg, #F6EEE0);
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    border: 2px solid var(--popup-border, #d4a373);
-    max-width: 280px;
-    z-index: 9999;
-    font-family: sans-serif;
-    opacity: 0;
-    transition: opacity 0.4s ease, transform 0.4s ease;
-    transform: translateY(50px);
-  }
-  #wsolatInstallPopup.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  #wsolatInstallText {
-    margin: 0 0 10px 0;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  #wsolatInstallClose {
-    background: #aaa;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    float: right;
-  }
-  </style>
-<!-- Install Popup HTML -->
+<!-- 🌟 Waktu Solat Lite Install Suggestion Popup -->
+<style>
+#wsolatInstallPopup {
+  position: fixed;
+  bottom: -70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,248,242,0.92);
+  border: 1.5px solid var(--primary,#A67734);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 8px 18px;
+  font-family: "Poppins",sans-serif;
+  text-align: center;
+  z-index: 9999;
+  display: none;
+  transition: bottom .4s ease, opacity .4s ease;
+  opacity: 0;
+}
+#wsolatInstallPopup.show {
+  display: block;
+  bottom: 20px;
+  opacity: 1;
+}
+#wsolatInstallPopup p {
+  color: var(--primary,#A67734);
+  font-weight: 600;
+  margin: 0;
+  cursor: pointer;
+}
+#wsolatInstallPopup .closeBtn {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+}
+</style>
 <div id="wsolatInstallPopup">
   <p id="wsolatInstallText">Install Waktu Solat Lite</p>
-  <button id="wsolatInstallClose" onclick="closeWSolatPopup()">Close</button>
+  <span class="closeBtn" onclick="closeWSolatPopup()">×</span>
 </div>
 
 <script>
