@@ -1,24 +1,12 @@
 {
   "name": "Waktu Solat Lite",
-  "short_name": "wsolat",
-  "description": "Prayer times, Qibla direction & daily hadith 🌙",
+  "short_name": "SolatLite",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F6EEE0",
-  "theme_color": "#A67734",
-  "orientation": "portrait-primary",
+  "theme_color": "#F6EEE0",
   "icons": [
-    {
-      "src": "/images/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/images/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
