@@ -319,9 +319,11 @@ async function getLocation(){
       return loc;
     }catch(e){console.warn(e);}
   }
-  loc={lat:3.1390,lon:101.6869,name:'Kuala Lumpur'};
-  APP.location=loc; storage.set('loc',loc);
-  return loc;
+  const name = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name };
+APP.location = loc;
+storage.set('loc', loc);
+return loc;
 }
 
 // Main runner
