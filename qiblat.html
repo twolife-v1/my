@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Qibla Compass</title>
+<title>Qibla Compass — Realistic</title>
 <style>
-  body { margin:0; font-family:system-ui; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:linear-gradient(#061226,#071026); color:#e8f5ff;}
-  h1 {margin-bottom:10px; text-align:center;}
+  body {margin:0; font-family:system-ui; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:linear-gradient(#061226,#071026); color:#e8f5ff;}
+  h1 {margin-bottom:12px; text-align:center;}
   .compass-face {width:250px; height:250px; border-radius:50%; background:radial-gradient(circle at 50% 40%, rgba(255,255,255,0.02), transparent 40%), linear-gradient(180deg,#071935,#031124); display:flex; align-items:center; justify-content:center; position:relative; border:3px solid rgba(255,255,255,0.03);}
-  .needle {width:6px; height:45%; position:absolute; top:5%; left:50%; transform-origin:50% 90%; transition:transform 180ms linear;}
+  .needle {width:6px; height:45%; position:absolute; top:5%; left:50%; transform-origin:50% 90%; transition:transform 180ms linear; display:none;}
   .needle .head {width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-bottom:50px solid #f97316; border-radius:2px; position:absolute; top:0; left:50%; transform:translateX(-50%);}
   .needle .tail {width:5px; height:36px; background:rgba(255,255,255,0.06); border-radius:3px; position:absolute; top:36px; left:50%; transform:translateX(-50%);}
   .center {width:12px; height:12px; border-radius:50%; background:#e8f5ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);}
@@ -32,7 +32,7 @@
 <div class="readout">
   <div>Qibla Angle: <span id="qiblaAngle">—</span>°</div>
   <button id="startBtn">Start Compass</button>
-  <div class="status" id="status">Press Start. iOS requires permission popup.</div>
+  <div class="status" id="status">Press Start. iOS requires HTTPS & permission.</div>
 </div>
 
 <script>
@@ -47,9 +47,11 @@ const status = document.getElementById('status');
 
 let lastRotation = 0;
 let qiblaBearing = 0;
+let sensorAvailable = false;
 
 // Shortest rotation helper
 function rotateNeedle(deg) {
+  if(!sensorAvailable) return;
   let diff = (deg - lastRotation + 540) % 360 - 180;
   lastRotation += diff;
   needle.style.transform = `rotate(${lastRotation}deg)`;
@@ -84,27 +86,34 @@ function handleOrientation(e) {
     heading = e.alpha;
   } else if (typeof e.alpha === 'number') {
     heading = e.alpha;
-  } else return;
+  } else {
+    sensorAvailable = false;
+    needle.style.display = 'none';
+    status.textContent = 'Sensor blocked. Showing numeric bearing only.';
+    return;
+  }
 
+  sensorAvailable = true;
+  needle.style.display = 'block';
   const screenAngle = getScreenAngle();
   const magnetic = (360 - heading + screenAngle + 360) % 360;
 
-  // Needle rotation = Qibla bearing - current magnetic
   rotateNeedle(qiblaBearing - magnetic);
 }
 
 // Start compass
 async function startCompass() {
+  // iOS 13+ permission
   if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
     try {
       const resp = await DeviceOrientationEvent.requestPermission();
       if (resp !== 'granted') {
-        status.textContent = 'Permission denied';
-        return;
+        status.textContent = 'Permission denied. Needle hidden, numeric only.';
+        sensorAvailable = false;
       }
     } catch(err) {
-      status.textContent = 'Permission error';
-      return;
+      status.textContent = 'Permission error. Needle hidden, numeric only.';
+      sensorAvailable = false;
     }
   }
 
@@ -119,7 +128,7 @@ async function startCompass() {
     const lon = pos.coords.longitude;
     qiblaBearing = calcQibla(lat, lon);
     qiblaAngleEl.textContent = Math.round(qiblaBearing);
-    status.textContent = 'Compass running';
+    status.textContent = sensorAvailable ? 'Compass running' : 'Sensor unavailable. Numeric Qibla shown.';
   }, err => {
     status.textContent = 'GPS error: ' + err.message;
   }, {enableHighAccuracy:true, timeout:10000});
@@ -132,4 +141,4 @@ async function startCompass() {
 startBtn.addEventListener('click', startCompass);
 </script>
 </body>
-    </html>
+</html>
