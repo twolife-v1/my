@@ -294,17 +294,18 @@ function updateHeroBackground(timings) {
   setInterval(refreshHeroBackground, 60 * 1000);
 }
 // Fetch accurate prayer times
-async function getPrayerTimes(lat, lon){
-  try{
-    const ts=Math.floor(new Date().getTime()/1000);
-    const res=await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=4`);
-    const data=await res.json();
-    if(data?.data?.timings){
-      const t=data.data.timings;
-      return {Fajr:t.Fajr,Dhuhr:t.Dhuhr,Asr:t.Asr,Maghrib:t.Maghrib,Isha:t.Isha};
-    }
-  }catch(e){ console.warn(e); }
-  return {Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
+async function getPrayerTimes(lat, lon) {
+  try {
+    const ts = Math.floor(Date.now() / 1000);
+    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=4`);
+    const data = await res.json();
+    const timings = { Fajr: data.data.timings.Fajr, Dhuhr: data.data.timings.Dhuhr, Asr: data.data.timings.Asr, Maghrib: data.data.timings.Maghrib, Isha: data.data.timings.Isha };
+    localStorage.setItem('lastPrayerTimes', JSON.stringify(timings));
+    return timings;
+  } catch(e) {
+    console.warn("Offline or API error, using cached timings");
+    return JSON.parse(localStorage.getItem('lastPrayerTimes')) || {Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
+  }
 }
 
 // Get user location
