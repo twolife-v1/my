@@ -9,7 +9,12 @@ const ASSETS = [
   '/my/Images/icon-192.png',
   '/my/Images/icon-512.png',
   '/my/Images/icon-1080.png',
-  '/my/Takwim-hijri.html'
+  '/my/Takwim-hijri.html',
+  '/my/Images/subuh.jpg',
+  '/my/Images/zohor.jpg',
+  '/my/Images/asar.jpg',
+  '/my/Images/maghrib.jpg',
+  '/my/Images/isyak.jpg',
 ];
 
 // Install
