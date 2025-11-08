@@ -16,6 +16,7 @@
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#FFFDF8);color:#2e2a24;-webkit-font-smoothing:antialiased}
     a{color:inherit;text-decoration:none}
+
     /* HERO */
     .hero {
       position: relative;
@@ -184,9 +185,8 @@
 
 <footer style="text-align:center;padding:12px;color:var(--muted)">
   Built with care • Works offline-ish • Customize translations/data
-</footer>
-
-<!-- SCRIPT: Accurate prayer times using AlAdhan API -->
+  </footer>
+  <!-- SCRIPT: Accurate prayer times using AlAdhan API -->
 <script>
 const APP = { location: null, use24:false, kaaba:{lat:21.422487, lon:39.826206} };
 const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){localStorage.setItem(k,JSON.stringify(v))} };
@@ -223,11 +223,7 @@ function getNextPrayer(timings){
 }
 
 // Hero countdown & clock
-let heroInterval = null;
-const prayerBackgrounds = {
-  Fajr:"Images/sunset.jpg", Dhuhr:"Images/sunset.jpg", Asr:"Images/sunset.jpg",
-  Maghrib:"Images/sunset.jpg", Isha:"Images/sunset.jpg"
-};
+let heroInterval=null;
 function updateHero(timings){
   if(heroInterval) clearInterval(heroInterval);
   heroInterval=setInterval(()=>{
@@ -244,7 +240,59 @@ function updateHero(timings){
     document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
   },1000);
 }
+// Hero background changer
+function updateHeroBackground(timings) {
+  const hero = document.getElementById("hero");
 
+  // Your background images for each prayer
+  const bgImages = {
+    Fajr: "Images/subuh.jpg",
+    Dhuhr: "Images/zohor.jpg",
+    Asr: "Images/asar.jpg",
+    Maghrib: "Images/maghrib.jpg",
+    Isha: "Images/isyak.jpg"
+  };
+
+  function getCurrentPrayerPeriod() {
+    const now = new Date();
+
+    // Convert time strings to Date objects
+    const timeToDate = (time) => {
+      const [h, m] = time.split(":").map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      return d;
+    };
+
+    const order = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+    let current = "Isha"; // default
+
+    for (let i = 0; i < order.length; i++) {
+      const prayer = order[i];
+      const prayerTime = timeToDate(timings[prayer]);
+      const before30min = new Date(prayerTime.getTime() - 30 * 60 * 1000);
+
+      if (now >= before30min && now < prayerTime) {
+        return prayer;
+      }
+      // Also show current prayer period after it starts
+      if (now >= prayerTime && i < order.length - 1) {
+        current = order[i + 1];
+      }
+    }
+    return current;
+  }
+
+  function refreshHeroBackground() {
+    const currentPrayer = getCurrentPrayerPeriod();
+    const bg = bgImages[currentPrayer];
+    hero.style.backgroundImage = `url('${bg}')`;
+  }
+
+  // Update immediately and every minute
+  refreshHeroBackground();
+  setInterval(refreshHeroBackground, 60 * 1000);
+}
 // Fetch accurate prayer times
 async function getPrayerTimes(lat, lon){
   try{
@@ -287,7 +335,7 @@ async function runAll(){
   const timings=await getPrayerTimes(loc.lat,loc.lon);
   renderHeroPrayers(timings);
   updateHero(timings);
-
+updateHeroBackground(timings);
   // Update table
   for(const [key,id] of [['Fajr','fajr'],['Dhuhr','dhuhr'],['Asr','asr'],['Maghrib','maghrib'],['Isha','isha']]){
     document.getElementById('pt-'+id).textContent=formatTime(timings[key]);
@@ -316,136 +364,6 @@ document.getElementById('openTakwimFull')?.addEventListener('click',()=>window.o
 
 // Run on load
 window.addEventListener('DOMContentLoaded',runAll);
-
-  
-<!-- 🌟 Waktu Solat Lite Install Suggestion Popup -->
-<style>
-#solatInstallPopup {
-  position: fixed;
-  bottom: -70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,248,242,0.92);
-  border: 1.5px solid var(--primary,#A67734);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  padding: 8px 18px;
-  font-family: "Poppins",sans-serif;
-  text-align: center;
-  z-index: 9999;
-  display: none;
-  transition: bottom .4s ease, opacity .4s ease;
-  opacity: 0;
-}
-
-#solatInstallPopup.show {
-  display: block;
-  bottom: 20px;
-  opacity: 1;
-}
-
-#solatInstallPopup p {
-  color: var(--primary,#A67734);
-  font-weight: 600;
-  margin: 0;
-  cursor: pointer;
-}
-
-#solatInstallPopup .closeBtn {
-  position: absolute;
-  top: 2px;
-  right: 8px;
-  font-size: 16px;
-  color: #666;
-  cursor: pointer;
-}
-</style>
-
-<div id="solatInstallPopup">
-  <span class="closeBtn" onclick="closeSolatPopup()">×</span>
-  <p id="solatInstallText"></p>
-</div>
-<script>
-  window.addEventListener("beforeinstallprompt", (e) => {
-  console.log("✅ beforeinstallprompt fired");
-});
-// ------------------- Install Popup -------------------
-let deferredPrompt = null;
-let installReady = false;
-let isInstalled = false;
-
-// Detect if already installed
-window.addEventListener("appinstalled", () => {
-  isInstalled = true;
-  localStorage.setItem("solatInstalled", "true");
-  closeSolatPopup();
-});
-
-if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getItem("solatInstalled") === "true") {
-  isInstalled = true;
-}
-
-// Catch install prompt event
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installReady = true;
-  updateInstallText();
-});
-
-// Update popup text & click behavior
-function updateInstallText() {
-  const text = document.getElementById("solatInstallText");
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-  if (isIOS) {
-    text.textContent = "Add to Homescreen ⬇️";
-    text.onclick = () => alert("On iOS, open Safari menu and tap 'Add to Homescreen'.");
-  } else if (installReady && deferredPrompt) {
-    text.textContent = "Install Waktu Solat Lite now";
-    text.onclick = async () => {
-      deferredPrompt.prompt();  // Show the prompt
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        console.log("PWA Installed!");
-        localStorage.setItem("solatInstalled", "true");
-      }
-      deferredPrompt = null;
-      closeSolatPopup();
-    };
-  } else {
-    text.textContent = "Install Waktu Solat Lite now";
-    text.onclick = () => alert("Use Chrome, Edge, or Brave to install Waktu Solat Lite.");
-  }
-}
-
-// Show popup after 5s if not installed
-window.addEventListener("load", () => {
-  if (!isInstalled) {
-    setTimeout(() => {
-      const popup = document.getElementById("solatInstallPopup");
-      updateInstallText();
-      popup.style.display = "block";
-      setTimeout(() => popup.classList.add("show"), 50);
-    }, 5000);
-  }
-});
-
-// Close popup
-function closeSolatPopup() {
-  const popup = document.getElementById("solatInstallPopup");
-  popup.classList.remove("show");
-  setTimeout(() => popup.style.display = "none", 400);
-  }
-  // ------------------- Service Worker Registration -------------------
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/my/service-worker.js')
-      .then(reg => console.log('Service Worker registered:', reg.scope))
-      .catch(err => console.error('Service Worker registration failed:', err));
-  });
-}
-</script>
 </script>
 </body>
-  </html>
+</html>
