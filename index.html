@@ -224,7 +224,11 @@ function getNextPrayer(timings){
 }
 
 // Hero countdown & clock
-let heroInterval=null;
+let heroInterval = null;
+const prayerBackgrounds = {
+  Fajr:"Images/sunset.jpg", Dhuhr:"Images/sunset.jpg", Asr:"Images/sunset.jpg",
+  Maghrib:"Images/sunset.jpg", Isha:"Images/sunset.jpg"
+};
 function updateHero(timings){
   if(heroInterval) clearInterval(heroInterval);
   heroInterval=setInterval(()=>{
