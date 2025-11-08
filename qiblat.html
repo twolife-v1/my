@@ -5,111 +5,131 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Qibla Compass</title>
 <style>
-body { margin:0; font-family:'Inter',sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:#f6eee0;}
-.compass-wrapper {position:relative; width:320px; height:320px; margin-bottom:16px;}
-.compass-dial {position:absolute; width:100%; height:100%; border-radius:50%; background: radial-gradient(circle at center, #fff, #e0cfa5); box-shadow: inset -4px -4px 15px rgba(0,0,0,0.1), 4px 4px 10px rgba(0,0,0,0.1);}
-.needle {position:absolute; width:8px; height:50%; top:0; left:50%; transform-origin:bottom center; background: linear-gradient(to top, #d9534f, #a93226); border-radius:4px; transition: transform 0.05s linear;}
-.center-dot {position:absolute; width:20px; height:20px; background:#d3a97c; border-radius:50%; left:calc(50% - 10px); top:calc(50% - 10px); box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3), 2px 2px 4px rgba(0,0,0,0.2);}
-.info {text-align:center; font-size:1rem; margin-bottom:12px; color:#333;}
-button {margin:4px; padding:6px 12px; border:none; border-radius:5px; background:#a67734; color:#fff; cursor:pointer; transition:0.3s;}
-button:hover {background:#c48c58;}
+  body { margin:0; font-family:system-ui; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:linear-gradient(#061226,#071026); color:#e8f5ff;}
+  h1 {margin-bottom:10px; text-align:center;}
+  .compass-face {width:250px; height:250px; border-radius:50%; background:radial-gradient(circle at 50% 40%, rgba(255,255,255,0.02), transparent 40%), linear-gradient(180deg,#071935,#031124); display:flex; align-items:center; justify-content:center; position:relative; border:3px solid rgba(255,255,255,0.03);}
+  .needle {width:6px; height:45%; position:absolute; top:5%; left:50%; transform-origin:50% 90%; transition:transform 180ms linear;}
+  .needle .head {width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-bottom:50px solid #f97316; border-radius:2px; position:absolute; top:0; left:50%; transform:translateX(-50%);}
+  .needle .tail {width:5px; height:36px; background:rgba(255,255,255,0.06); border-radius:3px; position:absolute; top:36px; left:50%; transform:translateX(-50%);}
+  .center {width:12px; height:12px; border-radius:50%; background:#e8f5ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);}
+  .readout {margin-top:15px; text-align:center;}
+  .bigdeg {font-size:28px; font-weight:700;}
+  button {margin-top:12px; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:#f97316; color:#041218; font-weight:700;}
+  .status {margin-top:8px; font-size:13px; color:#9fb0c8;}
 </style>
 </head>
 <body>
 
-<h2>Qibla Compass</h2>
-<div class="compass-wrapper" id="compassWrapper">
-  <div class="compass-dial"></div>
-  <div class="needle" id="needle"></div>
-  <div class="center-dot"></div>
+<h1>Qibla Compass</h1>
+<div class="compass-face">
+  <div class="needle" id="needle">
+    <div class="head"></div>
+    <div class="tail"></div>
+  </div>
+  <div class="center"></div>
 </div>
 
-<div class="info" id="distance">Distance: -- km</div>
-<div class="info" id="status">Status: Waiting for GPS...</div>
-<button onclick="recalibrate()">Recalibrate</button>
+<div class="readout">
+  <div>Qibla Angle: <span id="qiblaAngle">—</span>°</div>
+  <button id="startBtn">Start Compass</button>
+  <div class="status" id="status">Press Start. iOS requires permission popup.</div>
+</div>
 
 <script>
-const KAABA = {lat:21.4225, lon:39.8262};
-let userLat = null, userLon = null, heading = 0, qibla = 0;
+// Kaaba coordinates
+const kaabaLat = 21.422487;
+const kaabaLon = 39.826206;
 
-function deg2rad(d){ return d*Math.PI/180; }
-function rad2deg(r){ return r*180/Math.PI; }
+const needle = document.getElementById('needle');
+const qiblaAngleEl = document.getElementById('qiblaAngle');
+const startBtn = document.getElementById('startBtn');
+const status = document.getElementById('status');
 
-function calcQibla(lat, lon){
-  const φ1 = deg2rad(lat), φ2 = deg2rad(KAABA.lat), Δλ = deg2rad(KAABA.lon-lon);
-  const y = Math.sin(Δλ)*Math.cos(φ2);
-  const x = Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
-  return (rad2deg(Math.atan2(y,x))+360)%360;
+let lastRotation = 0;
+let qiblaBearing = 0;
+
+// Shortest rotation helper
+function rotateNeedle(deg) {
+  let diff = (deg - lastRotation + 540) % 360 - 180;
+  lastRotation += diff;
+  needle.style.transform = `rotate(${lastRotation}deg)`;
 }
 
-function calcDistance(lat, lon){
-  const R = 6371;
-  const dLat = deg2rad(KAABA.lat-lat);
-  const dLon = deg2rad(KAABA.lon-lon);
-  const a = Math.sin(dLat/2)**2 + Math.cos(deg2rad(lat))*Math.cos(deg2rad(KAABA.lat))*Math.sin(dLon/2)**2;
-  return (R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
+// Calculate Qibla bearing
+function calcQibla(lat1, lon1) {
+  const φ1 = lat1 * Math.PI/180;
+  const λ1 = lon1 * Math.PI/180;
+  const φ2 = kaabaLat * Math.PI/180;
+  const λ2 = kaabaLon * Math.PI/180;
+
+  const y = Math.sin(λ2 - λ1) * Math.cos(φ2);
+  const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2 - λ1);
+  let θ = Math.atan2(y, x) * 180/Math.PI;
+  return (θ + 360) % 360;
 }
 
-function rotateNeedle(angle){
-  document.getElementById('needle').style.transform = `rotate(${angle}deg)`;
+// Screen orientation helper
+function getScreenAngle() {
+  if (screen && screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
+  if (typeof window.orientation === 'number') return window.orientation || 0;
+  return 0;
 }
 
-function updateCompass(){
-  if(userLat==null||userLon==null) return;
-  qibla = calcQibla(userLat, userLon);
-  const relative = (qibla - heading + 360) % 360;
-  rotateNeedle(relative);
-  document.getElementById('distance').textContent = `Distance: ${calcDistance(userLat, userLon)} km`;
+// Handle device orientation
+function handleOrientation(e) {
+  let heading = null;
+  if (typeof e.webkitCompassHeading === 'number') {
+    heading = e.webkitCompassHeading;
+  } else if (e.absolute && typeof e.alpha === 'number') {
+    heading = e.alpha;
+  } else if (typeof e.alpha === 'number') {
+    heading = e.alpha;
+  } else return;
+
+  const screenAngle = getScreenAngle();
+  const magnetic = (360 - heading + screenAngle + 360) % 360;
+
+  // Needle rotation = Qibla bearing - current magnetic
+  rotateNeedle(qiblaBearing - magnetic);
 }
 
-function tryGetLocation(){
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      userLat = pos.coords.latitude;
-      userLon = pos.coords.longitude;
-      document.getElementById('status').textContent = `Location: ${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;
-      updateCompass();
-    }, err=>{
-      userLat=3.1390; userLon=101.6869;
-      document.getElementById('status').textContent = "GPS unavailable, using KL";
-      updateCompass();
-    }, {enableHighAccuracy:true, timeout:10000});
-  } else {
-    userLat=3.1390; userLon=101.6869;
-    updateCompass();
+// Start compass
+async function startCompass() {
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const resp = await DeviceOrientationEvent.requestPermission();
+      if (resp !== 'granted') {
+        status.textContent = 'Permission denied';
+        return;
+      }
+    } catch(err) {
+      status.textContent = 'Permission error';
+      return;
+    }
   }
-}
 
-function handleOrientation(event){
-  let alpha = event.alpha;
-  if(typeof event.webkitCompassHeading==='number') alpha = event.webkitCompassHeading;
-  if(alpha==null) return;
-  heading = alpha;
-  updateCompass();
-}
-
-function startCompass(){
-  tryGetLocation();
-  if(typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function'){
-    DeviceOrientationEvent.requestPermission().then(resp=>{
-      if(resp==='granted'){
-        window.addEventListener('deviceorientation', handleOrientation, true);
-        document.getElementById('status').textContent='Compass active';
-      } else document.getElementById('status').textContent='Permission denied, static Qibla';
-    });
-  } else if('DeviceOrientationEvent' in window){
-    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-    window.addEventListener('deviceorientation', handleOrientation, true);
-    document.getElementById('status').textContent='Compass active';
+  if (!navigator.geolocation) {
+    status.textContent = 'Geolocation not supported';
+    return;
   }
+
+  status.textContent = 'Getting location...';
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    qiblaBearing = calcQibla(lat, lon);
+    qiblaAngleEl.textContent = Math.round(qiblaBearing);
+    status.textContent = 'Compass running';
+  }, err => {
+    status.textContent = 'GPS error: ' + err.message;
+  }, {enableHighAccuracy:true, timeout:10000});
+
+  window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+  window.addEventListener('deviceorientation', handleOrientation, true);
+  startBtn.disabled = true;
 }
 
-function recalibrate(){
-  tryGetLocation();
-  document.getElementById('status').textContent='Recalibrating...';
-}
-
-window.addEventListener('DOMContentLoaded', startCompass);
+startBtn.addEventListener('click', startCompass);
 </script>
 </body>
-</html>
+    </html>
