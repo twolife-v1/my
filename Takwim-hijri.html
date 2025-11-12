@@ -73,10 +73,17 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
     <div class="footer">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <div class="small-muted">Location:</div>
-        <input id="lat" placeholder="lat" style="width:96px;padding:6px;border-radius:8px;border:1px solid #ddd" value="3.1390">
-        <input id="lng" placeholder="lng" style="width:96px;padding:6px;border-radius:8px;border:1px solid #ddd" value="101.6869">
+        <input id="lat" placeholder="lat" style="width:96px;padding:6px;border-radius:8px;border:1px solid #ddd" value="3.046">
+        <input id="lng" placeholder="lng" style="width:96px;padding:6px;border-radius:8px;border:1px solid #ddd" value="101.58">
         <input id="tz" placeholder="UTC" style="width:70px;padding:6px;border-radius:8px;border:1px solid #ddd" value="8">
-        <select id="method" style="padding:6px;border-radius:8px;border:1px solid #ddd"><option>MWL</option><option>ISNA</option><option>Egypt</option><option>Makkah</option></select>
+        
+        <select id="method" style="padding:6px;border-radius:8px;border:1px solid #ddd">
+            <option>MWL</option>
+            <option>ISNA</option>
+            <option>Egypt</option>
+            <option>Makkah</option>
+            <option selected>JAKIM</option>
+        </select>
         <button id="recalc" class="btn">Recalc</button>
       </div>
       <div style="text-align:right;">
@@ -147,8 +154,8 @@ async function getLocation(){
         console.warn('Geolocation error (user denied or timeout):', e);
     }
   }
-  // Fallback location
-  const fallbackLoc = { lat: 3.1390, lon: 101.6869, name: 'Kuala Lumpur (Default)' };
+  // /* CHANGED: Set Fallback location to Subang Jaya */
+  const fallbackLoc = { lat: 3.046, lon: 101.58, name: 'Subang Jaya (Default)' };
   APP.location = fallbackLoc;
   return fallbackLoc;
 }
@@ -156,8 +163,22 @@ async function getLocation(){
 // Fetch accurate prayer times (reusing function from index.html)
 async function fetchOnlinePrayerTimes(lat, lon) {
   try {
+    /* CHANGED: Dynamically set the API method based on the dropdown */
+    const methodSelect = document.getElementById('method').value;
+    let apiMethod = 10; // Default to JAKIM
+    
+    switch (methodSelect) {
+        case 'JAKIM': apiMethod = 10; break;
+        case 'ISNA':  apiMethod = 4; break;
+        case 'MWL':   apiMethod = 3; break;
+        case 'Egypt': apiMethod = 5; break;
+        case 'Makkah': apiMethod = 1; break;
+    }
+    /* END CHANGED */
+
     const ts = Math.floor(Date.now() / 1000);
-    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=4`);
+    // /* CHANGED: Use the dynamic apiMethod in the fetch URL */
+    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=${apiMethod}`);
     const data = await res.json();
     const timings = { 
         Fajr: data.data.timings.Fajr, 
@@ -210,13 +231,44 @@ var PT=(function(){
       var y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
       var jd=julianDate(y,m,d); var sp=sunPos(jd);
       var lat=coords.lat||0,lng=coords.lng||0; var noon=fixHour(12-sp.eqt-(lng/15)+tz);
-      var FajrAngle=-18,IshaAngle=-17,MaghribAngle=0.833;
+
+      /* --- CHANGED: Read method from dropdown and set angles dynamically --- */
+      var method = document.getElementById('method').value;
+      var FajrAngle = -18, IshaAngle = -17; // Default to MWL
+      var MaghribAngle = 0.833;
+
+      switch(method) {
+        case 'JAKIM':
+          FajrAngle = -20;
+          IshaAngle = -18;
+          break;
+        case 'ISNA':
+          FajrAngle = -15;
+          IshaAngle = -15;
+          break;
+        case 'Egypt':
+          FajrAngle = -19.5;
+          IshaAngle = -17.5;
+          break;
+        case 'Makkah': // Umm al-Qura (approximate angle, real is 90min after Maghrib)
+          FajrAngle = -18.5;
+          IshaAngle = -18.5; // Using angle as this algo doesn't support time-based
+          break;
+        case 'MWL':
+        default:
+          FajrAngle = -18;
+          IshaAngle = -17;
+      }
+      /* --- END CHANGED --- */
+
       var fajr=noon-hourAngle(lat,sp.decl,FajrAngle);
       var sunrise=noon-hourAngle(lat,sp.decl,MaghribAngle);
       var dhuhr=noon;
-      var asr=noon+(1+Math.tan(Math.abs(dtr(lat-sp.decl))))/15;
+      // This Asr calculation is Shafi'i (1x shadow), which is correct for JAKIM
+      var asr=noon+(1+Math.tan(Math.abs(dtr(lat-sp.decl))))/15; 
       var maghrib=noon+hourAngle(lat,sp.decl,MaghribAngle);
       var isha=noon+hourAngle(lat,sp.decl,IshaAngle);
+      
       // Return in the required keys for consistency with AlAdhan
       return {Fajr:toTimeStr(fajr),Sunrise:toTimeStr(sunrise),Dhuhr:toTimeStr(dhuhr),Asr:toTimeStr(asr),Maghrib:toTimeStr(maghrib),Isha:toTimeStr(isha)};
     }
@@ -224,7 +276,7 @@ var PT=(function(){
 })();
 
 /* ---------- Holidays (sample Malaysia) ---------- */
-const publicHolidays=[{m:1,d:1,name:"New Year's Day"},{m:5,d:1,name:"Labour Day"},{m:8,d:31,name:"National Day"},{m:9,d:16,name:"Malaysia Day"},{m:12,d:25,name:"Christmas Day"}];
+const publicHolidays=[{m:1,d:1,name:"New Year's Day"},{m:5,d:1,name:"Labour Day"},{m:8,d:31,name:"National Day"},{m:9,d:16,name:"Malaysia Day"},{mm:12,d:25,name:"Christmas Day"}];
 const islamicDays=[{im:1,id:1,name:'Islamic New Year'},{im:9,id:1,name:'Start of Ramadan (est.)'},{im:10,id:1,name:'Eid al-Fitr'},{im:12,id:9,name:'Arafah'},{im:12,id:10,name:'Eid al-Adha'}];
 
 /* ---------- Calendar State ---------- */
@@ -308,6 +360,7 @@ function openModal(gd,is){
       const lat=parseFloat(document.getElementById('lat').value)||0;
       const lng=parseFloat(document.getElementById('lng').value)||0;
       const tz=parseFloat(document.getElementById('tz').value)||0;
+      // This will now use the new dynamic angles
       times=PT.getTimes(gd,{lat:lat,lng:lng},tz);
   }
 
@@ -327,10 +380,11 @@ function openModal(gd,is){
 
 /* ---------- Initial Execution (MODIFIED) ---------- */
 async function runTakwim() {
-    // 1. Get location and update inputs
+    // 1. Get location and update inputs (will use Subang Jaya if GPS fails)
     await getLocation();
     
     // 2. Fetch or refresh the current day's prayer times (for modal usage)
+    // This will now use the JAKIM method by default
     const lat = parseFloat(document.getElementById('lat').value);
     const lng = parseFloat(document.getElementById('lng').value);
     await fetchOnlinePrayerTimes(lat, lng);
@@ -342,4 +396,4 @@ async function runTakwim() {
 window.addEventListener('DOMContentLoaded', runTakwim);
 </script>
 </body>
-</html>
+</html>eêa
