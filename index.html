@@ -330,6 +330,178 @@ return loc;
 // Main runner
 async function runAll(){
   const loc=await getLocation();
+<script>
+const APP = { location: null, use24:false, kaaba:{lat:21.422487, lon:39.826206} };
+const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){localStorage.setItem(k,JSON.stringify(v))} };
+
+// --- START: Added/Corrected Functions for Location Name ---
+
+// Placeholder for Reverse Geocoding: Converts (lat, lon) to a readable location name.
+// NOTE: For a real-world app, you must integrate a third-party GeoCoding API (e.g., OpenCage, Google Maps) here.
+async function reverseGeocode(lat, lon) {
+  console.log(`Attempting reverse geocoding for: ${lat}, ${lon}`);
+  // Dummy implementation for demonstration
+  return "Current GPS Location";
+}
+
+// Get user location (with improved name handling)
+async function getLocation(){
+  let loc=storage.get('loc') || APP.location;
+  // If we have stored location data, including the name, use it immediately
+  if(loc?.lat && loc?.lon && loc?.name) { 
+      APP.location=loc; 
+      return loc; 
+  }
+  
+  if(navigator.geolocation){
+    try{
+      const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:12000,enableHighAccuracy:true}));
+      
+      // Successfully obtained coordinates, now get the readable name
+      const name = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+      loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name };
+      
+      APP.location = loc;
+      storage.set('loc', loc);
+      return loc;
+      
+    }catch(e){
+        console.warn('Geolocation error (user denied or timeout):', e);
+        // Fallback location if Geolocation fails
+        const fallbackLoc = { lat: 3.1390, lon: 101.6869, name: 'Kuala Lumpur (Default)' };
+        APP.location = fallbackLoc;
+        return fallbackLoc;
+    }
+  }
+  // Fallback if no geolocation support at all
+  const fallbackLoc = { lat: 3.1390, lon: 101.6869, name: 'Kuala Lumpur (Default)' };
+  APP.location = fallbackLoc;
+  return fallbackLoc;
+}
+
+// --- END: Added/Corrected Functions ---
+
+
+// Format time
+function formatTime(t){
+  if(!t) return '--:--';
+  const [h,m]=t.split(':').map(n=>parseInt(n));
+  const dt=new Date(); dt.setHours(h,m,0,0);
+  return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:!APP.use24});
+}
+
+// Update hero prayers (5 stacked)
+function renderHeroPrayers(timings){
+  const order=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  const namesDiv=document.getElementById('prayerNames');
+  const timesDiv=document.getElementById('prayerTimes');
+  namesDiv.innerHTML=''; timesDiv.innerHTML='';
+  order.forEach(p=>{
+    const nameEl=document.createElement('div'); nameEl.textContent=p; namesDiv.appendChild(nameEl);
+    const timeEl=document.createElement('div'); timeEl.textContent=formatTime(timings[p]); timesDiv.appendChild(timeEl);
+  });
+}
+
+// Next prayer
+function getNextPrayer(timings){
+  const now=new Date();
+  for(const p of ['Fajr','Dhuhr','Asr','Maghrib','Isha']){
+    const [h,m]=timings[p].split(':').map(n=>parseInt(n));
+    const dt=new Date(); dt.setHours(h,m,0,0);
+    if(dt>now) return p;
+  }
+  return 'Fajr';
+}
+
+// Hero countdown & clock
+let heroInterval=null;
+function updateHero(timings){
+  if(heroInterval) clearInterval(heroInterval);
+  heroInterval=setInterval(()=>{
+    const next=getNextPrayer(timings);
+    const [h,m]=timings[next].split(':').map(n=>parseInt(n));
+    let t=new Date(); t.setHours(h,m,0,0);
+    if(next==='Fajr' && t<=new Date()) t.setDate(t.getDate()+1);
+    const diff=t-new Date();
+    const hours=Math.floor(diff/1000/3600);
+    const minutes=Math.floor((diff/1000/60)%60);
+    const seconds=Math.floor((diff/1000)%60);
+    document.getElementById('nextPrayer').textContent='Next: '+next;
+    document.getElementById('countdown').textContent=`${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+    document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
+  },1000);
+}
+// Hero background changer
+function updateHeroBackground(timings) {
+  const hero = document.getElementById("hero");
+
+  // Your background images for each prayer
+  const bgImages = {
+    Fajr: "Images/subuh.jpg",
+    Dhuhr: "Images/zohor.jpg",
+    Asr: "Images/asar.jpg",
+    Maghrib: "Images/maghrib.jpg",
+    Isha: "Images/isyak.jpg"
+  };
+
+  function getCurrentPrayerPeriod() {
+    const now = new Date();
+
+    // Convert time strings to Date objects
+    const timeToDate = (time) => {
+      const [h, m] = time.split(":").map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      return d;
+    };
+
+    const order = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+    let current = "Isha"; // default
+
+    for (let i = 0; i < order.length; i++) {
+      const prayer = order[i];
+      const prayerTime = timeToDate(timings[prayer]);
+      const before30min = new Date(prayerTime.getTime() - 30 * 60 * 1000);
+
+      if (now >= before30min && now < prayerTime) {
+        return prayer;
+      }
+      // Also show current prayer period after it starts
+      if (now >= prayerTime && i < order.length - 1) {
+        current = order[i + 1];
+      }
+    }
+    return current;
+  }
+
+  function refreshHeroBackground() {
+    const currentPrayer = getCurrentPrayerPeriod();
+    const bg = bgImages[currentPrayer];
+    hero.style.backgroundImage = `url('${bg}')`;
+  }
+
+  // Update immediately and every minute
+  refreshHeroBackground();
+  setInterval(refreshHeroBackground, 60 * 1000);
+}
+// Fetch accurate prayer times
+async function getPrayerTimes(lat, lon) {
+  try {
+    const ts = Math.floor(Date.now() / 1000);
+    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=4`);
+    const data = await res.json();
+    const timings = { Fajr: data.data.timings.Fajr, Dhuhr: data.data.timings.Dhuhr, Asr: data.data.timings.Asr, Maghrib: data.data.timings.Maghrib, Isha: data.data.timings.Isha };
+    localStorage.setItem('lastPrayerTimes', JSON.stringify(timings));
+    return timings;
+  } catch(e) {
+    console.warn("Offline or API error, using cached timings");
+    return JSON.parse(localStorage.getItem('lastPrayerTimes')) || {Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
+  }
+}
+
+// Main runner
+async function runAll(){
+  const loc=await getLocation();
   document.getElementById('locationName').textContent=loc.name;
   document.getElementById('locationNameSmall').textContent=loc.name;
   document.getElementById('heroDate').textContent=new Date().toDateString();
