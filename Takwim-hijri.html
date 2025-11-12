@@ -363,7 +363,6 @@ function openModal(gd,is){
       // This will now use the new dynamic angles
       times=PT.getTimes(gd,{lat:lat,lng:lng},tz);
   }
-
   // Render times
   ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].forEach(k=>{
     const timeStr = times ? (formatTime(times[k.replace('Sunrise','Sunrise')]) || '-') : '-';
@@ -396,4 +395,4 @@ async function runTakwim() {
 window.addEventListener('DOMContentLoaded', runTakwim);
 </script>
 </body>
-</html>eêa
+</html>
