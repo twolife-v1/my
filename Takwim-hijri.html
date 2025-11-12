@@ -24,7 +24,7 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
 .hdate{font-size:11px;color:var(--primary);margin-top:4px}
 .outside{opacity:.35}
 .badge{position:absolute;right:8px;top:8px;background:rgba(166,119,52,0.12);padding:2px 6px;border-radius:999px;font-size:11px;color:var(--primary)}
-.footer{margin-top:10px;padding:10px;background:#fff;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.04);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.footer{margin-top:10px;padding:10px;background:#fff;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.04);display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}
 .modal-back{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);visibility:hidden;opacity:0;transition:opacity .18s;z-index:999}
 .modal-back.show{visibility:visible;opacity:1}
 .modal{width:94%;max-width:720px;background:#fff;border-radius:10px;padding:12px;box-shadow:0 20px 50px rgba(0,0,0,0.18)}
@@ -71,17 +71,7 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
     <div class="grid" id="calendarGrid" aria-live="polite"></div>
 
     <div class="footer">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div class="small-muted">Location:</div>
-        <input id="lat" placeholder="lat" style="width:96px;padding:6px;border-radius:8px;border:1px solid #ddd" value="3.1390">
-        <input id="lng" placeholder="lng" style="width:96px;padding:6px;border-radius:8px;border:1px solid #ddd" value="101.6869">
-        <input id="tz" placeholder="UTC" style="width:70px;padding:6px;border-radius:8px;border:1px solid #ddd" value="8">
-        <select id="method" style="padding:6px;border-radius:8px;border:1px solid #ddd"><option>MWL</option><option>ISNA</option><option>Egypt</option><option>Makkah</option></select>
-        <button id="recalc" class="btn">Recalc</button>
-      </div>
-      <div style="text-align:right;">
-        <div class="small-muted">Note: hijri dates are approximate. Public holidays are examples (editable in script).</div>
-      </div>
+      <div class="small-muted">Hijri dates are approximate. Prayer times calculated by parent page.</div>
     </div>
   </div>
 
@@ -91,7 +81,10 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
       <h3 id="modalTitle"></h3>
       <div class="small-muted" id="modalSub"></div>
       <div class="modal-body" style="margin-top:10px">
-        <div class="prayers" id="prayersBox"></div>
+        <!-- Prayer times and holidays will be inserted here -->
+        <div class="prayers" id="prayersBox">
+          <div style="text-align:center; padding:16px;">Loading prayer times...</div>
+        </div>
         <div class="holidays" id="holidaysBox"></div>
       </div>
     </div>
@@ -106,51 +99,22 @@ function islamicToJd(y,m,d){return d+Math.ceil(29.5*(m-1)) + (y-1)*354 + Math.fl
 function jdToIslamic(jd){jd=Math.floor(jd)+0.5; var days=jd-1948439.5; var y=Math.floor((30*days+10646)/10631); var m=Math.min(12,Math.ceil((jd-islamicToJd(y,1,1)+1)/29.5)); var d=jd-islamicToJd(y,m,1)+1; return {iy:y,im:m,id:Math.floor(d)};}
 function formatIslamic(i){return i.id + ' ' + hijriMonths[i.im-1] + ' ' + i.iy;}
 
-/* ====== Prayer Times Algorithm (Muslim Pro style) ====== */
-var PT=(function(){
-  function dtr(d){return d*Math.PI/180;}
-  function rtd(r){return r*180/Math.PI;}
-  function sin(d){return Math.sin(dtr(d));}
-  function cos(d){return Math.cos(dtr(d));}
-  function fixHour(h){h=h%24; if(h<0) h+=24; return h;}
-  function julianDate(y,m,d){return jdFromDate(y,m,d)-0.5;}
-  function sunPos(jd){
-    var D=jd-2451545.0; var g=(357.529+0.98560028*D)%360; var q=(280.459+0.98564736*D)%360;
-    var L=(q+1.915*Math.sin(dtr(g))+0.02*Math.sin(dtr(2*g)))%360;
-    var e=23.439-0.00000036*D;
-    var RA=rtd(Math.atan2(Math.cos(dtr(e))*Math.sin(dtr(L)), Math.cos(dtr(L))))/15;
-    var decl=rtd(Math.asin(Math.sin(dtr(e))*Math.sin(dtr(L))));
-    var eqt=(q/15-RA); return {decl:decl, eqt:eqt};
-  }
-  function hourAngle(lat, decl, angle){ var term=(Math.sin(dtr(angle))-Math.sin(dtr(lat))*Math.sin(dtr(decl)))/(Math.cos(dtr(lat))*Math.cos(dtr(decl))); if(term>1)term=1;if(term<-1)term=-1; return rtd(Math.acos(term))/15;}
-  function toTimeStr(t){var H=Math.floor(t);var M=Math.floor((t-H)*60+0.5); if(M===60){H+=1;M=0;} H=(H+24)%24; var ap=H>=12?'PM':'AM'; var h12=H%12; if(h12===0)h12=12; return String(h12).padStart(2,'0')+':'+String(M).padStart(2,'0')+' '+ap;}
-  return {
-    getTimes:function(date,coords,tz){
-      var y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
-      var jd=julianDate(y,m,d); var sp=sunPos(jd);
-      var lat=coords.lat||0,lng=coords.lng||0; var noon=fixHour(12-sp.eqt-(lng/15)+tz);
-      var FajrAngle=-18,IshaAngle=-17,MaghribAngle=0.833;
-      var fajr=noon-hourAngle(lat,sp.decl,FajrAngle);
-      var sunrise=noon-hourAngle(lat,sp.decl,MaghribAngle);
-      var dhuhr=noon;
-      var asr=noon+(1+Math.tan(Math.abs(dtr(lat-sp.decl))))/15;
-      var maghrib=noon+hourAngle(lat,sp.decl,MaghribAngle);
-      var isha=noon+hourAngle(lat,sp.decl,IshaAngle);
-      return {Fajr:toTimeStr(fajr),Sunrise:toTimeStr(sunrise),Dhuhr:toTimeStr(dhuhr),Asr:toTimeStr(asr),Maghrib:toTimeStr(maghrib),Isha:toTimeStr(isha)};
-    }
-  };
-})();
+/* ---------- State and Globals ---------- */
+let now=new Date(); 
+let viewYear=now.getFullYear(); 
+let viewMonth=now.getMonth(); 
+let searchDay=null;
+let pendingRequest = {}; // To store the details of the request while waiting for API response
+let currentRequestId = 0; // Unique ID for each request
 
-/* ---------- Holidays (sample Malaysia) ---------- */
-const publicHolidays=[{m:1,d:1,name:"New Year's Day"},{m:5,d:1,name:"Labour Day"},{m:8,d:31,name:"National Day"},{m:9,d:16,name:"Malaysia Day"},{m:12,d:25,name:"Christmas Day"}];
-const islamicDays=[{im:1,id:1,name:'Islamic New Year'},{im:9,id:1,name:'Start of Ramadan (est.)'},{im:10,id:1,name:'Eid al-Fitr'},{im:12,id:9,name:'Arafah'},{im:12,id:10,name:'Eid al-Adha'}];
-
-/* ---------- Calendar State ---------- */
-let now=new Date(); let viewYear=now.getFullYear(); let viewMonth=now.getMonth(); let searchDay=null;
 const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const monthSelect=document.getElementById('searchMonth');
 monthNames.forEach((n,i)=>{let o=document.createElement('option'); o.value=i+1; o.textContent=n; monthSelect.appendChild(o);});
 document.getElementById('searchYear').value=viewYear;
+
+/* ---------- Holidays (sample Malaysia) ---------- */
+const publicHolidays=[{m:1,d:1,name:"New Year's Day"},{m:5,d:1,name:"Labour Day"},{m:8,d:31,name:"National Day"},{m:9,d:16,name:"Malaysia Day"},{m:12,d:25,name:"Christmas Day"}];
+const islamicDays=[{im:1,id:1,name:'Islamic New Year'},{im:9,id:1,name:'Start of Ramadan (est.)'},{im:10,id:1,name:'Eid al-Fitr'},{im:12,id:9,name:'Arafah'},{im:12,id:10,name:'Eid al-Adha'}];
 
 function findPublicHoliday(gd){for(let h of publicHolidays) if(h.m===gd.getMonth()+1&&h.d===gd.getDate()) return h.name; return null;}
 function findIslamicEvent(is){for(let e of islamicDays) if(e.im===is.im&&e.id===is.id) return e.name; return null;}
@@ -159,13 +123,14 @@ function findIslamicEvent(is){for(let e of islamicDays) if(e.im===is.im&&e.id===
 document.getElementById('prev').addEventListener('click',()=>{viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} renderCalendar();});
 document.getElementById('next').addEventListener('click',()=>{viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} renderCalendar();});
 document.getElementById('todayBtn').addEventListener('click',()=>{let t=new Date(); viewYear=t.getFullYear(); viewMonth=t.getMonth(); searchDay=null; renderCalendar();});
-document.getElementById('recalc').addEventListener('click', renderCalendar);
 document.getElementById('closeModal').addEventListener('click',()=>{document.getElementById('modalBack').classList.remove('show'); document.getElementById('modalBack').style.visibility='hidden';});
 document.getElementById('goBtn').addEventListener('click',()=>{
   let dd=parseInt(document.getElementById('searchDay').value,10);
   let mm=parseInt(document.getElementById('searchMonth').value,10);
   let yy=parseInt(document.getElementById('searchYear').value,10);
-  if(!yy) return alert('Enter year'); if(!mm) mm=1; if(!dd) dd=1;
+  if(!yy) return console.error('Enter year'); 
+  if(!mm) mm=1; 
+  if(!dd) dd=1;
   viewYear=yy; viewMonth=mm-1; searchDay={date:dd,month:mm-1,year:yy}; renderCalendar();
 });
 
@@ -203,32 +168,96 @@ function renderCalendar(){
   }
 }
 
+/**
+ * Sends a request to the parent window (index.html) to fetch prayer times.
+ * @param {Date} gd - Gregorian Date object.
+ */
+function requestPrayerTimes(gd) {
+    const y=gd.getFullYear(), m=gd.getMonth()+1, d=gd.getDate();
+    const dateStr = `${String(d).padStart(2, '0')}-${String(m).padStart(2, '0')}-${y}`;
+    
+    // Increment and store the request ID to match response
+    currentRequestId++;
+    const requestId = currentRequestId;
+
+    // Show loading state
+    const pb = document.getElementById('prayersBox');
+    pb.innerHTML = '<div style="text-align:center; padding:16px;">Loading prayer times...</div>';
+
+    // Send message to parent
+    if (window.parent !== window) {
+        window.parent.postMessage({
+            type: 'PRAYER_TIME_REQUEST',
+            payload: {
+                dateStr: dateStr,
+                // Note: We use a placeholder methodId (4) here, but the parent
+                // is expected to override it with its own configured method.
+                methodId: 4, 
+                requestId: requestId
+            }
+        }, '*');
+    } else {
+        // Fallback for standalone view (no parent to request from)
+        console.warn("Running standalone, cannot request prayer times from parent.");
+        const pb = document.getElementById('prayersBox');
+        pb.innerHTML = '<div style="text-align:center; padding:16px; color:red;">Cannot fetch prayer times (Run in main page to calculate).</div>';
+    }
+}
+
 /* ---------- Open Modal ---------- */
 function openModal(gd,is){
-  const modalBack=document.getElementById('modalBack'); modalBack.style.visibility='visible'; modalBack.classList.add('show');
+  const modalBack=document.getElementById('modalBack'); 
+  modalBack.style.visibility='visible'; 
+  modalBack.classList.add('show');
   document.getElementById('modalTitle').textContent=gd.toDateString();
   document.getElementById('modalSub').textContent='Hijri: '+formatIslamic(is);
 
-  const lat=parseFloat(document.getElementById('lat').value)||0;
-  const lng=parseFloat(document.getElementById('lng').value)||0;
-  const tz=parseFloat(document.getElementById('tz').value)||0;
-  const times=PT.getTimes(gd,{lat:lat,lng:lng},tz);
+  // Request prayer times from parent
+  requestPrayerTimes(gd);
 
-  const pb=document.getElementById('prayersBox'); pb.innerHTML='';
-  ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].forEach(k=>{
-    const r=document.createElement('div'); r.className='prayer';
-    r.innerHTML=`<div>${k}</div><div style="font-weight:700">${times[k]||'-'}</div>`;
-    pb.appendChild(r);
-  });
-
+  // Load Holiday/Event data
   const hb=document.getElementById('holidaysBox'); hb.innerHTML='';
-  const pub=findPublicHoliday(gd); if(pub){ const el=document.createElement('div'); el.className='holiday-item'; el.innerHTML=`<strong>Public</strong><div>${pub}</div>`; hb.appendChild(el); }
-  const iev=findIslamicEvent(is); if(iev){ const el2=document.createElement('div'); el2.className='holiday-item'; el2.innerHTML=`<strong>Islamic</strong><div>${iev}</div>`; hb.appendChild(el2); }
-  if(!pub && !iev) hb.innerHTML='<div class="small-muted">No public or islamic events on this date (edit list in script to add).</div>';
+  const pub=findPublicHoliday(gd); 
+  if(pub){ 
+    const el=document.createElement('div'); el.className='holiday-item'; 
+    el.innerHTML=`<strong>Public Holiday</strong><div>${pub}</div>`; 
+    hb.appendChild(el); 
+  }
+  const iev=findIslamicEvent(is); 
+  if(iev){ 
+    const el2=document.createElement('div'); el2.className='holiday-item'; 
+    el2.innerHTML=`<strong>Islamic Event</strong><div>${iev}</div>`; 
+    hb.appendChild(el2); 
+  }
+  if(!pub && !iev) hb.innerHTML='<div class="small-muted">No public or islamic events on this date.</div>';
 }
+
+/* ---------- Handle Response from Parent ---------- */
+window.addEventListener('message', (event) => {
+    // Check if the message is a prayer time response from the parent
+    if (event.data && event.data.type === 'PRAYER_TIME_RESPONSE') {
+        const { timings, requestId } = event.data.payload;
+
+        // Check if the modal is currently open and this is the latest request
+        if (requestId === currentRequestId && document.getElementById('modalBack').classList.contains('show')) {
+            const pb = document.getElementById('prayersBox');
+            pb.innerHTML = '';
+            
+            const prayers = timings || { Fajr: '--:--', Sunrise: '--:--', Dhuhr: '--:--', Asr: '--:--', Maghrib: '--:--', Isha: '--:--'};
+
+            ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].forEach(k => {
+                const r = document.createElement('div'); 
+                r.className = 'prayer';
+                r.innerHTML = `<div>${k}</div><div style="font-weight:700">${prayers[k] || '--:--'}</div>`;
+                pb.appendChild(r);
+            });
+        }
+    }
+});
 
 /* ---------- Initial Render ---------- */
 renderCalendar();
 </script>
 </body>
 </html>
+
