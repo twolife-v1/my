@@ -82,7 +82,7 @@
       <div class="hero-right">
         <div id="heroTime">--:--:--</div>
         <div id="countdown">—</div>
-        <div id="nextPrayer">is left to: —</div>
+        <div id="nextPrayer">left to:—</div>
       </div>
     </div>
 
@@ -311,7 +311,7 @@ function updateHero(timings){
     const hours=Math.floor(diff/1000/3600);
     const minutes=Math.floor((diff/1000/60)%60);
     const seconds=Math.floor((diff/1000)%60);
-    document.getElementById('nextPrayer').textContent='Next: '+next;
+    document.getElementById('nextPrayer').textContent='left to: '+next;
     document.getElementById('countdown').textContent=`${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
     document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
   },1000);
