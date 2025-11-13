@@ -3,36 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Qibla Compass — Realistic</title>
+<title>Qibla Compass — Compact</title>
 <style>
-  body {margin:0; font-family:system-ui; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:linear-gradient(#061226,#071026); color:#e8f5ff;}
-  h1 {margin-bottom:12px; text-align:center;}
-  .compass-face {width:250px; height:250px; border-radius:50%; background:radial-gradient(circle at 50% 40%, rgba(255,255,255,0.02), transparent 40%), linear-gradient(180deg,#071935,#031124); display:flex; align-items:center; justify-content:center; position:relative; border:3px solid rgba(255,255,255,0.03);}
-  .needle {width:6px; height:45%; position:absolute; top:5%; left:50%; transform-origin:50% 90%; transition:transform 180ms linear; display:none;}
-  .needle .head {width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-bottom:50px solid #f97316; border-radius:2px; position:absolute; top:0; left:50%; transform:translateX(-50%);}
-  .needle .tail {width:5px; height:36px; background:rgba(255,255,255,0.06); border-radius:3px; position:absolute; top:36px; left:50%; transform:translateX(-50%);}
-  .center {width:12px; height:12px; border-radius:50%; background:#e8f5ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);}
-  .readout {margin-top:15px; text-align:center;}
-  .bigdeg {font-size:28px; font-weight:700;}
-  button {margin-top:12px; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:#f97316; color:#041218; font-weight:700;}
-  .status {margin-top:8px; font-size:13px; color:#9fb0c8;}
+  /* --- Layout Changes for Two Columns (Ultra-Compact) --- */
+  body {
+    margin: 0;
+    font-family: system-ui;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(#061226, #071026);
+    color: #e8f5ff;
+    padding: 10px; /* Add slight padding in case of tiny iframe */
+  }
+
+  .main-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px; /* Minimal gap */
+    width: 100%; /* Maximize use of container */
+    max-width: 600px; /* **Further reduced maximum width** */
+    margin: auto;
+  }
+
+  .left-content {
+    flex-basis: 40%; /* More relative space for instruction text */
+    padding-top: 15px; /* Reduced padding top */
+    font-size: 12px; /* **Smallest base font size** */
+  }
+
+  .left-content h2 {
+    color: #f97316;
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-size: 16px; /* Reduced heading size */
+  }
+  
+  .left-content p {
+      margin-bottom: 5px;
+  }
+  
+  .left-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-top: 10px;
+  }
+
+  .right-content {
+    flex-basis: 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  /* --- End Layout Changes --- */
+
+  /* Original Compass Styling (Minimized) */
+  h1 {margin-bottom:8px; text-align:center; font-size: 18px;} /* Reduced H1 size */
+  
+  /* **COMPASS FACE MINIMIZED** from 200px to 160px */
+  .compass-face {width:160px; height:160px; border-radius:50%; background:radial-gradient(circle at 50% 40%, rgba(255,255,255,0.02), transparent 40%), linear-gradient(180deg,#071935,#031124); display:flex; align-items:center; justify-content:center; position:relative; border:2px solid rgba(255,255,255,0.03);}
+  
+  /* Needle Dimensions Adjusted */
+  .needle {width:4px; height:45%; position:absolute; top:5%; left:50%; transform-origin:50% 90%; transition:transform 180ms linear; display:none;}
+  .needle .head {width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-bottom:32px solid #f97316; border-radius:1px; position:absolute; top:0; left:50%; transform:translateX(-50%);}
+  .needle .tail {width:3px; height:24px; background:rgba(255,255,255,0.06); border-radius:2px; position:absolute; top:28px; left:50%; transform:translateX(-50%);}
+  
+  .center {width:8px; height:8px; border-radius:50%; background:#e8f5ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);}
+  
+  .readout {margin-top:8px; text-align:center; font-size: 13px;} 
+  .bigdeg {font-size:20px; font-weight:700;} /* Minimal angle text size */
+  
+  button {margin-top:8px; padding:6px 9px; border-radius:5px; border:none; cursor:pointer; background:#f97316; color:#041218; font-weight:700; font-size: 12px;} /* Minimal button size */
+  .status {margin-top:5px; font-size:11px; color:#9fb0c8;} /* Minimal status size */
 </style>
 </head>
 <body>
 
-<h1>Qibla Compass</h1>
-<div class="compass-face">
-  <div class="needle" id="needle">
-    <div class="head"></div>
-    <div class="tail"></div>
-  </div>
-  <div class="center"></div>
-</div>
+<div class="main-container">
 
-<div class="readout">
-  <div>Qibla Angle: <span id="qiblaAngle">—</span>°</div>
-  <button id="startBtn">Start Compass</button>
-  <div class="status" id="status">Press Start. iOS requires HTTPS & permission.</div>
+  <div class="left-content">
+    <h2>🕋 How to Use</h2>
+    <p>
+      1. Grant location permission to find the Qibla (Kaaba direction).
+    </p>
+    <p>
+      2. Hold the device flat and away from metal objects for accuracy.
+    </p>
+    <p>
+      3. Press 'Start Compass' to start or recalibrate geolocation.
+    </p>
+    <img src="your-instruction-image.jpg" alt="'Please find nearest Masjid or Surau for the best direction.'">
+  </div>
+
+  <div class="right-content">
+    <h1>Qibla Compass</h1>
+    <div class="compass-face">
+      <div class="needle" id="needle">
+        <div class="head"></div>
+        <div class="tail"></div>
+      </div>
+      <div class="center"></div>
+    </div>
+
+    <div class="readout">
+      <div>Qibla Angle: <span id="qiblaAngle">—</span>°</div>
+      <button id="startBtn">Start Compass</button>
+      <div class="status" id="status">Press Start. iOS requires HTTPS & permission.</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -96,14 +177,16 @@ function handleOrientation(e) {
   sensorAvailable = true;
   needle.style.display = 'block';
   const screenAngle = getScreenAngle();
+  // Adjust for screen orientation and convert magnetic heading to clockwise from North (360 - heading)
   const magnetic = (360 - heading + screenAngle + 360) % 360;
 
+  // Rotate needle to point QiblaBearing - CurrentMagneticHeading
   rotateNeedle(qiblaBearing - magnetic);
 }
 
 // Start compass
 async function startCompass() {
-  // iOS 13+ permission
+  // iOS 13+ permission request
   if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
     try {
       const resp = await DeviceOrientationEvent.requestPermission();
@@ -123,6 +206,7 @@ async function startCompass() {
   }
 
   status.textContent = 'Getting location...';
+  // Get current location to calculate Qibla bearing
   navigator.geolocation.getCurrentPosition(pos => {
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
@@ -133,6 +217,7 @@ async function startCompass() {
     status.textContent = 'GPS error: ' + err.message;
   }, {enableHighAccuracy:true, timeout:10000});
 
+  // Start listening for device orientation
   window.addEventListener('deviceorientationabsolute', handleOrientation, true);
   window.addEventListener('deviceorientation', handleOrientation, true);
   startBtn.disabled = true;
