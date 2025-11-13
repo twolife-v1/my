@@ -5,47 +5,66 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Takwim Hijri — Calendar</title>
 <style>
-:root{--primary:#A67734;--muted:#666;--card:rgba(255,255,255,0.36);--glass-blur:6px}
+:root{--primary:#A67734;--muted:#666;--card:rgba(255,255,255,0.36);--glass-blur:4px}
 *{box-sizing:border-box}
 body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:linear-gradient(180deg,#fff 0%,#f6f4ef 100%);color:#222}
-.header{padding:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.brand{font-weight:700;color:var(--primary);font-size:16px}
-.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.controls input,.controls select{padding:6px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px}
-.btn{background:var(--primary);color:#fff;padding:6px 10px;border-radius:9px;border:0;cursor:pointer}
-.wrap{max-width:1100px;margin:8px auto;padding:8px}
-.month-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
-.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px}
-.weekday{text-align:center;color:var(--muted);font-size:12px;padding:4px}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px}
-.day{background:var(--card);backdrop-filter:blur(var(--glass-blur));min-height:70px;border-radius:8px;padding:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:transform .12s;position:relative}
-.day:hover{transform:translateY(-3px)}
-.gdate{font-weight:700}
-.hdate{font-size:11px;color:var(--primary);margin-top:4px}
+
+/* --- SCALED DOWN SIZING --- */
+.header{padding:8px;display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.brand{font-weight:700;color:var(--primary);font-size:14px}
+.controls{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.controls input,.controls select{padding:4px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px}
+.btn{background:var(--primary);color:#fff;padding:4px 8px;border-radius:6px;border:0;cursor:pointer;font-size:12px;}
+
+.wrap{
+    max-width:100%;
+    margin:4px auto;
+    padding:0;
+    font-size: 13px;
+}
+.month-head{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:4px 0;flex-wrap:wrap}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:4px}
+.weekday{text-align:center;color:var(--muted);font-size:11px;padding:3px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:4px}
+
+.day{
+    background:var(--card);
+    backdrop-filter:blur(var(--glass-blur));
+    min-height:45px;
+    border-radius:6px;
+    padding:4px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:transform .12s;position:relative
+}
+.day:hover{transform:translateY(-2px)}
+.gdate{font-weight:700;font-size:13px;}
+.hdate{font-size:10px;color:var(--primary);margin-top:2px}
 .outside{opacity:.35}
-.badge{position:absolute;right:8px;top:8px;background:rgba(166,119,52,0.12);padding:2px 6px;border-radius:999px;font-size:11px;color:var(--primary)}
-.footer{margin-top:10px;padding:10px;background:#fff;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.04);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{position:absolute;right:4px;top:4px;background:rgba(166,119,52,0.12);padding:1px 4px;border-radius:999px;font-size:9px;color:var(--primary)}
+
+.footer{margin-top:6px;padding:6px;background:#fff;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.04);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.small-muted{font-size:11px;color:var(--muted)}
+
 .modal-back{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);visibility:hidden;opacity:0;transition:opacity .18s;z-index:999}
 .modal-back.show{visibility:visible;opacity:1}
-.modal{width:94%;max-width:720px;background:#fff;border-radius:10px;padding:12px;box-shadow:0 20px 50px rgba(0,0,0,0.18)}
-.modal-body{display:flex;gap:12px;flex-wrap:wrap}
-.prayers{flex:1 1 220px;display:flex;flex-direction:column;gap:6px}
-.prayer{display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:#f5f5f5}
-.holidays{flex:1 1 160px}
-.holiday-item{background:#fff3f0;padding:8px;border-radius:8px;margin-bottom:6px}
-.small-muted{font-size:12px;color:var(--muted)}
+.modal{width:96%;max-width:500px;background:#fff;border-radius:8px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,0.18)}
+.modal-body{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px !important;}
+.prayers{flex:1 1 180px;display:flex;flex-direction:column;gap:4px;font-size:13px;}
+.prayer{display:flex;justify-content:space-between;padding:6px;border-radius:6px;background:#f5f5f5}
+.holidays{flex:1 1 120px;font-size:13px;}
+.holiday-item{background:#fff3f0;padding:6px;border-radius:6px;margin-bottom:4px}
+
 .day.today{border:2px solid var(--primary);background:rgba(166,119,52,0.15);}
 .day.searched{border:2px dashed var(--primary);background:rgba(255,223,186,0.3);}
-@media(max-width:420px){.day{min-height:56px;padding:5px}.gdate{font-size:13px}.hdate{font-size:10px}}
+@media(max-width:420px){.day{min-height:40px;padding:3px}.gdate{font-size:12px}.hdate{font-size:9px}}
 </style>
 </head>
 <body>
   <div class="header">
     <div class="brand">Takwim Hijri</div>
     <div class="controls">
-      <input id="searchDay" type="number" min="1" max="31" placeholder="DD" style="width:64px">
+      <input id="searchDay" type="number" min="1" max="31" placeholder="DD" style="width:40px">
       <select id="searchMonth"></select>
-      <input id="searchYear" type="number" placeholder="YYYY" style="width:90px">
+      <input id="searchYear" type="number" placeholder="YYYY" style="width:60px">
       <button id="goBtn" class="btn">Go</button>
     </div>
   </div>
@@ -56,7 +75,7 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
         <div id="monthYearTitle" class="month-title"></div>
         <div class="small-muted" id="globalYears"></div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center">
+      <div style="display:flex;gap:4px;align-items:center">
         <button id="prev" class="btn">◀</button>
         <button id="next" class="btn">▶</button>
         <button id="todayBtn" class="btn">Today</button>
@@ -71,16 +90,16 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
     <div class="grid" id="calendarGrid" aria-live="polite"></div>
 
     <div class="footer">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div class="small-muted">Location:</div>
-        <input id="lat" placeholder="lat" style="width:96px;padding:6px;border-radius:8px;border:1px solid #ddd" value="3.046">
-        <input id="lng" placeholder="lng" style="width:96px;padding:6px;border-radius:8px;border:1px solid #ddd" value="101.58">
-        <input id="tz" placeholder="UTC" style="width:70px;padding:6px;border-radius:8px;border:1px solid #ddd" value="8">
+      <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+        <div class="small-muted">Loc:</div>
+        <input id="lat" placeholder="lat" style="width:70px;padding:4px;border-radius:6px;border:1px solid #ddd" value="3.046">
+        <input id="lng" placeholder="lng" style="width:70px;padding:4px;border-radius:6px;border:1px solid #ddd" value="101.58">
+        <input id="tz" placeholder="UTC" style="width:40px;padding:4px;border-radius:6px;border:1px solid #ddd" value="8">
         
         <button id="recalc" class="btn">Recalc</button>
       </div>
       <div style="text-align:right;">
-        <div class="small-muted">Note: hijri dates are approximate. Public holidays are examples (editable in script).</div>
+        <div class="small-muted">Note: hijri/holiday dates are approx.</div>
       </div>
     </div>
   </div>
@@ -88,9 +107,9 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
   <div class="modal-back" id="modalBack">
     <div class="modal">
       <button id="closeModal" style="float:right;border:0;background:transparent;cursor:pointer;font-size:18px">✕</button>
-      <h3 id="modalTitle"></h3>
+      <h3 id="modalTitle" style="font-size:16px; margin: 4px 0;"></h3>
       <div class="small-muted" id="modalSub"></div>
-      <div class="modal-body" style="margin-top:10px">
+      <div class="modal-body">
         <div class="prayers" id="prayersBox"></div>
         <div class="holidays" id="holidaysBox"></div>
       </div>
@@ -115,7 +134,6 @@ function formatTime(t){
   if(!t) return '--:--';
   const [h,m]=t.split(':').map(n=>parseInt(n));
   const dt=new Date(); dt.setHours(h,m,0,0);
-  // NOTE: Swapping !APP.use24 to true here as the takwim uses 12h by default (no 24h toggle)
   return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:true});
 }
 
@@ -124,7 +142,6 @@ async function getLocation(){
   let loc=storage.get('loc') || APP.location;
   if(loc?.lat && loc?.lon && loc?.name) { 
       APP.location=loc; 
-      // Update inputs with stored location
       document.getElementById('lat').value = loc.lat;
       document.getElementById('lng').value = loc.lon;
       return loc; 
@@ -138,7 +155,6 @@ async function getLocation(){
       
       APP.location = loc;
       storage.set('loc', loc);
-      // Update inputs with new location
       document.getElementById('lat').value = loc.lat;
       document.getElementById('lng').value = loc.lon;
       return loc;
@@ -156,11 +172,9 @@ async function getLocation(){
 // Fetch accurate prayer times (reusing function from index.html)
 async function fetchOnlinePrayerTimes(lat, lon) {
   try {
-    /* CHANGED: Hard-coded the API method to 10 (JAKIM) */
     let apiMethod = 10;
     const ts = Math.floor(Date.now() / 1000);
     
-    // Use the dynamic apiMethod in the fetch URL
     const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=${apiMethod}`);
     const data = await res.json();
     const timings = { 
@@ -169,13 +183,13 @@ async function fetchOnlinePrayerTimes(lat, lon) {
         Asr: data.data.timings.Asr, 
         Maghrib: data.data.timings.Maghrib, 
         Isha: data.data.timings.Isha,
-        Sunrise: data.data.timings.Sunrise // Include Sunrise for the modal
+        Sunrise: data.data.timings.Sunrise
     };
     localStorage.setItem('lastPrayerTimes', JSON.stringify(timings));
     return timings;
   } catch(e) {
     console.warn("API Error: Unable to fetch fresh data.");
-    return null; // Return null on failure
+    return null;
   }
 }
 /* ----------------------------------------------------- */
@@ -191,7 +205,6 @@ function jdToIslamic(jd){jd=Math.floor(jd)+0.5; var days=jd-1948439.5; var y=Mat
 function formatIslamic(i){return i.id + ' ' + hijriMonths[i.im-1] + ' ' + i.iy;}
 
 /* ====== Prayer Times Algorithm (Simplified Fallback ONLY) ====== */
-// This is kept ONLY as a fallback for non-current dates, or if API/cache fails.
 var PT=(function(){
   function dtr(d){return d*Math.PI/180;}
   function rtd(r){return r*180/Math.PI;}
@@ -215,27 +228,20 @@ var PT=(function(){
       var jd=julianDate(y,m,d); var sp=sunPos(jd);
       var lat=coords.lat||0,lng=coords.lng||0; var noon=fixHour(12-sp.eqt-(lng/15)+tz);
 
-      /* --- CHANGED: Hard-coded JAKIM angles --- */
       var FajrAngle = -20;
       var IshaAngle = -18;
-      var MaghribAngle = 0.833; // Standard for sunset
-      /* --- END CHANGED --- */
+      var MaghribAngle = 0.833;
 
       var fajr=noon-hourAngle(lat,sp.decl,FajrAngle);
       var sunrise=noon-hourAngle(lat,sp.decl,MaghribAngle);
       var dhuhr=noon;
       
-      /* --- CHANGED: Fixed the broken Asr calculation --- */
-      // Correctly calculate Asr altitude for Shafi'i (1x shadow)
       var asrAlt = rtd(Math.atan(1 / (1 + Math.tan(Math.abs(dtr(lat - sp.decl))))));
-      // Use the hourAngle function to get the time
       var asr = noon + hourAngle(lat, sp.decl, asrAlt);
-      /* --- END CHANGED --- */
       
       var maghrib=noon+hourAngle(lat,sp.decl,MaghribAngle);
       var isha=noon+hourAngle(lat,sp.decl,IshaAngle);
       
-      // Return in the required keys for consistency with AlAdhan
       return {Fajr:toTimeStr(fajr),Sunrise:toTimeStr(sunrise),Dhuhr:toTimeStr(dhuhr),Asr:toTimeStr(asr),Maghrib:toTimeStr(maghrib),Isha:toTimeStr(isha)};
     }
   };
@@ -294,7 +300,7 @@ function renderCalendar(){
       cell.innerHTML=`<div class="gdate">${d}</div><div class="hdate">${is.id} ${hijriMonths[is.im-1]}</div>`;
       const pub=findPublicHoliday(gd); const iev=findIslamicEvent(is);
       if(pub) cell.innerHTML+=`<div class="badge">H</div>`;
-      if(iev) cell.innerHTML+=`<div class="badge" style="right:44px">✪</div>`;
+      if(iev) cell.innerHTML+=`<div class="badge" style="right:26px">✪</div>`;
       if(gd.toDateString()===today.toDateString()) cell.classList.add('today');
       if(searchDay && gd.getDate()===searchDay.date && gd.getMonth()===searchDay.month && gd.getFullYear()===searchDay.year) cell.classList.add('searched');
       cell.addEventListener('click',()=>openModal(gd,is));
@@ -303,7 +309,7 @@ function renderCalendar(){
   }
 }
 
-/* ---------- Open Modal (MODIFIED) ---------- */
+/* ---------- Open Modal (FIXED) ---------- */
 function openModal(gd,is){
   const modalBack=document.getElementById('modalBack'); modalBack.style.visibility='visible'; modalBack.classList.add('show');
   document.getElementById('modalTitle').textContent=gd.toDateString();
@@ -316,17 +322,14 @@ function openModal(gd,is){
   const selectedDateStr = gd.toDateString();
 
   if (selectedDateStr === todayDateStr) {
-      // Prioritize the AlAdhan cached times for TODAY
       times = JSON.parse(localStorage.getItem('lastPrayerTimes'));
-      if (times) times.Sunrise = times.Sunrise || '--:--'; // Ensure Sunrise is present
+      if (times) times.Sunrise = times.Sunrise || '--:--';
   } 
 
-  // Fallback to the internal, less-accurate calculation if not today or no cache
   if (!times) {
       const lat=parseFloat(document.getElementById('lat').value)||0;
       const lng=parseFloat(document.getElementById('lng').value)||0;
       const tz=parseFloat(document.getElementById('tz').value)||0;
-      // This will now use the new dynamic angles AND the fixed Asr calculation
       times=PT.getTimes(gd,{lat:lat,lng:lng},tz);
   }
 
@@ -339,28 +342,38 @@ function openModal(gd,is){
   });
 
   const hb=document.getElementById('holidaysBox'); hb.innerHTML='';
-  const pub=findPublicHoliday(gd); if(pub){ const el=document.createElement('div'); el.className='holiday-item'; el.innerHTML=`<strong>Public</strong><div>${pub}</div>`; hb.appendChild(el); }
-  const iev=findIslamicEvent(is); if(iev){ const el2=document.createElement('div'); el2.className='holiday-item'; el2.innerHTML=`<strong>Islamic</strong><div>${iev}</div>`; hb.appendChild(el); }
+  
+  const pub=findPublicHoliday(gd); 
+  if(pub){ 
+    const el=document.createElement('div'); 
+    el.className='holiday-item'; 
+    el.innerHTML=`<strong>Public</strong><div>${pub}</div>`; 
+    hb.appendChild(el); 
+  }
+  
+  const iev=findIslamicEvent(is); 
+  if(iev){ 
+    const el2=document.createElement('div'); // el2 is defined here
+    el2.className='holiday-item'; 
+    el2.innerHTML=`<strong>Islamic</strong><div>${iev}</div>`; 
+    hb.appendChild(el2); // <<< FIXED: Appending the correct element el2
+  }
+  
   if(!pub && !iev) hb.innerHTML='<div class="small-muted">No public or islamic events on this date (edit list in script to add).</div>';
 }
 
 /* ---------- Initial Execution (MODIFIED) ---------- */
 async function runTakwim() {
-    // 1. Get location and update inputs (will use Subang Jaya if GPS fails)
     await getLocation();
     
-    // 2. Fetch or refresh the current day's prayer times (for modal usage)
-    // This will now use the hard-coded JAKIM method
     const lat = parseFloat(document.getElementById('lat').value);
     const lng = parseFloat(document.getElementById('lng').value);
     await fetchOnlinePrayerTimes(lat, lng);
 
-    // 3. Render calendar
     renderCalendar();
 }
 
 window.addEventListener('DOMContentLoaded', runTakwim);
 </script>
 </body>
-  </html>
-  
+</html>
