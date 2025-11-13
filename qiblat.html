@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Qibla Compass — Compact</title>
 <style>
+  /* --- CRITICAL FIX: Ensures padding/borders don't cause overflow --- */
+  * {
+    box-sizing: border-box;
+  }
+  
   /* --- Layout Changes for Two Columns (Ultra-Compact) --- */
   body {
     margin: 0;
@@ -15,7 +20,7 @@
     height: 100vh;
     background: linear-gradient(#061226, #071026);
     color: #e8f5ff;
-    padding: 10px; /* Add slight padding in case of tiny iframe */
+    padding: 5px; /* Reduced padding for extra safety */
   }
 
   .main-container {
@@ -23,21 +28,22 @@
     align-items: flex-start;
     gap: 15px; /* Minimal gap */
     width: 100%; /* Maximize use of container */
-    max-width: 600px; /* **Further reduced maximum width** */
+    max-width: 600px; 
     margin: auto;
   }
 
   .left-content {
-    flex-basis: 40%; /* More relative space for instruction text */
-    padding-top: 15px; /* Reduced padding top */
-    font-size: 12px; /* **Smallest base font size** */
+    flex-basis: 40%; /* 40% of the total width */
+    flex-shrink: 0; /* Prevents text column from collapsing too much */
+    padding-top: 15px; 
+    font-size: 12px;
   }
 
   .left-content h2 {
     color: #f97316;
     margin-top: 0;
     margin-bottom: 5px;
-    font-size: 16px; /* Reduced heading size */
+    font-size: 16px;
   }
   
   .left-content p {
@@ -51,8 +57,11 @@
     margin-top: 10px;
   }
 
+  /* --- FLEXBOX FIX: Use calc() to subtract the gap from the right side --- */
   .right-content {
-    flex-basis: 60%;
+    /* 60% of total width MINUS the 15px gap */
+    flex-basis: calc(60% - 15px); 
+    flex-grow: 1; /* Allows it to take up any fractional space left */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,9 +69,8 @@
   /* --- End Layout Changes --- */
 
   /* Original Compass Styling (Minimized) */
-  h1 {margin-bottom:8px; text-align:center; font-size: 18px;} /* Reduced H1 size */
+  h1 {margin-bottom:8px; text-align:center; font-size: 18px;} 
   
-  /* **COMPASS FACE MINIMIZED** from 200px to 160px */
   .compass-face {width:160px; height:160px; border-radius:50%; background:radial-gradient(circle at 50% 40%, rgba(255,255,255,0.02), transparent 40%), linear-gradient(180deg,#071935,#031124); display:flex; align-items:center; justify-content:center; position:relative; border:2px solid rgba(255,255,255,0.03);}
   
   /* Needle Dimensions Adjusted */
@@ -73,10 +81,10 @@
   .center {width:8px; height:8px; border-radius:50%; background:#e8f5ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);}
   
   .readout {margin-top:8px; text-align:center; font-size: 13px;} 
-  .bigdeg {font-size:20px; font-weight:700;} /* Minimal angle text size */
+  .bigdeg {font-size:20px; font-weight:700;} 
   
-  button {margin-top:8px; padding:6px 9px; border-radius:5px; border:none; cursor:pointer; background:#f97316; color:#041218; font-weight:700; font-size: 12px;} /* Minimal button size */
-  .status {margin-top:5px; font-size:11px; color:#9fb0c8;} /* Minimal status size */
+  button {margin-top:8px; padding:6px 9px; border-radius:5px; border:none; cursor:pointer; background:#f97316; color:#041218; font-weight:700; font-size: 12px;} 
+  .status {margin-top:5px; font-size:11px; color:#9fb0c8;} 
 </style>
 </head>
 <body>
