@@ -122,7 +122,8 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;
 /* ----------------------------------------------------- */
 const APP = { location: null, use24:false, kaaba:{lat:21.422487, lon:39.826206} };
 const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){localStorage.setItem(k,JSON.stringify(v))} };
-const DEFAULT_TIMINGS = {Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
+// MODIFIED: Added Imsak to default timings
+const DEFAULT_TIMINGS = {Imsak:'05:35', Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
 
 // Placeholder for Reverse Geocoding
 async function reverseGeocode(lat, lon) {
@@ -172,18 +173,21 @@ async function getLocation(){
 // Fetch accurate prayer times (reusing function from index.html)
 async function fetchOnlinePrayerTimes(lat, lon) {
   try {
-    let apiMethod = 10;
+    // Using method 11 (Singapore/JAKIM Proxy)
+    let apiMethod = 11; 
     const ts = Math.floor(Date.now() / 1000);
     
     const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=${apiMethod}`);
     const data = await res.json();
     const timings = { 
+        // ADDED: Imsak extraction
+        Imsak: data.data.timings.Imsak,
         Fajr: data.data.timings.Fajr, 
         Dhuhr: data.data.timings.Dhuhr, 
         Asr: data.data.timings.Asr, 
         Maghrib: data.data.timings.Maghrib, 
-        Isha: data.data.timings.Isha,
-        Sunrise: data.data.timings.Sunrise
+        Isha: data.data.timings.Isha
+        // REMOVED: Sunrise
     };
     localStorage.setItem('lastPrayerTimes', JSON.stringify(timings));
     return timings;
@@ -222,18 +226,30 @@ var PT=(function(){
   }
   function hourAngle(lat, decl, angle){ var term=(Math.sin(dtr(angle))-Math.sin(dtr(lat))*Math.sin(dtr(decl)))/(Math.cos(dtr(lat))*Math.cos(dtr(decl))); if(term>1)term=1;if(term<-1)term=-1; return rtd(Math.acos(term))/15;}
   function toTimeStr(t){var H=Math.floor(t);var M=Math.floor((t-H)*60+0.5); if(M===60){H+=1;M=0;} H=(H+24)%24; var ap=H>=12?'PM':'AM'; var h12=H%12; if(h12===0)h12=12; return String(h12).padStart(2,'0')+':'+String(M).padStart(2,'0')+' '+ap;}
+  // Helper to subtract 10 minutes for Imsak (for fallback)
+  function subtract10Minutes(timeStr) {
+      if (!timeStr) return '--:--';
+      const [h, m] = timeStr.split(':').map(Number);
+      let totalMinutes = h * 60 + m - 10;
+      let newH = Math.floor(totalMinutes / 60);
+      let newM = totalMinutes % 60;
+      if (newM < 0) { newM += 60; newH -= 1; }
+      if (newH < 0) { newH += 24; }
+      return String(newH).padStart(2, '0') + ':' + String(newM).padStart(2, '0');
+  }
+
   return {
     getTimes:function(date,coords,tz){
       var y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
       var jd=julianDate(y,m,d); var sp=sunPos(jd);
       var lat=coords.lat||0,lng=coords.lng||0; var noon=fixHour(12-sp.eqt-(lng/15)+tz);
 
-      var FajrAngle = -20;
-      var IshaAngle = -18;
+      var FajrAngle = -20; // JAKIM/Singapore angle
+      var IshaAngle = -18; // JAKIM/Singapore angle
       var MaghribAngle = 0.833;
 
       var fajr=noon-hourAngle(lat,sp.decl,FajrAngle);
-      var sunrise=noon-hourAngle(lat,sp.decl,MaghribAngle);
+      // Sunrise calculation removed
       var dhuhr=noon;
       
       var asrAlt = rtd(Math.atan(1 / (1 + Math.tan(Math.abs(dtr(lat - sp.decl))))));
@@ -242,7 +258,17 @@ var PT=(function(){
       var maghrib=noon+hourAngle(lat,sp.decl,MaghribAngle);
       var isha=noon+hourAngle(lat,sp.decl,IshaAngle);
       
-      return {Fajr:toTimeStr(fajr),Sunrise:toTimeStr(sunrise),Dhuhr:toTimeStr(dhuhr),Asr:toTimeStr(asr),Maghrib:toTimeStr(maghrib),Isha:toTimeStr(isha)};
+      const FajrTime = toTimeStr(fajr);
+
+      return {
+        Imsak: subtract10Minutes(FajrTime), // Calculated Imsak for fallback
+        Fajr: FajrTime,
+        // Sunrise:toTimeStr(sunrise), // REMOVED
+        Dhuhr:toTimeStr(dhuhr),
+        Asr:toTimeStr(asr),
+        Maghrib:toTimeStr(maghrib),
+        Isha:toTimeStr(isha)
+      };
     }
   };
 })();
@@ -322,20 +348,24 @@ function openModal(gd,is){
   const selectedDateStr = gd.toDateString();
 
   if (selectedDateStr === todayDateStr) {
+      // Prioritize the timings cached from the main page (which uses method=11)
       times = JSON.parse(localStorage.getItem('lastPrayerTimes'));
-      if (times) times.Sunrise = times.Sunrise || '--:--';
   } 
 
-  if (!times) {
+  if (!times || !times.Imsak) {
+      // If cached data is missing Imsak or is not present, use the simplified fallback or fetch fresh data
       const lat=parseFloat(document.getElementById('lat').value)||0;
       const lng=parseFloat(document.getElementById('lng').value)||0;
       const tz=parseFloat(document.getElementById('tz').value)||0;
       times=PT.getTimes(gd,{lat:lat,lng:lng},tz);
   }
 
+  // FIXED: Removed Sunrise from the prayerOrder list
+  const prayerOrder = ['Imsak', 'Fajr', 'Dhuhr','Asr','Maghrib','Isha'];
+  
   // Render times
-  ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].forEach(k=>{
-    const timeStr = times ? (formatTime(times[k.replace('Sunrise','Sunrise')]) || '-') : '-';
+  prayerOrder.forEach(k=>{
+    const timeStr = times ? (formatTime(times[k]) || '-') : '-';
     const r=document.createElement('div'); r.className='prayer';
     r.innerHTML=`<div>${k}</div><div style="font-weight:700">${timeStr}</div>`;
     pb.appendChild(r);
@@ -353,10 +383,10 @@ function openModal(gd,is){
   
   const iev=findIslamicEvent(is); 
   if(iev){ 
-    const el2=document.createElement('div'); // el2 is defined here
+    const el2=document.createElement('div'); 
     el2.className='holiday-item'; 
     el2.innerHTML=`<strong>Islamic</strong><div>${iev}</div>`; 
-    hb.appendChild(el2); // <<< FIXED: Appending the correct element el2
+    hb.appendChild(el2); 
   }
   
   if(!pub && !iev) hb.innerHTML='<div class="small-muted">No public or islamic events on this date (edit list in script to add).</div>';
@@ -368,7 +398,8 @@ async function runTakwim() {
     
     const lat = parseFloat(document.getElementById('lat').value);
     const lng = parseFloat(document.getElementById('lng').value);
-    await fetchOnlinePrayerTimes(lat, lng);
+    // Fetch fresh data once to populate local storage correctly (method=11)
+    await fetchOnlinePrayerTimes(lat, lng); 
 
     renderCalendar();
 }
