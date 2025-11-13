@@ -39,9 +39,11 @@
     .hero-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
     #heroTime{font-size:34px;font-weight:700;letter-spacing:0.6px}
     #countdown{font-size:20px;font-weight:600;color:var(--muted)}
+    #nextPrayer{font-size:16px;font-weight:600}
     #heroPrayers{margin-top:12px}
     #prayerNames,#prayerTimes{display:flex;justify-content:space-between;align-items:center;width:100%;font-weight:700}
-    #prayerNames div,#prayerTimes div{flex:1;text-align:center;font-size:14px;color:var(--muted)}
+    /* FIX: Removed flex:1 here to allow better spacing for 6 columns */
+    #prayerNames div,#prayerTimes div{text-align:center;font-size:14px;color:var(--muted)}
     #prayerTimes div{color:#2e2a24}
 
     /* NAV */
@@ -53,8 +55,11 @@
 
     .container{max-width:1100px;margin:14px auto;padding:0 12px}
 
-    main{padding:18px;max-width:1100px;margin:18px auto}
-    .grid{display:grid;grid-template-columns:1fr 420px;gap:14px}
+    /* MODIFIED: Added centering for the main grid */
+    main{padding:18px;max-width:1100px;margin:18px auto; display:flex; justify-content:center;}
+    
+    /* MODIFIED: Changed 420px to 1fr for responsive width */
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px; width:100%;}
     .card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 6px 20px rgba(18,15,12,0.06)}
     .prayer-table table{width:100%;border-collapse:collapse;margin-top:8px}
     .prayer-table th,.prayer-table td{padding:10px 8px;text-align:left;border-bottom:1px solid #f3f3f3}
@@ -66,11 +71,15 @@
     @media (max-width:900px){ .grid{grid-template-columns:1fr} .hero{min-height:260px} #heroTime{font-size:28px} iframe.takwim-frame{height:520px} }
 
     iframe.qiblat-frame { width: 180px; height: 180px; border-radius:50%; border:2px solid #A67734; display:block; overflow:hidden; }
+    
+    /* NEW ADDITION: Prevents any horizontal scrolling/movability on the Takwim card */
+    #takwimCard {
+      overflow-x: hidden;
+    }
   </style>
 </head>
 <body>
 
-<!-- HERO -->
 <header class="hero" id="hero" role="banner" aria-label="Prayer hero">
   <div class="hero-card-bg" id="heroCard">
     <div class="hero-top">
@@ -82,7 +91,7 @@
       <div class="hero-right">
         <div id="heroTime">--:--:--</div>
         <div id="countdown">—</div>
-        <div id="nextPrayer">left to:—</div>
+        <div id="nextPrayer">Next: —</div>
       </div>
     </div>
 
@@ -95,7 +104,6 @@
   </div>
 </header>
 
-<!-- NAV -->
 <nav class="site-nav" aria-label="Primary">
   <div class="nav-bar container" style="background:transparent;">
     <ul class="nav-list" role="menubar" aria-label="Main navigation">
@@ -111,7 +119,6 @@
 
 <main class="container">
   <div class="grid" id="mainGrid">
-    <!-- LEFT BOX: Prayer Times -->
     <section>
       <div class="card prayer-table" id="prayer">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
@@ -129,6 +136,7 @@
           <table aria-label="Prayer times table">
             <thead><tr><th>Prayer</th><th>Time</th></tr></thead>
             <tbody id="prayerTableBody">
+              <tr id="row-imsak"><td>Imsak</td><td id="pt-imsak">--:--</td></tr>
               <tr id="row-fajr"><td>Fajr</td><td id="pt-fajr">--:--</td></tr>
               <tr id="row-dhuhr"><td>Dhuhr</td><td id="pt-dhuhr">--:--</td></tr>
               <tr id="row-asr"><td>Asr</td><td id="pt-asr">--:--</td></tr>
@@ -138,8 +146,6 @@
           </table>
         </div>
       </div>
-      <!-- RIGHT BOX & Remaining HTML + Scripts -->
-      <!-- Daily Hadith -->
       <div class="card" id="hadith" style="margin-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <strong>Daily Hadith</strong>
@@ -155,29 +161,27 @@
       </div>
     </section>
 
-    <!-- Qibla -->
-<!-- Qibla Full View -->
-<div class="card" style="margin-top:14px; height:400px; display:flex; flex-direction:column; gap:8px;">
-  <div id="qiblaWrapper" style="flex:1; width:100%; display:flex; justify-content:center; align-items:center; overflow:hidden;">
-    <iframe id="qiblatFrame" src="qiblat.html"
-            style="width:100%; height:100%; border:none; border-radius:0; display:block;"></iframe>
-  </div>
-  <div style="text-align:center; color:var(--muted); font-size:14px;">
-    <span id="qiblaDegDisplay">—°</span>
-  </div>
-</div>
+    <aside style="display:contents;">
+      <div class="card" style="margin-top:0; height:400px; display:flex; flex-direction:column; gap:8px;">
+        <div id="qiblaWrapper" style="flex:1; width:100%; display:flex; justify-content:center; align-items:center; overflow:hidden;">
+          <iframe id="qiblatFrame" src="qiblat2.html"
+                  style="width:100%; height:100%; border:none; border-radius:0; display:block;"></iframe>
+        </div>
+        <div style="text-align:center; color:var(--muted); font-size:14px;">
+          <span id="qiblaDegDisplay">—°</span>
+        </div>
+      </div>
 
-<!-- Takwim / Hijri -->
-<div class="card" id="takwimCard" style="margin-top:14px; display:flex; flex-direction:column; gap:12px;">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <strong>Takwim & Hijri</strong>
-    <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
-  </div>
-  <iframe id="takwimFrame" class="takwim-frame" src="Takwim-hijri.html"
-          style="width:100%; height:450px; max-width:100%; border-radius:12px; border:0;"></iframe>
-  <div style="display:flex;gap:8px;justify-content:flex-end">
-    <button class="btn" id="openTakwimFull">Open Full</button>
-  </div>
+      <div class="card" id="takwimCard" style="margin-top:14px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Takwim & Hijri</strong>
+          <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
+        </div>
+        <iframe id="takwimFrame" class="takwim-frame" src="Takwim-hijri.html"
+                style="width:100%; height:450px; max-width:100%; border-radius:12px; border:0;"></iframe>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" id="openTakwimFull">Open Full</button>
+        </div>
       </div>
     </aside>
   </div>
@@ -185,14 +189,13 @@
 
 <footer style="text-align:center;padding:12px;color:var(--muted)">
   Built with care • Works offline-ish • Customize translations/data
-  </footer>
-  <!-- SCRIPT: Accurate prayer times using AlAdhan API -->
-<script>
+</footer>
+  <script>
 const APP = { location: null, use24:false, kaaba:{lat:21.422487, lon:39.826206} };
 const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){localStorage.setItem(k,JSON.stringify(v))} };
 
-// Default times for fallback
-const DEFAULT_TIMINGS = {Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
+// Default times for fallback (Imsak added here: 10 mins before Fajr)
+const DEFAULT_TIMINGS = {Imsak:'05:35', Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
 
 // --- Location and Time Handling ---
 
@@ -243,9 +246,11 @@ async function getLocation(){
 async function fetchOnlinePrayerTimes(lat, lon) {
   try {
     const ts = Math.floor(Date.now() / 1000);
-    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=4`);
+    // METHOD 11 (Singapore) used for JAKIM accuracy
+    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=11`);
     const data = await res.json();
     const timings = { 
+        Imsak: data.data.timings.Imsak, // Imsak time retrieved from API
         Fajr: data.data.timings.Fajr, 
         Dhuhr: data.data.timings.Dhuhr, 
         Asr: data.data.timings.Asr, 
@@ -262,9 +267,10 @@ async function fetchOnlinePrayerTimes(lat, lon) {
 
 // --- UI Rendering Functions ---
 
-// Update hero prayers (5 stacked)
+// Update hero prayers (5 stacked + Imsak)
 function renderHeroPrayers(timings){
-  const order=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  // Imsak added to the prayer order
+  const order=['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'];
   const namesDiv=document.getElementById('prayerNames');
   const timesDiv=document.getElementById('prayerTimes');
   namesDiv.innerHTML=''; timesDiv.innerHTML='';
@@ -276,7 +282,8 @@ function renderHeroPrayers(timings){
 
 // Update the detailed prayer table
 function renderPrayerTable(timings) {
-  for(const [key,id] of [['Fajr','fajr'],['Dhuhr','dhuhr'],['Asr','asr'],['Maghrib','maghrib'],['Isha','isha']]){
+  // Imsak added to the table rows
+  for(const [key,id] of [['Imsak','imsak'], ['Fajr','fajr'],['Dhuhr','dhuhr'],['Asr','asr'],['Maghrib','maghrib'],['Isha','isha']]){
     const timeElement = document.getElementById('pt-'+id);
     if(timeElement) {
         timeElement.textContent = formatTime(timings[key] || '--:--'); 
@@ -287,12 +294,13 @@ function renderPrayerTable(timings) {
 // Next prayer logic
 function getNextPrayer(timings){
   const now=new Date();
-  for(const p of ['Fajr','Dhuhr','Asr','Maghrib','Isha']){
+  // Imsak added to the check list
+  for(const p of ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha']){
     const [h,m]=timings[p].split(':').map(n=>parseInt(n));
     const dt=new Date(); dt.setHours(h,m,0,0);
     if(dt>now) return p;
   }
-  return 'Fajr';
+  return 'Imsak'; // Loop back to Imsak (or Fajr if outside fasting)
 }
 
 // Hero countdown & clock
@@ -306,18 +314,19 @@ function updateHero(timings){
     const next=getNextPrayer(timings);
     const [h,m]=timings[next].split(':').map(n=>parseInt(n));
     let t=new Date(); t.setHours(h,m,0,0);
-    if(next==='Fajr' && t<=new Date()) t.setDate(t.getDate()+1);
+    // If the next prayer is Imsak or Fajr and the time has already passed today, set it for the next day
+    if((next==='Imsak' || next==='Fajr') && t<=new Date()) t.setDate(t.getDate()+1);
     const diff=t-new Date();
     const hours=Math.floor(diff/1000/3600);
     const minutes=Math.floor((diff/1000/60)%60);
     const seconds=Math.floor((diff/1000)%60);
-    document.getElementById('nextPrayer').textContent='left to: '+next;
+    document.getElementById('nextPrayer').textContent='Next: '+next;
     document.getElementById('countdown').textContent=`${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
     document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
   },1000);
 }
 
-// Hero background changer
+// Hero background changer (No change needed as Imsak uses Fajr/Subuh background logic)
 function updateHeroBackground(timings) {
   const hero = document.getElementById("hero");
   const bgImages = {
@@ -419,4 +428,5 @@ document.getElementById('openTakwimFull')?.addEventListener('click',()=>window.o
 window.addEventListener('DOMContentLoaded',runAll);
 </script>
 </body>
-</html>
+  </html>
+  
