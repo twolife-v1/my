@@ -137,11 +137,11 @@
             <thead><tr><th>Prayer</th><th>Time</th></tr></thead>
             <tbody id="prayerTableBody">
               <tr id="row-imsak"><td>Imsak</td><td id="pt-imsak">--:--</td></tr>
-              <tr id="row-fajr"><td>Fajr</td><td id="pt-fajr">--:--</td></tr>
-              <tr id="row-dhuhr"><td>Dhuhr</td><td id="pt-dhuhr">--:--</td></tr>
-              <tr id="row-asr"><td>Asr</td><td id="pt-asr">--:--</td></tr>
+              <tr id="row-fajr"><td>Subuh</td><td id="pt-fajr">--:--</td></tr>
+              <tr id="row-dhuhr"><td>Zohor</td><td id="pt-dhuhr">--:--</td></tr>
+              <tr id="row-asr"><td>Asar</td><td id="pt-asr">--:--</td></tr>
               <tr id="row-maghrib"><td>Maghrib</td><td id="pt-maghrib">--:--</td></tr>
-              <tr id="row-isha"><td>Isha</td><td id="pt-isha">--:--</td></tr>
+              <tr id="row-isha"><td>Ishaa</td><td id="pt-isha">--:--</td></tr>
             </tbody>
           </table>
         </div>
@@ -164,7 +164,7 @@
     <aside style="display:contents;">
       <div class="card" style="margin-top:0; height:400px; display:flex; flex-direction:column; gap:8px;">
         <div id="qiblaWrapper" style="flex:1; width:100%; display:flex; justify-content:center; align-items:center; overflow:hidden;">
-          <iframe id="qiblatFrame" src="qiblat.html"
+          <iframe id="qiblatFrame" src="qiblat2.html"
                   style="width:100%; height:100%; border:none; border-radius:0; display:block;"></iframe>
         </div>
         <div style="text-align:center; color:var(--muted); font-size:14px;">
@@ -251,11 +251,11 @@ async function fetchOnlinePrayerTimes(lat, lon) {
     const data = await res.json();
     const timings = { 
         Imsak: data.data.timings.Imsak, // Imsak time retrieved from API
-        Fajr: data.data.timings.Fajr, 
-        Dhuhr: data.data.timings.Dhuhr, 
+        Fajr: data.data.timings.Fajr, // Retained API key
+        Dhuhr: data.data.timings.Dhuhr, // Retained API key
         Asr: data.data.timings.Asr, 
         Maghrib: data.data.timings.Maghrib, 
-        Isha: data.data.timings.Isha 
+        Isha: data.data.timings.Isha // Retained API key
     };
     localStorage.setItem('lastPrayerTimes', JSON.stringify(timings));
     return timings;
@@ -267,23 +267,38 @@ async function fetchOnlinePrayerTimes(lat, lon) {
 
 // --- UI Rendering Functions ---
 
+// Mapping for display names
+const prayerDisplayMap = {
+    'Imsak': 'Imsak',
+    'Fajr': 'Subuh',
+    'Dhuhr': 'Zohor',
+    'Asr': 'Asar',
+    'Maghrib': 'Maghrib',
+    'Isha': 'Ishaa'
+};
+
 // Update hero prayers (5 stacked + Imsak)
 function renderHeroPrayers(timings){
-  // Imsak added to the prayer order
+  // Use API keys for iteration, but display the local names
   const order=['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'];
   const namesDiv=document.getElementById('prayerNames');
   const timesDiv=document.getElementById('prayerTimes');
   namesDiv.innerHTML=''; timesDiv.innerHTML='';
-  order.forEach(p=>{
-    const nameEl=document.createElement('div'); nameEl.textContent=p; namesDiv.appendChild(nameEl);
-    const timeEl=document.createElement('div'); timeEl.textContent=formatTime(timings[p]); timesDiv.appendChild(timeEl);
+  order.forEach(key=>{
+    const nameEl=document.createElement('div'); 
+    nameEl.textContent=prayerDisplayMap[key]; // Use the converted name
+    namesDiv.appendChild(nameEl);
+    const timeEl=document.createElement('div'); 
+    timeEl.textContent=formatTime(timings[key]); 
+    timesDiv.appendChild(timeEl);
   });
 }
 
-// Update the detailed prayer table
+// Update the detailed prayer table (HTML rows already updated)
 function renderPrayerTable(timings) {
-  // Imsak added to the table rows
-  for(const [key,id] of [['Imsak','imsak'], ['Fajr','fajr'],['Dhuhr','dhuhr'],['Asr','asr'],['Maghrib','maghrib'],['Isha','isha']]){
+  // Use API keys for accessing data from the `timings` object
+  for(const key of ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha']){
+    const id = key.toLowerCase(); // IDs match the original keys (imsak, fajr, dhuhr, etc.)
     const timeElement = document.getElementById('pt-'+id);
     if(timeElement) {
         timeElement.textContent = formatTime(timings[key] || '--:--'); 
@@ -294,13 +309,17 @@ function renderPrayerTable(timings) {
 // Next prayer logic
 function getNextPrayer(timings){
   const now=new Date();
-  // Imsak added to the check list
-  for(const p of ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha']){
-    const [h,m]=timings[p].split(':').map(n=>parseInt(n));
+  // Use API keys for logic
+  const prayerKeys = ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  for(const key of prayerKeys){
+    const timeValue = timings[key];
+    if (!timeValue) continue;
+
+    const [h,m]=timeValue.split(':').map(n=>parseInt(n));
     const dt=new Date(); dt.setHours(h,m,0,0);
-    if(dt>now) return p;
+    if(dt>now) return prayerDisplayMap[key]; // Return the DISPLAY name
   }
-  return 'Imsak'; // Loop back to Imsak (or Fajr if outside fasting)
+  return prayerDisplayMap['Imsak']; // Loop back to Imsak (display name)
 }
 
 // Hero countdown & clock
@@ -311,24 +330,32 @@ function updateHero(timings){
   document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
 
   heroInterval=setInterval(()=>{
-    const next=getNextPrayer(timings);
-    const [h,m]=timings[next].split(':').map(n=>parseInt(n));
+    const nextDisplayName = getNextPrayer(timings);
+    
+    // Find the original key for the next prayer based on the display name
+    let nextKey = Object.keys(prayerDisplayMap).find(key => prayerDisplayMap[key] === nextDisplayName) || 'Fajr';
+    
+    const [h,m]=timings[nextKey].split(':').map(n=>parseInt(n));
     let t=new Date(); t.setHours(h,m,0,0);
-    // If the next prayer is Imsak or Fajr and the time has already passed today, set it for the next day
-    if((next==='Imsak' || next==='Fajr') && t<=new Date()) t.setDate(t.getDate()+1);
+    
+    // If the next prayer is Imsak or Fajr (Subuh) and the time has already passed today, set it for the next day
+    if((nextKey==='Imsak' || nextKey==='Fajr') && t<=new Date()) t.setDate(t.getDate()+1);
+    
     const diff=t-new Date();
     const hours=Math.floor(diff/1000/3600);
     const minutes=Math.floor((diff/1000/60)%60);
     const seconds=Math.floor((diff/1000)%60);
-    document.getElementById('nextPrayer').textContent='Next: '+next;
+    
+    document.getElementById('nextPrayer').textContent='Next: '+nextDisplayName; // Use the display name
     document.getElementById('countdown').textContent=`${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
     document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
   },1000);
 }
 
-// Hero background changer (No change needed as Imsak uses Fajr/Subuh background logic)
+// Hero background changer 
 function updateHeroBackground(timings) {
   const hero = document.getElementById("hero");
+  // UPDATED IMAGE NAMES
   const bgImages = {
     Fajr: "Images/subuh.jpg", Dhuhr: "Images/zohor.jpg", Asr: "Images/asar.jpg", 
     Maghrib: "Images/maghrib.jpg", Isha: "Images/isyak.jpg"
@@ -343,16 +370,17 @@ function updateHeroBackground(timings) {
       return d;
     };
 
+    // Use API keys for comparison
     const order = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
     let current = "Isha"; 
 
     for (let i = 0; i < order.length; i++) {
-      const prayer = order[i];
-      const prayerTime = timeToDate(timings[prayer]);
+      const prayerKey = order[i];
+      const prayerTime = timeToDate(timings[prayerKey]);
       const before30min = new Date(prayerTime.getTime() - 30 * 60 * 1000);
 
       if (now >= before30min && now < prayerTime) {
-        return prayer;
+        return prayerKey; // Return the key (Fajr, Dhuhr...) to map to image
       }
       if (now >= prayerTime && i < order.length - 1) {
         current = order[i + 1];
@@ -362,8 +390,8 @@ function updateHeroBackground(timings) {
   }
 
   function refreshHeroBackground() {
-    const currentPrayer = getCurrentPrayerPeriod();
-    const bg = bgImages[currentPrayer];
+    const currentPrayerKey = getCurrentPrayerPeriod();
+    const bg = bgImages[currentPrayerKey];
     hero.style.backgroundImage = `url('${bg}')`;
   }
 
@@ -428,5 +456,4 @@ document.getElementById('openTakwimFull')?.addEventListener('click',()=>window.o
 window.addEventListener('DOMContentLoaded',runAll);
 </script>
 </body>
-  </html>
-  
+</html>
