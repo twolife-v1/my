@@ -197,225 +197,7 @@ const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e)
 // Default times for fallback (Imsak added here: 10 mins before Fajr)
 const DEFAULT_TIMINGS = {Imsak:'05:35', Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
 
-// --- Location and Time Handling ---
-
-// Placeholder for Reverse Geocoding
-async function reverseGeocode(lat, lon) {
-  // In a real application, replace this with a call to a GeoCoding service
-  console.log(`Attempting reverse geocoding for: ${lat}, ${lon}`);
-  return "Current GPS Location"; 
-}
-
-// Format time
-function formatTime(t){
-  if(!t) return '--:--';
-  const [h,m]=t.split(':').map(n=>parseInt(n));
-  const dt=new Date(); dt.setHours(h,m,0,0);
-  return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:!APP.use24});
-}
-
-// Get user location (with improved name handling)
-async function getLocation(){
-  let loc=storage.get('loc') || APP.location;
-  if(loc?.lat && loc?.lon && loc?.name) { 
-      APP.location=loc; 
-      return loc; 
-  }
-  
-  if(navigator.geolocation){
-    try{
-      const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:12000,enableHighAccuracy:true}));
-      const name = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
-      loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name };
-      
-      APP.location = loc;
-      storage.set('loc', loc);
-      return loc;
-      
-    }catch(e){
-        console.warn('Geolocation error (user denied or timeout):', e);
-    }
-  }
-  // Fallback location if Geolocation fails or is unsupported
-  const fallbackLoc = { lat: 3.1390, lon: 101.6869, name: 'Kuala Lumpur (Default)' };
-  APP.location = fallbackLoc;
-  return fallbackLoc;
-}
-
-// Fetch accurate prayer times (Prioritizes online, falls back to cached/default)
-async function fetchOnlinePrayerTimes(lat, lon) {
-  try {
-    const ts = Math.floor(Date.now() / 1000);
-    // METHOD 11 (Singapore) used for JAKIM accuracy
-    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=11`);
-    const data = await res.json();
-    const timings = { 
-        Imsak: data.data.timings.Imsak, // Imsak time retrieved from API
-        Fajr: data.data.timings.Fajr, // Retained API key
-        Dhuhr: data.data.timings.Dhuhr, // Retained API key
-        Asr: data.data.timings.Asr, 
-        Maghrib: data.data.timings.Maghrib, 
-        Isha: data.data.timings.Isha // Retained API key
-    };
-    localStorage.setItem('lastPrayerTimes', JSON.stringify(timings));
-    return timings;
-  } catch(e) {
-    console.warn("API Error: Unable to fetch fresh data.");
-    return null; // Return null on failure
-  }
-}
-
-// --- UI Rendering Functions ---
-
-// Mapping for display names
-const prayerDisplayMap = {
-    'Imsak': 'Imsak',
-    'Fajr': 'Subuh',
-    'Dhuhr': 'Zohor',
-    'Asr': 'Asar',
-    'Maghrib': 'Maghrib',
-    'Isha': 'Ishaa'
-};
-
-// Update hero prayers (5 stacked + Imsak)
-function renderHeroPrayers(timings){
-  // Use API keys for iteration, but display the local names
-  const order=['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'];
-  const namesDiv=document.getElementById('prayerNames');
-  const timesDiv=document.getElementById('prayerTimes');
-  namesDiv.innerHTML=''; timesDiv.innerHTML='';
-  order.forEach(key=>{
-    const nameEl=document.createElement('div'); 
-    nameEl.textContent=prayerDisplayMap[key]; // Use the converted name
-    namesDiv.appendChild(nameEl);
-    const timeEl=document.createElement('div'); 
-    timeEl.textContent=formatTime(timings[key]); 
-    timesDiv.appendChild(timeEl);
-  });
-}
-
-// Update the detailed prayer table (HTML rows already updated)
-function renderPrayerTable(timings) {
-  // Use API keys for accessing data from the `timings` object
-  for(const key of ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha']){
-    const id = key.toLowerCase(); // IDs match the original keys (imsak, fajr, dhuhr, etc.)
-    const timeElement = document.getElementById('pt-'+id);
-    if(timeElement) {
-        timeElement.textContent = formatTime(timings[key] || '--:--'); 
-    }
-  }
-}
-
-// Next prayer logic
-function getNextPrayer(timings){
-  const now=new Date();
-  // Use API keys for logic
-  const prayerKeys = ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'];
-  for(const key of prayerKeys){
-    const timeValue = timings[key];
-    if (!timeValue) continue;
-
-    const [h,m]=timeValue.split(':').map(n=>parseInt(n));
-    const dt=new Date(); dt.setHours(h,m,0,0);
-    if(dt>now) return prayerDisplayMap[key]; // Return the DISPLAY name
-  }
-  return prayerDisplayMap['Imsak']; // Loop back to Imsak (display name)
-}
-
-// Hero countdown & clock
-let heroInterval=null;
-function updateHero(timings){
-  if(heroInterval) clearInterval(heroInterval);
-  // Initial time update
-  document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
-
-  heroInterval=setInterval(()=>{
-    const nextDisplayName = getNextPrayer(timings);
-    
-    // Find the original key for the next prayer based on the display name
-    let nextKey = Object.keys(prayerDisplayMap).find(key => prayerDisplayMap[key] === nextDisplayName) || 'Fajr';
-    
-    const [h,m]=timings[nextKey].split(':').map(n=>parseInt(n));
-    let t=new Date(); t.setHours(h,m,0,0);
-    
-    // If the next prayer is Imsak or Fajr (Subuh) and the time has already passed today, set it for the next day
-    if((nextKey==='Imsak' || nextKey==='Fajr') && t<=new Date()) t.setDate(t.getDate()+1);
-    
-    const diff=t-new Date();
-    const hours=Math.floor(diff/1000/3600);
-    const minutes=Math.floor((diff/1000/60)%60);
-    const seconds=Math.floor((diff/1000)%60);
-    
-    document.getElementById('nextPrayer').textContent='Next: '+nextDisplayName; // Use the display name
-    document.getElementById('countdown').textContent=`${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-    document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
-  },1000);
-}
-
-// Hero background changer 
-function updateHeroBackground(timings) {
-  const hero = document.getElementById("hero");
-  // UPDATED IMAGE NAMES
-  const bgImages = {
-    Fajr: "Images/subuh.jpg", Dhuhr: "Images/zohor.jpg", Asr: "Images/asar.jpg", 
-    Maghrib: "Images/maghrib.jpg", Isha: "Images/isyak.jpg"
-  };
-
-  function getCurrentPrayerPeriod() {
-    const now = new Date();
-    const timeToDate = (time) => {
-      const [h, m] = time.split(":").map(Number);
-      const d = new Date();
-      d.setHours(h, m, 0, 0);
-      return d;
-    };
-
-    // Use API keys for comparison
-    const order = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
-    let current = "Isha"; 
-
-    for (let i = 0; i < order.length; i++) {
-      const prayerKey = order[i];
-      const prayerTime = timeToDate(timings[prayerKey]);
-      const before30min = new Date(prayerTime.getTime() - 30 * 60 * 1000);
-
-      if (now >= before30min && now < prayerTime) {
-        return prayerKey; // Return the key (Fajr, Dhuhr...) to map to image
-      }
-      if (now >= prayerTime && i < order.length - 1) {
-        current = order[i + 1];
-      }
-    }
-    return current;
-  }
-
-  function refreshHeroBackground() {
-    const currentPrayerKey = getCurrentPrayerPeriod();
-    const bg = bgImages[currentPrayerKey];
-    hero.style.backgroundImage = `url('${bg}')`;
-  }
-
-  refreshHeroBackground();
-  setInterval(refreshHeroBackground, 60 * 1000);
-}
-
-// --- Main Execution ---
-
-async function runAll(){
-  // 1. Get Location (uses fallback if needed)
-  const loc=await getLocation();
-  document.getElementById('locationName').textContent=loc.name;
-  document.getElementById('locationNameSmall').textContent=loc.name;
-  document.getElementById('heroDate').textContent=new Date().toDateString();
-  document.getElementById('worldTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
-  <script>
-const APP = { location: null, use24:false, kaaba:{lat:21.422487, lon:39.826206} };
-const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){localStorage.setItem(k,JSON.stringify(v))} };
-
-// Default times for fallback (Imsak added here: 10 mins before Fajr)
-const DEFAULT_TIMINGS = {Imsak:'05:35', Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
-
-// --- NEW GLOBAL STATE & FUNCTIONS FOR NOTIFICATIONS ---
+// --- NOTIFICATION & SOUND FUNCTIONS ---
 let sentNotifications = new Set(); 
 
 async function requestNotificationPermission() {
@@ -428,25 +210,22 @@ async function requestNotificationPermission() {
     }
 }
 
-// 🔔 THIS FUNCTION HANDLES THE CUSTOM SOUND 🔔
 function showPrayerNotification(prayerName) {
     if (Notification.permission === 'granted' && !sentNotifications.has(prayerName)) {
         
-        // 1. Display the standard browser notification
-        new Notification('Waktu Solat', {
-            body: `It is now time for ${prayerName}.`,
+        // 1. Display the standard browser notification (Customized text)
+        new Notification(`Allahu Akbar!`, { 
+            body: `Waktunya solat ${prayerName} telah tiba.`, 
             icon: '/Images/icon-512.png',
             vibrate: [200, 100, 200]
         });
         
         // 2. Play a custom sound using the HTML Audio API
         try {
-            // !!! IMPORTANT: CHANGE '/.mp3' to your actual file path !!!
+            // !!! IMPORTANT: CHANGE '/audio/azan.mp3' to your actual file path !!!
             const audio = new Audio('Images/noti.mp3'); 
-            // Setting volume higher if needed (0.0 to 1.0)
             audio.volume = 0.8; 
             audio.play().catch(error => {
-                // Audio might fail if the browser requires prior user interaction
                 console.warn("Audio playback failed (browser may require user interaction first):", error);
             });
         } catch (e) {
@@ -459,18 +238,18 @@ function showPrayerNotification(prayerName) {
 }
 
 function resetDailySentNotifications() {
-    // We only reset if the day has changed
     const today = new Date().toDateString();
     const lastReset = storage.get('lastNotificationReset');
     if (lastReset !== today) {
         sentNotifications.clear();
         storage.set('lastNotificationReset', today);
-        console.log("Daily notification tracker reset.");
     }
 }
-// ------------------------------------------------------------------
+// ------------------------------------
 
-// --- Utility function for time adjustment (from prior request)
+// --- UTILITY FUNCTIONS ---
+
+// Function to adjust HH:MM time string by N minutes (for +1 minute adjustment)
 function adjustTime(timeStr, minutes) {
   if (!timeStr || timeStr === '--:--') return timeStr;
   const [h, m] = timeStr.split(':').map(Number);
@@ -481,11 +260,9 @@ function adjustTime(timeStr, minutes) {
   const newM = date.getMinutes().toString().padStart(2, '0');
   return `${newH}:${newM}`;
 }
-// --- Location and Time Handling ---
 
 // Placeholder for Reverse Geocoding
 async function reverseGeocode(lat, lon) {
-  // In a real application, replace this with a call to a GeoCoding service
   console.log(`Attempting reverse geocoding for: ${lat}, ${lon}`);
   return "Current GPS Location"; 
 }
@@ -534,12 +311,8 @@ async function fetchOnlinePrayerTimes(lat, lon) {
     const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=11`);
     const data = await res.json();
     const timings = { 
-        Imsak: data.data.timings.Imsak, // Imsak time retrieved from API
-        Fajr: data.data.timings.Fajr, // Retained API key
-        Dhuhr: data.data.timings.Dhuhr, // Retained API key
-        Asr: data.data.timings.Asr, 
-        Maghrib: data.data.timings.Maghrib, 
-        Isha: data.data.timings.Isha // Retained API key
+        Imsak: data.data.timings.Imsak, Fajr: data.data.timings.Fajr, Dhuhr: data.data.timings.Dhuhr, 
+        Asr: data.data.timings.Asr, Maghrib: data.data.timings.Maghrib, Isha: data.data.timings.Isha
     };
     
     // Apply +1 minute adjustment before caching
@@ -732,7 +505,7 @@ async function runAll(){
   document.getElementById('heroDate').textContent=new Date().toDateString();
   document.getElementById('worldTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
   
-  // 2. Load cached/default timings IMMEDIATELY
+  // 2. Load cached/default timings IMMEDIATELY (robust fix)
   let timings = JSON.parse(localStorage.getItem('lastPrayerTimes')) || DEFAULT_TIMINGS;
   
   // Apply +1 minute adjustment for cached/default data
@@ -742,7 +515,7 @@ async function runAll(){
   }
   timings = initialTimings;
   
-  // 3. Update UI with the initial data
+  // 3. Update UI with the initial data (using adjusted cached/default times)
   renderHeroPrayers(timings);
   renderPrayerTable(timings);
   updateHero(timings);
@@ -752,7 +525,7 @@ async function runAll(){
   const freshTimings = await fetchOnlinePrayerTimes(loc.lat, loc.lon);
 
   if (freshTimings) {
-    // Fresh data (already adjusted by +1 min)
+    // If fresh data is available (already adjusted by +1 min), update the UI again
     timings = freshTimings;
     renderHeroPrayers(timings);
     renderPrayerTable(timings);
@@ -785,6 +558,5 @@ document.getElementById('openTakwimFull')?.addEventListener('click',()=>window.o
 // Run on load
 window.addEventListener('DOMContentLoaded',runAll);
 </script>
-
 </body>
 </html>
