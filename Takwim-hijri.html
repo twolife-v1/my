@@ -225,10 +225,22 @@ var PT=(function(){
     var eqt=(q/15-RA); return {decl:decl, eqt:eqt};
   }
   function hourAngle(lat, decl, angle){ var term=(Math.sin(dtr(angle))-Math.sin(dtr(lat))*Math.sin(dtr(decl)))/(Math.cos(dtr(lat))*Math.cos(dtr(decl))); if(term>1)term=1;if(term<-1)term=-1; return rtd(Math.acos(term))/15;}
+  
+  // MODIFIED: Changed to return 24-hour time string (HH:MM)
+  function toTimeStr24(t){
+      var H=Math.floor(t);
+      var M=Math.floor((t-H)*60+0.5); 
+      if(M===60){H+=1;M=0;} 
+      H=(H+24)%24; 
+      return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0');
+  }
+
+  // NOTE: toTimeStr (12h format) is kept for reference but not used in final calculation
   function toTimeStr(t){var H=Math.floor(t);var M=Math.floor((t-H)*60+0.5); if(M===60){H+=1;M=0;} H=(H+24)%24; var ap=H>=12?'PM':'AM'; var h12=H%12; if(h12===0)h12=12; return String(h12).padStart(2,'0')+':'+String(M).padStart(2,'0')+' '+ap;}
+  
   // Helper to subtract 10 minutes for Imsak (for fallback)
   function subtract10Minutes(timeStr) {
-      if (!timeStr) return '--:--';
+      if (!timeStr || timeStr.indexOf(':') === -1) return '--:--'; // Added safety check
       const [h, m] = timeStr.split(':').map(Number);
       let totalMinutes = h * 60 + m - 10;
       let newH = Math.floor(totalMinutes / 60);
@@ -249,7 +261,6 @@ var PT=(function(){
       var MaghribAngle = 0.833;
 
       var fajr=noon-hourAngle(lat,sp.decl,FajrAngle);
-      // Sunrise calculation removed
       var dhuhr=noon;
       
       var asrAlt = rtd(Math.atan(1 / (1 + Math.tan(Math.abs(dtr(lat - sp.decl))))));
@@ -258,16 +269,16 @@ var PT=(function(){
       var maghrib=noon+hourAngle(lat,sp.decl,MaghribAngle);
       var isha=noon+hourAngle(lat,sp.decl,IshaAngle);
       
-      const FajrTime = toTimeStr(fajr);
+      // MODIFIED: Use toTimeStr24 for all returned times
+      const FajrTime24 = toTimeStr24(fajr);
 
       return {
-        Imsak: subtract10Minutes(FajrTime), // Calculated Imsak for fallback
-        Fajr: FajrTime,
-        // Sunrise:toTimeStr(sunrise), // REMOVED
-        Dhuhr:toTimeStr(dhuhr),
-        Asr:toTimeStr(asr),
-        Maghrib:toTimeStr(maghrib),
-        Isha:toTimeStr(isha)
+        Imsak: subtract10Minutes(FajrTime24), // Calculated Imsak based on 24-hour Fajr
+        Fajr: FajrTime24,
+        Dhuhr:toTimeStr24(dhuhr),
+        Asr:toTimeStr24(asr),
+        Maghrib:toTimeStr24(maghrib),
+        Isha:toTimeStr24(isha)
       };
     }
   };
@@ -285,7 +296,7 @@ monthNames.forEach((n,i)=>{let o=document.createElement('option'); o.value=i+1; 
 document.getElementById('searchYear').value=viewYear;
 
 function findPublicHoliday(gd){for(let h of publicHolidays) if(h.m===gd.getMonth()+1&&h.d===gd.getDate()) return h.name; return null;}
-function findIslamicEvent(is){for(let e of islamicDays) if(e.im===is.im&&e.id===is.id) return e.name; return null;}
+function findIslamicEvent(is){for(let e of islamicDays) if(e.im===is.im&&is.id===is.id) return e.name; return null;}
 
 /* ---------- Events ---------- */
 document.getElementById('prev').addEventListener('click',()=>{viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} renderCalendar();});
@@ -349,22 +360,24 @@ function openModal(gd,is){
 
   if (selectedDateStr === todayDateStr) {
       // Prioritize the timings cached from the main page (which uses method=11)
+      // These are already in HH:MM (24-hour) format.
       times = JSON.parse(localStorage.getItem('lastPrayerTimes'));
   } 
 
   if (!times || !times.Imsak) {
-      // If cached data is missing Imsak or is not present, use the simplified fallback or fetch fresh data
+      // If cached data is missing Imsak or is not present, use the simplified fallback
       const lat=parseFloat(document.getElementById('lat').value)||0;
       const lng=parseFloat(document.getElementById('lng').value)||0;
       const tz=parseFloat(document.getElementById('tz').value)||0;
+      // PT.getTimes now correctly returns HH:MM (24-hour) strings
       times=PT.getTimes(gd,{lat:lat,lng:lng},tz);
   }
 
-  // FIXED: Removed Sunrise from the prayerOrder list
   const prayerOrder = ['Imsak', 'Fajr', 'Dhuhr','Asr','Maghrib','Isha'];
   
   // Render times
   prayerOrder.forEach(k=>{
+    // formatTime expects a standard HH:MM string, which is now provided by PT.getTimes
     const timeStr = times ? (formatTime(times[k]) || '-') : '-';
     const r=document.createElement('div'); r.className='prayer';
     r.innerHTML=`<div>${k}</div><div style="font-weight:700">${timeStr}</div>`;
@@ -392,6 +405,7 @@ function openModal(gd,is){
   if(!pub && !iev) hb.innerHTML='<div class="small-muted">No public or islamic events on this date (edit list in script to add).</div>';
 }
 
+
 /* ---------- Initial Execution (MODIFIED) ---------- */
 async function runTakwim() {
     await getLocation();
@@ -407,4 +421,4 @@ async function runTakwim() {
 window.addEventListener('DOMContentLoaded', runTakwim);
 </script>
 </body>
-</html>
+  </html>
