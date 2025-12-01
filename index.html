@@ -323,14 +323,16 @@
 
 <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
-      authDomain: "waktusolatlite.firebaseapp.com",
-      projectId: "waktusolatlite",
-      storageBucket: "waktusolatlite.firebasestorage.app",
-      messagingSenderId: "86910439082",
-      appId: "1:86910439082:web:e482d01e1451e58179cad3"
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
+        authDomain: "waktusolatlite.firebaseapp.com",
+        // This must match index.html exactly:
+        databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "waktusolatlite",
+        storageBucket: "waktusolatlite.firebasestorage.app",
+        messagingSenderId: "86910439082",
+        appId: "1:86910439082:web:e482d01e1451e58179cad3"
     };
-
     try {
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
