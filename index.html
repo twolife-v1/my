@@ -1,562 +1,744 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
-  <link rel="apple-touch-icon" href="/Images/icon-512.png">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#d2b48c">
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Waktu Solat — Unified</title>
-  <style>
-    :root{
-      --bg:#F6EEE0; --card:#FFF; --muted:#6f604f; --accent:#A67734; --soft:#FFF6EE;
-      --glass: rgba(255,255,255,0.28); --hero-height:360px;
-      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#FFFDF8);color:#2e2a24;-webkit-font-smoothing:antialiased}
-    a{color:inherit;text-decoration:none}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#A67734">
+    <title>WaktuSolatLite</title>
+    <link rel="apple-touch-icon" href="/images/icon-512.png">
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.2); --glass-text: #FFFFFF; --header-scrolled: rgba(255, 255, 255, 0.85); --header-text-scrolled: #1F2937; --shadow:0 10px 30px -10px rgba(0,0,0,0.1); }
+        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --glass: rgba(0, 0, 0, 0.4); --glass-border: rgba(255, 255, 255, 0.1); --glass-text: #FFFFFF; --header-scrolled: rgba(30, 30, 30, 0.85); --header-text-scrolled: #F3F4F6; --shadow:0 10px 30px -10px rgba(0,0,0,0.5); }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { min-height: 100%; }
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            min-height: 100vh; 
+            padding-bottom: 90px; /* Space for nav bar */
+        }
 
-    /* HERO */
-    .hero {
-      position: relative;
-      min-height: var(--hero-height);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      background-size: cover;
-      background-position: center;
-      transition: background 1s ease;
-      background-repeat: no-repeat;
-    }
-    .hero::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.02));z-index:0;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
-    .hero-card-bg{position:relative;z-index:2;width:100%;max-width:1100px;border-radius:16px;backdrop-filter: blur(10px);background:var(--glass);padding:16px;box-shadow:0 10px 30px rgba(16,12,8,0.0.5)}
-    .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-    .hero-left{display:flex;flex-direction:column;gap:6px}
-    #locationName{font-weight:700;font-size:16px}
-    #heroDate{font-size:13px;color:var(--muted)}
-    .hero-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-    #heroTime{font-size:34px;font-weight:700;letter-spacing:0.6px}
-    #countdown{font-size:20px;font-weight:600;color:var(--muted)}
-    #nextPrayer{font-size:16px;font-weight:600}
-    #heroPrayers{margin-top:12px}
-    #prayerNames,#prayerTimes{display:flex;justify-content:space-between;align-items:center;width:100%;font-weight:700}
-    /* FIX: Removed flex:1 here to allow better spacing for 6 columns */
-    #prayerNames div,#prayerTimes div{text-align:center;font-size:14px;color:var(--muted)}
-    #prayerTimes div{color:#2e2a24}
+        /* --- STICKY HEADER --- */
+        .header-overlay {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 10px 20px; padding-top: max(10px, env(safe-area-inset-top));
+            display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.3s ease;
+        }
+        .header-overlay.scrolled {
+            background: var(--header-scrolled);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding-bottom: 15px;
+        }
+        .header-overlay.scrolled .header-greeting { color: var(--text-muted); text-shadow: none; }
+        .header-overlay.scrolled .header-title-overlay { color: var(--header-text-scrolled); text-shadow: none; }
+        .header-overlay.scrolled .icon-btn-glass { background: var(--bg); color: var(--text); border-color: var(--border); }
+        
+        .header-greeting { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); transition: color 0.3s; }
+        .header-title-overlay { font-size: 20px; font-weight: 800; color: white; margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.5); transition: color 0.3s; }
+        
+        .icon-btn-glass {
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white;
+            backdrop-filter: blur(4px); width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s;
+        }
 
-    /* NAV */
-    .site-nav{position:sticky;top:0;background:var(--accent);z-index:120;padding:10px 0;box-shadow:0 3px 12px rgba(0,0,0,0.08)}
-    .nav-list{list-style:none;margin:0;padding:0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
-    .nav-list a{color:#fff;font-weight:700;padding:8px 14px;border-radius:8px;transition:transform .15s,background .15s}
-    .nav-list a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.12)}
-    .nav-list a.active{background:#fff;color:var(--accent)}
+        /* --- HERO SECTION --- */
+        .hero-wrapper {
+            position: relative; width: 100%; min-height: 360px; overflow: hidden;
+            border-bottom-left-radius: 32px; border-bottom-right-radius: 32px;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3); margin-bottom: 25px;
+        }
+        .hero {
+            position: absolute; inset: 0; background-color: var(--primary);
+            background-size: cover; background-position: center; transition: background-image 1s ease-in-out;
+            /* CENTER ALIGNMENT */
+            display: flex; align-items: center; justify-content: center; 
+            padding: 80px 20px;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.3) 100%);
+            z-index: 1;
+        }
+        .hero-card-bg {
+            position: relative; z-index: 2; width: 100%; max-width: 500px;
+            background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px 20px;
+            color: var(--glass-text); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .hero-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .hero-left { display: flex; flex-direction: column; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .hero-right { text-align: right; display: flex; flex-direction: column; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        #locationName { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+        #heroDate { font-size: 11px; opacity: 0.9; font-weight: 500; }
+        #heroTime { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+        #countdown { font-size: 14px; font-weight: 600; opacity: 0.9; font-variant-numeric: tabular-nums; }
+        #nextPrayer { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #FFD700; margin-top: 2px; }
+        .hero-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 10px 0; border-radius: 2px; }
+        #heroPrayers { width: 100%; }
+        #prayerNames, #prayerTimes { display: flex; justify-content: space-between; width: 100%; }
+        #prayerNames div { font-size: 10px; opacity: 0.8; text-transform: uppercase; text-align: center; width: 16%; font-weight: 600; }
+        #prayerTimes div { font-size: 13px; font-weight: 700; text-align: center; width: 16%; margin-top: 4px; }
 
-    .container{max-width:1100px;margin:14px auto;padding:0 12px}
+        /* --- REST OF APP LAYOUT --- */
+        #app-container { padding: 0 20px; }
+        .view { display: none; animation: fadeIn 0.3s ease; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* MODIFIED: Added centering for the main grid */
-    main{padding:18px;max-width:1100px;margin:18px auto; display:flex; justify-content:center;}
-    
-    /* MODIFIED: Changed 420px to 1fr for responsive width */
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px; width:100%;}
-    .card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 6px 20px rgba(18,15,12,0.06)}
-    .prayer-table table{width:100%;border-collapse:collapse;margin-top:8px}
-    .prayer-table th,.prayer-table td{padding:10px 8px;text-align:left;border-bottom:1px solid #f3f3f3}
-    .current-row{background:linear-gradient(90deg,rgba(166,119,52,0.06),rgba(255,255,255,0));}
-    .btn{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;background:#A67734;color:white;font-weight:600}
-    .btn.ghost{background:#fff;border:1px solid #A67734;color:#A67734}
-    iframe.takwim-frame{width:100%;height:420px;border-radius:12px;border:0;background:#fff}
-    @media (max-width:1100px){ .grid{grid-template-columns:1fr 1fr} }
-    @media (max-width:900px){ .grid{grid-template-columns:1fr} .hero{min-height:260px} #heroTime{font-size:28px} iframe.takwim-frame{height:520px} }
+        .card { background: var(--surface); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
 
-    iframe.qiblat-frame { width: 180px; height: 180px; border-radius:50%; border:2px solid #A67734; display:block; overflow:hidden; }
-    
-    /* NEW ADDITION: Prevents any horizontal scrolling/movability on the Takwim card */
-    #takwimCard {
-      overflow-x: hidden;
-    }
-  </style>
+        .prayer-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .prayer-row:last-child { border-bottom: none; }
+        .prayer-info { display: flex; gap: 15px; align-items: center; }
+        .prayer-time { font-weight: 700; }
+        .bell-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 5px; }
+        .bell-btn.sound { color: var(--primary); }
+        
+        /* Bookmarks */
+        .bookmark-btn { background: none; border: none; cursor: pointer; padding: 5px; color: var(--border); transition: color 0.2s; }
+        .bookmark-btn.saved { color: var(--primary); }
+        .bookmark-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* Side Panel */
+        #sidePanelOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 290; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        #sidePanelOverlay.open { opacity: 1; pointer-events: auto; }
+        #sidePanel { position: fixed; top: 0; right: 0; bottom: 0; width: 85%; max-width: 400px; background: var(--bg); z-index: 300; transform: translateX(100%); transition: transform 0.3s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+        #sidePanel.open { transform: translateX(0); }
+        .panel-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); }
+        .panel-content { flex: 1; overflow-y: auto; padding: 20px; }
+
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .tool-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: var(--shadow); transition: transform 0.1s; }
+        .tool-btn:active { transform: scale(0.98); }
+        .tool-btn span { font-size: 12px; font-weight: 700; }
+        .tool-btn svg { color: var(--primary); }
+
+        .iframe-wrap { width: 100%; border: none; border-radius: 12px; background: white; margin-top: 10px; display: block; overflow: hidden; position: relative; }
+        .missing-file-placeholder {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; background: var(--bg); color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px;
+        }
+
+        /* Reader Modal */
+        #readerModal { position: fixed; inset: 0; background: var(--bg); z-index: 400; transform: translateY(100%); transition: transform 0.3s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+        #readerModal.open { transform: translateY(0); }
+        .reader-header { padding: 15px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .reader-content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
+        .ayah-block { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px dashed var(--border); position: relative; }
+        .ayah-tools { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .ayah-arabic { font-family: 'Amiri', serif; font-size: 26px; text-align: right; margin-bottom: 10px; line-height: 2.2; color: var(--text); }
+        .ayah-trans { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+        
+        .content-guide-item { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .content-guide-title { font-weight: 700; margin-bottom: 5px; color: var(--primary); }
+
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: calc(65px + env(safe-area-inset-bottom)); background: var(--surface); display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
+        .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-muted); }
+        .nav-item.active { color: var(--primary); }
+        .nav-label { font-size: 10px; font-weight: 600; }
+
+        .surah-item { display: flex; align-items: center; padding: 16px; background: var(--surface); margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); }
+        .surah-num { background: var(--primary-light); color: var(--primary); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 700; margin-right: 15px; }
+        
+        /* Keyframe for PWA slide up */
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
 </head>
 <body>
 
-<header class="hero" id="hero" role="banner" aria-label="Prayer hero">
-  <div class="hero-card-bg" id="heroCard">
-    <div class="hero-top">
-      <div class="hero-left">
-        <div id="locationName">—</div>
-        <div id="heroDate">—</div>
-      </div>
+    <header class="header-overlay" id="stickyHeader">
+        <div class="header-left">
+            <div class="header-greeting" id="greetings">Assalamualaikum</div>
+            <h1 class="header-title-overlay">WaktuSolat</h1>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button class="icon-btn-glass" onclick="toggleTheme()"><svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg></button>
+            <button class="icon-btn-glass" onclick="toggleSidePanel()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+        </div>
+    </header>
 
-      <div class="hero-right">
-        <div id="heroTime">--:--:--</div>
-        <div id="countdown">—</div>
-        <div id="nextPrayer">Next: —</div>
-      </div>
+    <div id="view-home" class="view active">
+        <div class="hero-wrapper">
+            <div class="hero" id="hero">
+                <div class="hero-card-bg" id="heroCard">
+                    <div class="hero-top">
+                        <div class="hero-left">
+                            <div id="locationName">Loading...</div>
+                            <div id="heroDate">...</div>
+                        </div>
+
+                        <div class="hero-right">
+                            <div id="heroTime">--:--</div>
+                            <div id="countdown">--:--:--</div>
+                            <div id="nextPrayer">Next: --</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-divider"></div>
+
+                    <div id="heroPrayers">
+                        <div id="prayerNames"></div>
+                        <div id="prayerTimes"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="app-container">
+            <div id="announcementBanner" style="display:none; background:#FEF3C7; color:#92400E; padding:12px; margin-bottom:15px; border-radius:12px; border-left:4px solid #F59E0B; font-size:13px;"></div>
+            
+            <div class="card">
+                <div class="section-title">Today's Schedule <span style="font-size:12px; color:var(--text-muted)" id="hijriDate"></span></div>
+                <div id="prayerList"></div>
+            </div>
+        </div>
     </div>
 
-    <div style="height:1px;background:rgba(0,0,0,0.03);margin:10px 0;border-radius:2px" aria-hidden="true"></div>
-
-    <div id="heroPrayers" aria-live="polite">
-      <div id="prayerNames" aria-hidden="false"></div>
-      <div id="prayerTimes" aria-hidden="false"></div>
+    <div id="view-quran" class="view" style="padding: 20px; padding-top: 80px;">
+        <h1 style="color:var(--text); font-size:24px; font-weight:800; margin-bottom:20px;">Al Quran</h1>
+        <select id="quranLangSelect" onchange="loadQuranList()" style="width:100%; padding:12px; border-radius:12px; margin-bottom:15px; background:var(--surface); color:var(--text); border:1px solid var(--border);">
+            <option value="ms.basmeih">Malay</option>
+            <option value="en.sahih">English</option>
+            <option value="id.indonesian">Indonesian</option>
+        </select>
+        <div id="surahList"></div>
     </div>
-  </div>
-</header>
 
-<nav class="site-nav" aria-label="Primary">
-  <div class="nav-bar container" style="background:transparent;">
-    <ul class="nav-list" role="menubar" aria-label="Main navigation">
-      <li role="none"><a role="menuitem" href="#prayer" class="active">Prayer</a></li>
-      <li role="none"><a role="menuitem" href="quran.html">Al Quran</a></li>
-      <li role="none"><a role="menuitem" href="#qiblaWrapper">Qiblat</a></li>
-      <li role="none"><a role="menuitem" href="#takwimFrame">Takwim</a></li>
-      <li role="none"><a role="menuitem" href="#hadith">Daily Hadith</a></li>
-      <li role="none"><a role="menuitem" href="#about">About</a></li>
-    </ul>
-  </div>
-</nav>
+    <div id="view-saved" class="view" style="padding: 20px; padding-top: 80px;">
+        <h1 style="color:var(--text); font-size:24px; font-weight:800; margin-bottom:20px;">Saved</h1>
+        <div id="bookmarksList" class="card"></div>
+    </div>
 
-<main class="container">
-  <div class="grid" id="mainGrid">
-    <section>
-      <div class="card prayer-table" id="prayer">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-          <div>
-            <strong id="locationNameSmall">—</strong>
-            <div style="color:var(--muted);font-size:13px">Prayer times today</div>
-          </div>
-          <div style="text-align:right">
-            <div id="worldTime" style="font-weight:700">--:--:--</div>
-            <div style="color:var(--muted);font-size:12px">Local time</div>
-          </div>
+    <div id="sidePanelOverlay" onclick="toggleSidePanel()"></div>
+    <aside id="sidePanel">
+        <div class="panel-header">
+            <div style="font-weight:700">Menu & Tools</div>
+            <button onclick="toggleSidePanel()" style="background:none; border:none; color:var(--text); padding:5px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
+        <div class="panel-content">
+            
+            <div class="section-title">Daily Hadith</div>
+            <div class="card" style="margin:0 0 20px 0; border-radius:16px;">
+                <div style="font-style:italic; font-size:14px; margin-bottom:8px; line-height:1.5;" id="hadithTextContent">Loading...</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size:11px; font-weight:700; color:var(--primary); text-transform:uppercase;" id="hadithSourceContent"></div>
+                    <button class="bookmark-btn" id="hadithBookmark" onclick="toggleHadithBookmark(this)"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>
+                </div>
+            </div>
 
-        <div id="tableWrapper" style="margin-top:10px;">
-          <table aria-label="Prayer times table">
-            <thead><tr><th>Prayer</th><th>Time</th></tr></thead>
-            <tbody id="prayerTableBody">
-              <tr id="row-imsak"><td>Imsak</td><td id="pt-imsak">--:--</td></tr>
-              <tr id="row-fajr"><td>Subuh</td><td id="pt-fajr">--:--</td></tr>
-              <tr id="row-dhuhr"><td>Zohor</td><td id="pt-dhuhr">--:--</td></tr>
-              <tr id="row-asr"><td>Asar</td><td id="pt-asr">--:--</td></tr>
-              <tr id="row-maghrib"><td>Maghrib</td><td id="pt-maghrib">--:--</td></tr>
-              <tr id="row-isha"><td>Ishaa</td><td id="pt-isha">--:--</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card" id="hadith" style="margin-top:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Daily Hadith</strong>
-          <div style="color:var(--muted);font-size:13px">Quote image (offline friendly)</div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
-          <canvas id="hadithCanvas" width="160" height="160" style="border-radius:8px;background:linear-gradient(180deg,#fff,#FFF6EE)"></canvas>
-          <div>
-            <div id="hadithText" style="font-weight:600">Loading hadith…</div>
-            <div style="color:var(--muted);font-size:13px">Source: sample</div>
-          </div>
-        </div>
-      </div>
-    </section>
+            <div class="section-title">Hadith Collections</div>
+            <div class="tool-grid">
+                <div class="tool-btn" onclick="openHadithCollection('bukhari')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span>Sahih Bukhari</span>
+                </div>
+                <div class="tool-btn" onclick="openHadithCollection('muslim')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span>Sahih Muslim</span>
+                </div>
+                <div class="tool-btn" onclick="openHadithCollection('nawawi')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                    <span>40 Hadith</span>
+                </div>
+                <div class="tool-btn" onclick="openHadithCollection('asbabun')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span>Asbabun Nuzul</span>
+                </div>
+            </div>
 
-    <aside style="display:contents;">
-      <div class="card" style="margin-top:0; height:400px; display:flex; flex-direction:column; gap:8px;">
-        <div id="qiblaWrapper" style="flex:1; width:100%; display:flex; justify-content:center; align-items:center; overflow:hidden;">
-          <iframe id="qiblatFrame" src="qiblat.html"
-                  style="width:100%; height:100%; border:none; border-radius:0; display:block;"></iframe>
-        </div>
-        <div style="text-align:center; color:var(--muted); font-size:14px;">
-          <span id="qiblaDegDisplay">—°</span>
-        </div>
-      </div>
+            <div class="section-title">Panduan² (Guides)</div>
+            <div class="tool-grid" id="panduanContainer"></div>
+            
+            <div class="section-title">Daily Duas</div>
+            <div class="tool-grid">
+                <div class="tool-btn" onclick="openDuas()" style="grid-column: span 2; flex-direction: row; justify-content: center; gap: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"></path><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                    <span>Open Himpunan Doa</span>
+                </div>
+            </div>
 
-      <div class="card" id="takwimCard" style="margin-top:14px; display:flex; flex-direction:column; gap:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Takwim & Hijri</strong>
-          <div style="font-size:13px;color:var(--muted)">7-day view • Full takwim below</div>
+            <div class="section-title" style="margin-top:20px;">Utility Tools</div>
+            <div class="card" style="padding:10px; margin-bottom:10px;">
+                <div class="section-title" style="font-size:14px; margin-bottom:5px;">Qibla Compass</div>
+                <div class="iframe-wrap" style="height: 300px;">
+                    <iframe src="qiblat.html" style="width:100%; height:100%; border:none;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"></iframe>
+                    <div class="missing-file-placeholder" style="display:none;">
+                        <strong>Feature Unavailable</strong><br>qiblat.html not found.
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="padding:10px;">
+                <div class="section-title" style="font-size:14px; margin-bottom:5px;">Takwim Hijri</div>
+                <div class="iframe-wrap" style="height: 360px;">
+                    <iframe src="Takwim-hijri.html" style="width:100%; height:100%; border:none;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"></iframe>
+                    <div class="missing-file-placeholder" style="display:none;">
+                        <strong>Feature Unavailable</strong><br>Takwim-hijri.html not found.
+                    </div>
+                </div>
+            </div>
+
         </div>
-        <iframe id="takwimFrame" class="takwim-frame" src="Takwim-hijri.html"
-                style="width:100%; height:450px; max-width:100%; border-radius:12px; border:0;"></iframe>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn" id="openTakwimFull">Open Full</button>
-        </div>
-      </div>
     </aside>
-  </div>
-</main>
 
-<footer style="text-align:center;padding:12px;color:var(--muted)">
-  Built with care • Works offline-ish • Customize translations/data
-</footer>
-  <script>
-const APP = { location: null, use24:false, kaaba:{lat:21.422487, lon:39.826206} };
-const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){localStorage.setItem(k,JSON.stringify(v))} };
+    <div id="readerModal">
+        <div class="reader-header">
+            <div style="display:flex; flex-direction:column;">
+                <div style="font-weight:700" id="readerTitle">Reader</div>
+                <span id="readerSubtitle" style="font-size:12px; color:var(--text-muted);"></span>
+            </div>
+            <button onclick="closeReader()" style="background:none; border:none; font-size:24px; color:var(--text);">&times;</button>
+        </div>
+        <div class="reader-content" id="readerContent"></div>
+    </div>
 
-// Default times for fallback (Imsak added here: 10 mins before Fajr)
-const DEFAULT_TIMINGS = {Imsak:'05:35', Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
+    <nav class="nav-bar">
+        <button class="nav-item active" onclick="switchTab('home', this)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><span class="nav-label">Home</span></button>
+        <button class="nav-item" onclick="switchTab('quran', this)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg><span class="nav-label">Quran</span></button>
+        <button class="nav-item" onclick="switchTab('saved', this)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg><span class="nav-label">Saved</span></button>
+    </nav>
+    
+    <div id="pwaInstall" style="display: none; position: fixed; bottom: 85px; left: 20px; right: 20px; background: var(--text); color: var(--bg); padding: 15px; border-radius: 16px; z-index: 200; align-items: center; justify-content: space-between; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideUp 0.4s ease;">
+        <div style="display:flex; flex-direction:column;">
+            <div style="font-weight:700; font-size:14px;">Install App</div>
+            <div style="font-size:11px; opacity:0.8;">Add to home screen</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="closePWA()" style="background:rgba(128,128,128,0.2); color:var(--bg); border:none; padding:8px 12px; border-radius:8px; font-weight:600; font-size:12px;">Close</button>
+            <button onclick="installPWA()" style="background:var(--bg); color:var(--text); border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:12px;">Install</button>
+        </div>
+    </div>
 
-// --- NOTIFICATION & SOUND FUNCTIONS ---
-let sentNotifications = new Set(); 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-async function requestNotificationPermission() {
-    if ('Notification' in window) {
-        if (Notification.permission === 'default') {
-            await Notification.requestPermission();
-        }
-    } else {
-        console.warn("Notifications not supported in this browser.");
-    }
-}
-
-function showPrayerNotification(prayerName) {
-    if (Notification.permission === 'granted' && !sentNotifications.has(prayerName)) {
-        
-        // 1. Display the standard browser notification (Customized text)
-        new Notification(`Allahu Akbar!`, { 
-            body: `Waktunya solat ${prayerName} telah tiba.`, 
-            icon: '/Images/icon-512.png',
-            vibrate: [200, 100, 200]
-        });
-        
-        // 2. Play a custom sound using the HTML Audio API
-        try {
-            // !!! IMPORTANT: CHANGE '/audio/azan.mp3' to your actual file path !!!
-            const audio = new Audio('Images/noti.mp3'); 
-            audio.volume = 0.8; 
-            audio.play().catch(error => {
-                console.warn("Audio playback failed (browser may require user interaction first):", error);
-            });
-        } catch (e) {
-            console.error("Error initializing audio:", e);
-        }
-
-        // 3. Mark the notification as sent for today
-        sentNotifications.add(prayerName);
-    }
-}
-
-function resetDailySentNotifications() {
-    const today = new Date().toDateString();
-    const lastReset = storage.get('lastNotificationReset');
-    if (lastReset !== today) {
-        sentNotifications.clear();
-        storage.set('lastNotificationReset', today);
-    }
-}
-// ------------------------------------
-
-// --- UTILITY FUNCTIONS ---
-
-// Function to adjust HH:MM time string by N minutes (for +1 minute adjustment)
-function adjustTime(timeStr, minutes) {
-  if (!timeStr || timeStr === '--:--') return timeStr;
-  const [h, m] = timeStr.split(':').map(Number);
-  const date = new Date();
-  date.setHours(h, m, 0, 0); 
-  date.setMinutes(date.getMinutes() + minutes);
-  const newH = date.getHours().toString().padStart(2, '0');
-  const newM = date.getMinutes().toString().padStart(2, '0');
-  return `${newH}:${newM}`;
-}
-
-// Placeholder for Reverse Geocoding
-async function reverseGeocode(lat, lon) {
-  console.log(`Attempting reverse geocoding for: ${lat}, ${lon}`);
-  return "Current GPS Location"; 
-}
-
-// Format time
-function formatTime(t){
-  if(!t) return '--:--';
-  const [h,m]=t.split(':').map(n=>parseInt(n));
-  const dt=new Date(); dt.setHours(h,m,0,0);
-  return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:!APP.use24});
-}
-
-// Get user location (with improved name handling)
-async function getLocation(){
-  let loc=storage.get('loc') || APP.location;
-  if(loc?.lat && loc?.lon && loc?.name) { 
-      APP.location=loc; 
-      return loc; 
-  }
-  
-  if(navigator.geolocation){
-    try{
-      const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:12000,enableHighAccuracy:true}));
-      const name = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
-      loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name };
-      
-      APP.location = loc;
-      storage.set('loc', loc);
-      return loc;
-      
-    }catch(e){
-        console.warn('Geolocation error (user denied or timeout):', e);
-    }
-  }
-  // Fallback location if Geolocation fails or is unsupported
-  const fallbackLoc = { lat: 3.1390, lon: 101.6869, name: 'Kuala Lumpur (Default)' };
-  APP.location = fallbackLoc;
-  return fallbackLoc;
-}
-
-// Fetch accurate prayer times (Prioritizes online, falls back to cached/default)
-async function fetchOnlinePrayerTimes(lat, lon) {
-  try {
-    const ts = Math.floor(Date.now() / 1000);
-    // METHOD 11 (Singapore) used for JAKIM accuracy
-    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=11`);
-    const data = await res.json();
-    const timings = { 
-        Imsak: data.data.timings.Imsak, Fajr: data.data.timings.Fajr, Dhuhr: data.data.timings.Dhuhr, 
-        Asr: data.data.timings.Asr, Maghrib: data.data.timings.Maghrib, Isha: data.data.timings.Isha
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
+      authDomain: "waktusolatlite.firebaseapp.com",
+      projectId: "waktusolatlite",
+      storageBucket: "waktusolatlite.firebasestorage.app",
+      messagingSenderId: "86910439082",
+      appId: "1:86910439082:web:e482d01e1451e58179cad3"
     };
-    
-    // Apply +1 minute adjustment before caching
-    const adjustedTimings = {};
-    for (const key in timings) {
-        adjustedTimings[key] = adjustTime(timings[key], 1); 
-    }
-    
-    localStorage.setItem('lastPrayerTimes', JSON.stringify(adjustedTimings));
-    return adjustedTimings;
-  } catch(e) {
-    console.warn("API Error: Unable to fetch fresh data.");
-    return null; // Return null on failure
-  }
-}
 
-// --- UI Rendering Functions ---
-
-// Mapping for display names
-const prayerDisplayMap = {
-    'Imsak': 'Imsak',
-    'Fajr': 'Subuh',
-    'Dhuhr': 'Zohor',
-    'Asr': 'Asar',
-    'Maghrib': 'Maghrib',
-    'Isha': 'Ishaa'
-};
-
-// Update hero prayers (5 stacked + Imsak)
-function renderHeroPrayers(timings){
-  // Use API keys for iteration, but display the local names
-  const order=['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'];
-  const namesDiv=document.getElementById('prayerNames');
-  const timesDiv=document.getElementById('prayerTimes');
-  namesDiv.innerHTML=''; timesDiv.innerHTML='';
-  order.forEach(key=>{
-    const nameEl=document.createElement('div'); 
-    nameEl.textContent=prayerDisplayMap[key]; // Use the converted name
-    namesDiv.appendChild(nameEl);
-    const timeEl=document.createElement('div'); 
-    timeEl.textContent=formatTime(timings[key]); 
-    timesDiv.appendChild(timeEl);
-  });
-}
-
-// Update the detailed prayer table (HTML rows already updated)
-function renderPrayerTable(timings) {
-  // Use API keys for accessing data from the `timings` object
-  for(const key of ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha']){
-    const id = key.toLowerCase(); // IDs match the original keys (imsak, fajr, dhuhr, etc.)
-    const timeElement = document.getElementById('pt-'+id);
-    if(timeElement) {
-        timeElement.textContent = formatTime(timings[key] || '--:--'); 
-    }
-  }
-}
-
-// Next prayer logic
-function getNextPrayer(timings){
-  const now=new Date();
-  // Use API keys for logic
-  const prayerKeys = ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'];
-  for(const key of prayerKeys){
-    const timeValue = timings[key];
-    if (!timeValue) continue;
-
-    const [h,m]=timeValue.split(':').map(n=>parseInt(n));
-    const dt=new Date(); dt.setHours(h,m,0,0);
-    if(dt>now) return prayerDisplayMap[key]; // Return the DISPLAY name
-  }
-  return prayerDisplayMap['Imsak']; // Loop back to Imsak (display name)
-}
-
-// Hero countdown, clock, and Notification check
-let heroInterval=null;
-function updateHero(timings){
-  if(heroInterval) clearInterval(heroInterval);
-  resetDailySentNotifications(); // Check and reset daily tracking
-  
-  // Initial time update
-  document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
-
-  // Get all today's prayer times as Date objects for precise checking
-  const todayPrayers = {};
-  const prayerKeys = ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'];
-  
-  prayerKeys.forEach(key => {
-    const timeValue = timings[key];
-    if (!timeValue) return;
-    const [h,m]=timeValue.split(':').map(n=>parseInt(n));
-    const dt=new Date(); 
-    dt.setHours(h,m,0,0);
-    todayPrayers[key] = dt;
-  });
-
-  heroInterval=setInterval(()=>{
-    const now = new Date();
-    
-    // Check for Prayer Time for Notification
-    for (const key of prayerKeys) {
-        const prayerDate = todayPrayers[key];
-        const displayName = prayerDisplayMap[key];
+    try {
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
         
-        // Check if current time is within 1 second of the prayer time
-        if (prayerDate && Math.abs(now - prayerDate) < 1000) {
-            // Check if notification hasn't been sent yet for this prayer today
-            if (!sentNotifications.has(displayName)) {
-                showPrayerNotification(displayName);
+        // Expose helper to window for main script
+        window.updateUserLocation = function(lat, lon, device) {
+            let installId = localStorage.getItem('wsl_install_id');
+            if(!installId) { 
+                installId = crypto.randomUUID(); 
+                localStorage.setItem('wsl_install_id', installId); 
             }
-        }
+            db.ref('users/' + installId).update({
+                lastActive: Date.now(),
+                lat: lat,
+                lon: lon,
+                device: device
+            });
+        };
+
+        // Initialize user tracking immediately if possible, or wait for trigger
+        window.firebaseReady = true;
+
+        db.ref('announcement').on('value', (snap) => {
+            const d = snap.val(); 
+            const el = document.getElementById('announcementBanner');
+            if(d && d.show && d.text) { el.style.display='block'; el.textContent=d.text; } 
+            else el.style.display='none';
+        });
+
+        db.ref('hadiths').on('value', (snap) => {
+            const arr=[]; snap.forEach(c=>arr.push(c.val()));
+            if(arr.length>0) { 
+                const r=arr[Math.floor(Math.random()*arr.length)]; 
+                document.getElementById('hadithTextContent').textContent=`"${r.text}"`; 
+                document.getElementById('hadithSourceContent').textContent=r.source; 
+                if(window.checkHadithBookmark) window.checkHadithBookmark(); 
+            }
+        });
+
+        db.ref('duas').on('value', (snap) => { 
+            if(!window.STATE) window.STATE={}; 
+            window.STATE.duasCache=[]; 
+            if(snap.exists()) snap.forEach(x=>window.STATE.duasCache.push(x.val())); 
+        });
+
+    } catch(e) { 
+        console.error("Firebase Error", e); 
     }
-    
-    // Countdown Logic
-    const nextDisplayName = getNextPrayer(timings);
-    let nextKey = Object.keys(prayerDisplayMap).find(key => prayerDisplayMap[key] === nextDisplayName) || 'Fajr';
-    
-    const [h,m]=timings[nextKey].split(':').map(n=>parseInt(n));
-    let t=new Date(); t.setHours(h,m,0,0);
-    
-    if((nextKey==='Imsak' || nextKey==='Fajr') && t<=new Date()) t.setDate(t.getDate()+1);
-    
-    const diff=t-new Date();
-    const hours=Math.floor(diff/1000/3600);
-    const minutes=Math.floor((diff/1000/60)%60);
-    const seconds=Math.floor((diff/1000)%60);
-    
-    document.getElementById('nextPrayer').textContent='Next: '+nextDisplayName; 
-    document.getElementById('countdown').textContent=`${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-    document.getElementById('heroTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
-  },1000);
-}
+</script>
 
-// Hero background changer 
-function updateHeroBackground(timings) {
-  const hero = document.getElementById("hero");
-  // UPDATED IMAGE NAMES
-  const bgImages = {
-    Fajr: "Images/subuh.jpg", Dhuhr: "Images/zohor.jpg", Asr: "Images/asar.jpg", 
-    Maghrib: "Images/maghrib.jpg", Isha: "Images/isyak.jpg"
-  };
+<script>
+    // 1. INSTANT LOAD: Read saved data immediately
+    const savedCoords = JSON.parse(localStorage.getItem('wsl_coords'));
+    const INITIAL_LAT = savedCoords ? savedCoords.lat : 3.1390;
+    const INITIAL_LON = savedCoords ? savedCoords.lon : 101.6869;
 
-  function getCurrentPrayerPeriod() {
-    const now = new Date();
-    const timeToDate = (time) => {
-      const [h, m] = time.split(":").map(Number);
-      const d = new Date();
-      d.setHours(h, m, 0, 0);
-      return d;
+    const STATE = { 
+        lat: INITIAL_LAT, 
+        lon: INITIAL_LON, 
+        prayerTimes: JSON.parse(localStorage.getItem('wsl_cached_times') || 'null'), 
+        theme: localStorage.getItem('wsl_theme')||'light', 
+        notifSettings: JSON.parse(localStorage.getItem('wsl_notif_settings')||'{}'), 
+        notified: {}, 
+        bookmarks: JSON.parse(localStorage.getItem('wsl_bookmarks')||'[]'), 
+        duasCache: [] 
     };
 
-    // Use API keys for comparison
-    const order = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
-    let current = "Isha"; 
+    const prayerDisplayMap = { 'Imsak': 'Imsak', 'Fajr': 'Subuh', 'Dhuhr': 'Zohor', 'Asr': 'Asar', 'Maghrib': 'Maghrib', 'Isha': 'Isyak' };
+    const prayerKeys = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']; 
+    const bgImages = {
+        Fajr: "images/subuh.jpg", Dhuhr: "images/zohor.jpg", Asr: "images/asar.jpg", 
+        Maghrib: "images/maghrib.jpg", Isha: "images/isyak.jpg", Default: "images/isyak.jpg"
+    };
+    const PANDUAN_DATA = [
+        {title: "Panduan Wudhu", id:"wudhu", icon: "💧"},
+        {title: "Panduan Solat", id:"solat", icon: "🤲"},
+        {title: "Panduan Puasa", id:"puasa", icon: "🌙"},
+        {title: "Panduan Zakat", id:"zakat", icon: "💰"}
+    ];
 
-    for (let i = 0; i < order.length; i++) {
-      const prayerKey = order[i];
-      const prayerTime = timeToDate(timings[prayerKey]);
-      const before30min = new Date(prayerTime.getTime() - 30 * 60 * 1000);
+    window.addEventListener('DOMContentLoaded', () => {
+        applyTheme();
+        updateGreeting();
+        renderBookmarksList();
+        renderPanduan();
+        
+        // 2. RENDER IMMEDIATELY: Don't wait for GPS
+        if(STATE.prayerTimes) {
+            renderPrayerList();
+            renderHeroPrayers(STATE.prayerTimes);
+            updateHero(STATE.prayerTimes);
+            document.getElementById('locationName').textContent = savedCoords ? "Last Known Location" : "Kuala Lumpur (Default)";
+        } else {
+            // Very first run: Show fallback immediately while loading
+            document.getElementById('locationName').textContent = "Locating...";
+            fetchTimes(); // Fetch using the default (KL) coordinates immediately
+        }
 
-      if (now >= before30min && now < prayerTime) {
-        return prayerKey; // Return the key (Fajr, Dhuhr...) to map to image
-      }
-      if (now >= prayerTime && i < order.length - 1) {
-        current = order[i + 1];
-      }
+        // 3. START BACKGROUND TASKS
+        getLocation(); 
+
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+        
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('stickyHeader');
+            if (window.scrollY > 30) header.classList.add('scrolled'); else header.classList.remove('scrolled');
+        });
+
+        document.querySelectorAll('iframe').forEach(frame => {
+            try {
+                frame.addEventListener('error', () => {
+                    frame.style.display = 'none';
+                    frame.nextElementSibling.style.display = 'flex';
+                });
+            } catch(e){}
+        });
+    });
+
+    // --- HELPER FUNCTIONS ---
+    function renderPanduan() {
+        const c = document.getElementById('panduanContainer');
+        c.innerHTML = PANDUAN_DATA.map(p => `
+            <div class="tool-btn" onclick="openPanduan('${p.id}', '${p.title}')">
+                <div style="font-size:24px;">${p.icon}</div>
+                <span>${p.title}</span>
+            </div>
+        `).join('');
     }
-    return current;
-  }
 
-  function refreshHeroBackground() {
-    const currentPrayerKey = getCurrentPrayerPeriod();
-    const bg = bgImages[currentPrayerKey];
-    hero.style.backgroundImage = `url('${bg}')`;
-  }
+    window.openPanduan = function(id, title) {
+        const m = document.getElementById('readerModal');
+        const c = document.getElementById('readerContent');
+        m.classList.add('open');
+        document.getElementById('readerTitle').textContent = title;
+        document.getElementById('readerSubtitle').textContent = "Islamic Guide";
+        
+        let html = '';
+        if(id === 'wudhu') {
+             html = `
+                <div class="content-guide-item"><div class="content-guide-title">1. Niat</div><p>Berniat di dalam hati untuk mengambil air wudhu.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">2. Membasuh Muka</div><p>Basuh muka rata-rata 3 kali.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">3. Membasuh Tangan</div><p>Basuh tangan hingga ke siku (kanan kemudian kiri) 3 kali.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">4. Menyapu Kepala</div><p>Sapu sedikit bahagian kepala dengan air.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">5. Membasuh Kaki</div><p>Basuh kaki hingga ke buku lali (kanan kemudian kiri) 3 kali.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">6. Tertib</div><p>Lakukan mengikut urutan.</p></div>
+             `;
+        } else {
+             html = `<div style="text-align:center; padding:20px;">Content for ${title} is being updated.</div>`;
+        }
+        c.innerHTML = html;
+    };
 
-  refreshHeroBackground();
-  setInterval(refreshHeroBackground, 60 * 1000);
-}
+    window.openDuas = function() {
+        const m = document.getElementById('readerModal'); const c = document.getElementById('readerContent');
+        m.classList.add('open');
+        document.getElementById('readerTitle').textContent = "Himpunan Doa";
+        document.getElementById('readerSubtitle').textContent = "Daily Duas";
+        c.innerHTML = '';
+        if(!STATE.duasCache || STATE.duasCache.length === 0) { c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Loading or no duas available...</div>'; return; }
+        STATE.duasCache.forEach(v => {
+            c.innerHTML += `<div class="card" style="padding:15px;margin-bottom:10px;"><div style="font-weight:700;font-size:16px;">${v.t}</div><div style="font-family:Amiri;text-align:right;font-size:20px;color:var(--primary);margin:10px 0;">${v.a}</div><div style="font-size:14px;color:var(--text-muted);line-height:1.5">${v.m}</div></div>`;
+        });
+    };
 
-// --- Main Execution ---
+    window.openHadithCollection = async function(type) {
+        const m = document.getElementById('readerModal'); const c = document.getElementById('readerContent');
+        const t = document.getElementById('readerTitle'); const s = document.getElementById('readerSubtitle');
+        m.classList.add('open'); 
+        t.textContent = type.replace('asbabun', 'Asbabun Nuzul').toUpperCase(); s.textContent = "Loading...";
+        c.innerHTML = '<div style="text-align:center; padding:20px;">Fetching trusted data...</div>';
 
-async function runAll(){
-  // Request Notification permission on load
-  await requestNotificationPermission(); 
-  
-  // 1. Get Location (uses fallback if needed)
-  const loc=await getLocation();
-  document.getElementById('locationName').textContent=loc.name;
-  document.getElementById('locationNameSmall').textContent=loc.name;
-  document.getElementById('heroDate').textContent=new Date().toDateString();
-  document.getElementById('worldTime').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!APP.use24});
-  
-  // 2. Load cached/default timings IMMEDIATELY (robust fix)
-  let timings = JSON.parse(localStorage.getItem('lastPrayerTimes')) || DEFAULT_TIMINGS;
-  
-  // Apply +1 minute adjustment for cached/default data
-  const initialTimings = {};
-  for (const key in timings) {
-      initialTimings[key] = adjustTime(timings[key], 1); 
-  }
-  timings = initialTimings;
-  
-  // 3. Update UI with the initial data (using adjusted cached/default times)
-  renderHeroPrayers(timings);
-  renderPrayerTable(timings);
-  updateHero(timings);
-  updateHeroBackground(timings);
-  
-  // 4. ASYNCHRONOUSLY fetch fresh data
-  const freshTimings = await fetchOnlinePrayerTimes(loc.lat, loc.lon);
+        if(type === 'asbabun') {
+            s.textContent = "Context of Revelation";
+            c.innerHTML = `<div class="card" style="padding:20px; text-align:center;"><h3>Asbabun Nuzul</h3><p style="color:var(--text-muted)">Historical context for specific Quranic verses.</p></div>`;
+            return;
+        }
 
-  if (freshTimings) {
-    // If fresh data is available (already adjusted by +1 min), update the UI again
-    timings = freshTimings;
-    renderHeroPrayers(timings);
-    renderPrayerTable(timings);
-    updateHero(timings);
-    updateHeroBackground(timings);
-  }
-  
-  // Qibla calculation 
-  const deg=Math.atan2(Math.sin(APP.kaaba.lon*Math.PI/180-loc.lon*Math.PI/180)*Math.cos(APP.kaaba.lat*Math.PI/180),
-    Math.cos(loc.lat*Math.PI/180)*Math.sin(APP.kaaba.lat*Math.PI/180)-Math.sin(loc.lat*Math.PI/180)*Math.cos(APP.kaaba.lat*Math.PI/180)*Math.cos(APP.kaaba.lon*Math.PI/180-loc.lon*Math.PI/180)
-  )*180/Math.PI;
-  document.getElementById('qiblaDegDisplay').textContent=Math.round((deg+360)%360)+'°';
-}
+        try {
+            if(type === 'nawawi') {
+                const resAr = await fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-nawawi.json'); const dataAr = await resAr.json();
+                const resEn = await fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-nawawi.json'); const dataEn = await resEn.json();
+                s.textContent = `${dataAr.hadiths.length} Hadiths`;
+                let html = '';
+                dataAr.hadiths.forEach((h, i) => {
+                    const enText = dataEn.hadiths[i] ? dataEn.hadiths[i].text : '';
+                    html += `<div class="ayah-block"><div style="font-weight:700; margin-bottom:10px; color:var(--primary);">Hadith ${h.hadithnumber}</div><div class="ayah-arabic" style="font-size:20px;">${h.text}</div><div class="ayah-trans">${enText}</div></div>`;
+                });
+                c.innerHTML = html;
+            } else {
+                const book = type === 'bukhari' ? 'bukhari' : 'muslim';
+                s.textContent = `Selection from ${type}`;
+                const res = await fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-${book}.min.json`);
+                const data = await res.json();
+                let html = `<div style="padding:20px; text-align:center;"><p>Displaying first 50 hadiths preview.</p><hr></div>`;
+                data.hadiths.slice(0, 50).forEach(h => {
+                    html += `<div class="ayah-block"><div style="font-weight:700; color:var(--text-muted); font-size:12px;">No. ${h.hadithnumber}</div><div class="ayah-trans" style="margin-top:5px; color:var(--text);">${h.text}</div></div>`;
+                });
+                c.innerHTML = html;
+            }
+        } catch(e) { c.innerHTML = `<div style="color:red; text-align:center;">Error loading Hadith.</div>`; }
+    };
 
-// --- Event Handlers ---
+    window.togAyah = function(b,s,a,ar,tr,sn) {
+        ar = decodeURIComponent(ar); tr = decodeURIComponent(tr); sn = decodeURIComponent(sn);
+        const id=`ayah_${s}_${a}`; const i=STATE.bookmarks.findIndex(x=>x.id===id);
+        if(i>-1){STATE.bookmarks.splice(i,1);b.classList.remove('saved');}
+        else{STATE.bookmarks.push({id,type:'ayah',surahNum:s,ayahNum:a,arText:ar,trText:tr,surahName:sn});b.classList.add('saved');}
+        localStorage.setItem('wsl_bookmarks',JSON.stringify(STATE.bookmarks)); renderBookmarksList();
+    };
+    window.toggleHadithBookmark = function(b) {
+        const t=document.getElementById('hadithTextContent').textContent; const src=document.getElementById('hadithSourceContent').textContent;
+        const id=`hadith_${t.substring(0,10)}`; const i=STATE.bookmarks.findIndex(x=>x.id===id);
+        if(i>-1){STATE.bookmarks.splice(i,1);b.classList.remove('saved');}
+        else{STATE.bookmarks.push({id,type:'hadith',text:t,src:src});b.classList.add('saved');}
+        localStorage.setItem('wsl_bookmarks',JSON.stringify(STATE.bookmarks)); renderBookmarksList();
+    };
+    window.checkHadithBookmark = function() {
+        const t=document.getElementById('hadithTextContent').textContent; const b=document.getElementById('hadithBookmark');
+        if(!b) return;
+        if(STATE.bookmarks.some(x=>x.id===`hadith_${t.substring(0,10)}`)) b.classList.add('saved'); else b.classList.remove('saved');
+    };
+    function renderBookmarksList() {
+        const l=document.getElementById('bookmarksList'); if(STATE.bookmarks.length===0){l.innerHTML='<div style="color:var(--text-muted);font-size:13px;text-align:center;">No bookmarks.</div>';return;}
+        l.innerHTML=''; STATE.bookmarks.forEach(b => {
+            l.innerHTML += `<div style="border-bottom:1px solid var(--border);padding:10px 0;font-size:13px;">${b.type==='ayah'?`<div><strong>${b.surahName} (${b.surahNum}:${b.ayahNum})</strong></div><div style="color:var(--text-muted)">${b.trText.substring(0,50)}...</div>`:`<div><strong>Hadith:</strong> ${b.text.substring(0,50)}...</div>`}</div>`;
+        });
+    }
 
-document.getElementById('toggle24')?.addEventListener('click',()=>{
-  APP.use24=!APP.use24;
-  document.getElementById('toggle24').textContent='24h: '+(APP.use24?'On':'Off');
-  runAll();
-});
-document.getElementById('setLocationBtn')?.addEventListener('click',async ()=>{
-  const lat=prompt('Enter latitude:',APP.location?.lat||3.1390);
-  const lon=prompt('Enter longitude:',APP.location?.lon||101.6869);
-  const name=prompt('Enter location name:','My Location');
-  if(lat && lon){APP.location={lat:parseFloat(lat),lon:parseFloat(lon),name:name||'My Location'};storage.set('loc',APP.location);await runAll();}
-});
-document.getElementById('openTakwimFull')?.addEventListener('click',()=>window.open('Takwim-hijri.html','_blank'));
+    // --- UPDATED LOCATION & FETCH LOGIC ---
+    function getLocation() {
+        const onSuccess = (p) => {
+            STATE.lat = p.coords.latitude; 
+            STATE.lon = p.coords.longitude;
+            localStorage.setItem('wsl_coords', JSON.stringify({lat: STATE.lat, lon: STATE.lon}));
+            document.getElementById('locationName').textContent = "Current Location";
+            syncLocationToFirebase(STATE.lat, STATE.lon);
+            fetchTimes(); 
+        };
 
-// Run on load
-window.addEventListener('DOMContentLoaded',runAll);
+        const onError = () => {
+            if(!savedCoords) document.getElementById('locationName').textContent = "Kuala Lumpur (Default)";
+            syncLocationToFirebase(null, null);
+        };
+
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(onSuccess, onError, {timeout: 10000}); 
+        } else { onError(); }
+    }
+
+    function syncLocationToFirebase(lat, lon) {
+        const device = navigator.userAgent || 'Unknown';
+        let attempts = 0;
+        const interval = setInterval(() => {
+            if(window.updateUserLocation) {
+                window.updateUserLocation(lat, lon, device);
+                clearInterval(interval);
+            }
+            attempts++;
+            if(attempts > 20) clearInterval(interval);
+        }, 500);
+    }
+
+    async function fetchTimes() {
+        try {
+            const res = await fetch(`https://api.aladhan.com/v1/timings/${Math.floor(Date.now()/1000)}?latitude=${STATE.lat}&longitude=${STATE.lon}&method=11`);
+            const d = await res.json();
+            STATE.prayerTimes = d.data.timings;
+            // SAVE CACHE
+            localStorage.setItem('wsl_cached_times', JSON.stringify(STATE.prayerTimes));
+            
+            document.getElementById('hijriDate').textContent = `${d.data.date.hijri.day} ${d.data.date.hijri.month.en} ${d.data.date.hijri.year}`;
+            renderPrayerList(); 
+            renderHeroPrayers(STATE.prayerTimes); 
+            updateHero(STATE.prayerTimes);
+        } catch(e) { console.error(e); }
+    }
+
+    function renderPrayerList() {
+        const l = document.getElementById('prayerList'); l.innerHTML = '';
+        prayerKeys.forEach(k => {
+            const s = STATE.notifSettings[k]||'sound';
+            l.innerHTML += `<div class="prayer-row"><div class="prayer-info"><span>${prayerDisplayMap[k]}</span><span class="prayer-time">${convertTo12Hour(STATE.prayerTimes[k])}</span></div><button class="bell-btn ${s}" onclick="cycleNotif('${k}')">${getBellIcon(s)}</button></div>`;
+        });
+    }
+    function getBellIcon(m) {
+        if(m==='sound') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`;
+        if(m==='silent') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+    }
+    function cycleNotif(k) {
+        if(Notification.permission === 'default') Notification.requestPermission();
+        const m=['sound','silent','off']; const c=STATE.notifSettings[k]||'sound';
+        STATE.notifSettings[k] = m[(m.indexOf(c)+1)%3];
+        localStorage.setItem('wsl_notif_settings', JSON.stringify(STATE.notifSettings)); renderPrayerList();
+    }
+    function convertTo12Hour(t) { let [h,m]=t.split(':'); h=parseInt(h); const am=h>=12?'PM':'AM'; h=h%12||12; return `${h}:${m} ${am}`; }
+
+    function renderHeroPrayers(timings) {
+        const order = ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'];
+        const namesDiv = document.getElementById('prayerNames'); const timesDiv = document.getElementById('prayerTimes');
+        namesDiv.innerHTML=''; timesDiv.innerHTML='';
+        order.forEach(key => {
+            const nameEl = document.createElement('div'); nameEl.textContent = prayerDisplayMap[key].substring(0,3); namesDiv.appendChild(nameEl);
+            const timeEl = document.createElement('div'); timeEl.textContent = timings[key].split(' ')[0]; timesDiv.appendChild(timeEl);
+        });
+    }
+    let heroInterval = null;
+    function updateHero(timings) {
+        if(heroInterval) clearInterval(heroInterval);
+        updateHeroBackground(timings);
+        const tick = () => {
+            const now = new Date();
+            document.getElementById('heroTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
+            document.getElementById('heroDate').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
+            let nextKey = 'Fajr'; let minDiff = Infinity;
+            ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
+                const [h,m] = timings[k].split(':');
+                let t = new Date(); t.setHours(h,m,0,0);
+                if(t < now) t.setDate(t.getDate()+1);
+                const diff = t - now;
+                if(diff < minDiff) { minDiff = diff; nextKey = k; }
+            });
+            const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0');
+            const mm = Math.floor((minDiff%3600000)/60000).toString().padStart(2,'0');
+            const ss = Math.floor((minDiff%60000)/1000).toString().padStart(2,'0');
+            document.getElementById('countdown').textContent = `- ${hh}:${mm}:${ss}`;
+            document.getElementById('nextPrayer').textContent = `NEXT: ${prayerDisplayMap[nextKey]}`;
+        };
+        tick(); heroInterval = setInterval(tick, 1000);
+    }
+    function updateHeroBackground(timings) {
+        const hero = document.getElementById("hero"); const now = new Date();
+        const timeToDate = (t) => { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h,m,0,0); return d; };
+        let currentBg = bgImages.Default;
+        if(now >= timeToDate(timings.Fajr) && now < timeToDate(timings.Dhuhr)) currentBg = bgImages.Fajr;
+        else if(now >= timeToDate(timings.Dhuhr) && now < timeToDate(timings.Asr)) currentBg = bgImages.Dhuhr;
+        else if(now >= timeToDate(timings.Asr) && now < timeToDate(timings.Maghrib)) currentBg = bgImages.Asr;
+        else if(now >= timeToDate(timings.Maghrib) && now < timeToDate(timings.Isha)) currentBg = bgImages.Maghrib;
+        else currentBg = bgImages.Isha; 
+        hero.style.backgroundImage = `url('${currentBg}')`;
+    }
+
+    function toggleTheme() { STATE.theme = STATE.theme==='light'?'dark':'light'; localStorage.setItem('wsl_theme', STATE.theme); applyTheme(); }
+    function applyTheme() {
+        document.documentElement.setAttribute('data-theme', STATE.theme);
+        document.getElementById('themeIcon').innerHTML = STATE.theme==='dark' ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>' : '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
+    }
+    function toggleSidePanel() {
+        const p = document.getElementById('sidePanel'); const o = document.getElementById('sidePanelOverlay');
+        if(p.classList.contains('open')) { p.classList.remove('open'); o.classList.remove('open'); }
+        else { p.classList.add('open'); o.classList.add('open'); }
+    }
+
+    async function loadQuranList() {
+        const l=document.getElementById('surahList'); l.innerHTML='Loading...'; 
+        try {
+            const r=await fetch('https://api.alquran.cloud/v1/surah'); const d=await r.json(); l.innerHTML='';
+            d.data.forEach(s => { l.innerHTML += `<div class="surah-item" onclick="openReader(${s.number},'${s.englishName}')"><div class="surah-num">${s.number}</div><div style="flex:1"><div style="font-weight:700">${s.englishName}</div><div style="font-size:12px;color:var(--text-muted)">${s.englishNameTranslation}</div></div><div class="surah-arabic">${s.name}</div></div>`; });
+        } catch(e){ l.innerHTML = 'Error loading list.'; }
+    }
+    async function openReader(n,t) {
+        const m=document.getElementById('readerModal'); m.classList.add('open'); document.getElementById('readerTitle').textContent=t; document.getElementById('readerSubtitle').textContent = `Surah ${n}`;
+        const c=document.getElementById('readerContent'); c.innerHTML='Loading...'; const lang=document.getElementById('quranLangSelect').value;
+        try {
+            const [r1,r2]=await Promise.all([fetch(`https://api.alquran.cloud/v1/surah/${n}`), fetch(`https://api.alquran.cloud/v1/surah/${n}/${lang}`)]);
+            const d1=await r1.json(); const d2=await r2.json();
+            let h = (n!==1&&n!==9) ? `<div style="text-align:center;font-family:Amiri;font-size:24px;margin-bottom:20px;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>` : '';
+            d1.data.ayahs.forEach((a,i) => {
+                const tr = d2.data.ayahs[i].text;
+                const sv = STATE.bookmarks.some(b=>b.id===`ayah_${n}_${a.numberInSurah}`);
+                const safeAr = encodeURIComponent(a.text); const safeTr = encodeURIComponent(tr); const safeTitle = encodeURIComponent(t);
+                h += `<div class="ayah-block">
+                        <div class="ayah-tools">
+                            <span style="font-size:12px;color:var(--text-muted)">${n}:${a.numberInSurah}</span>
+                            <button class="bookmark-btn ${sv?'saved':''}" onclick="togAyah(this,${n},${a.numberInSurah},'${safeAr}','${safeTr}','${safeTitle}')">
+                                <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                            </button>
+                        </div>
+                        <div class="ayah-arabic">${a.text}</div><div class="ayah-trans">${tr}</div>
+                      </div>`; 
+            });
+            c.innerHTML=h;
+        } catch(e){ c.innerHTML='Error loading.'; }
+    }
+    function updateGreeting() { const h=new Date().getHours(); document.getElementById('greetings').textContent=`Assalamualaikum, ${h<12?'Good Morning':h<18?'Good Afternoon':'Good Evening'}`; }
+    function switchTab(id, b) {
+        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById('view-'+id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); b.classList.add('active');
+        const h = document.getElementById('stickyHeader');
+        if(id!=='home') { h.classList.add('scrolled'); h.style.background='var(--surface)'; } else { h.style.background=''; h.classList.remove('scrolled'); }
+        if(id==='quran') loadQuranList();
+    }
+    window.closeReader = function(){ document.getElementById('readerModal').classList.remove('open'); };
+    
+    // PWA INSTALL LOGIC
+    let dp; 
+    window.addEventListener('beforeinstallprompt',e=>{
+        e.preventDefault();
+        dp=e;
+        document.getElementById('pwaInstall').style.display='flex';
+    });
+    window.installPWA = function(){
+        if(dp) dp.prompt();
+        document.getElementById('pwaInstall').style.display='none';
+    }
+    window.closePWA = function(){
+        document.getElementById('pwaInstall').style.display='none';
+    }
 </script>
 </body>
 </html>
