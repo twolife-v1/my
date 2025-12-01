@@ -10,11 +10,34 @@
         body { background-color: #1a1a1a; color: #f3f4f6; }
         .card { background-color: #2a2a2a; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         #map { height: 500px; width: 100%; border-radius: 12px; z-index: 1; }
+        
+        /* Login Screen Styles */
+        #loginOverlay {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .login-box {
+            background: #2a2a2a; padding: 30px; border-radius: 16px;
+            text-align: center; border: 1px solid #444; width: 300px;
+        }
     </style>
 </head>
 <body class="p-6">
 
-    <div class="max-w-6xl mx-auto">
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2 class="text-xl font-bold text-yellow-500 mb-4">Admin Access</h2>
+            <input type="password" id="adminPass" placeholder="Enter PIN" 
+                   class="w-full p-3 mb-4 bg-black border border-gray-700 rounded text-white text-center text-lg focus:border-yellow-500 outline-none">
+            <button onclick="checkLogin()" 
+                    class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 rounded transition">
+                Unlock
+            </button>
+            <p id="loginMsg" class="text-red-500 text-sm mt-3 hidden">Incorrect PIN</p>
+        </div>
+    </div>
+
+    <div id="mainDashboard" style="display: none;" class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold text-yellow-500">WaktuSolatLite Analytics</h1>
             <div class="text-sm text-gray-400">Status: <span id="statusIndicator" class="text-yellow-500">Connecting...</span></div>
@@ -61,11 +84,34 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <script>
+        // LOGIN LOGIC
+        const passInput = document.getElementById('adminPass');
+        
+        // Allow pressing "Enter" key
+        passInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") checkLogin();
+        });
+
+        function checkLogin() {
+            const val = passInput.value;
+            const msg = document.getElementById('loginMsg');
+            
+            if(val === '1234') { // CHANGE PIN HERE
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainDashboard').style.display = 'block';
+                initDashboard(); // Only load data after login
+            } else {
+                msg.classList.remove('hidden');
+                passInput.value = '';
+                passInput.focus();
+            }
+        }
+
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
             authDomain: "waktusolatlite.firebaseapp.com",
@@ -75,101 +121,96 @@
             appId: "1:86910439082:web:e482d01e1451e58179cad3"
         };
 
-        // Initialize Map
-        const map = L.map('map').setView([3.1390, 101.6869], 6); 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-            subdomains: 'abcd',
-            maxZoom: 19
-        }).addTo(map);
+        // WRAPPED IN FUNCTION TO RUN ONLY AFTER LOGIN
+        function initDashboard() {
+            // Initialize Map
+            const map = L.map('map').setView([3.1390, 101.6869], 6); 
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
 
-        const markers = [];
+            // Fix map rendering issue when un-hiding div
+            setTimeout(() => { map.invalidateSize(); }, 200);
 
-        try {
-            // Initialize Firebase
-            const app = firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            const statusEl = document.getElementById('statusIndicator');
+            const markers = [];
 
-            statusEl.textContent = "Live";
-            statusEl.className = "text-green-500";
+            try {
+                const app = firebase.initializeApp(firebaseConfig);
+                const db = firebase.database();
+                const statusEl = document.getElementById('statusIndicator');
 
-            // Listen for data
-            db.ref('users').on('value', (snapshot) => {
-                const users = snapshot.val();
-                
-                if (!users) {
-                    document.getElementById('totalUsers').textContent = "0";
-                    document.getElementById('activeUsers').textContent = "0";
-                    document.getElementById('userTableBody').innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">No users found yet. Open the app to generate data.</td></tr>';
-                    return;
-                }
+                statusEl.textContent = "Live";
+                statusEl.className = "text-green-500";
 
-                const userList = Object.keys(users).map(key => ({ id: key, ...users[key] }));
-                
-                // Sort by last active (newest first)
-                userList.sort((a, b) => (b.lastActive || 0) - (a.lastActive || 0));
-
-                // Update Stats
-                document.getElementById('totalUsers').textContent = userList.length;
-                
-                const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
-                const activeCount = userList.filter(u => u.lastActive && u.lastActive > oneDayAgo).length;
-                document.getElementById('activeUsers').textContent = activeCount;
-                
-                if(userList.length > 0 && userList[0].lastActive) {
-                    document.getElementById('lastActivity').textContent = new Date(userList[0].lastActive).toLocaleTimeString();
-                }
-
-                // Update Table
-                const tbody = document.getElementById('userTableBody');
-                tbody.innerHTML = '';
-                userList.slice(0, 20).forEach(u => { // Show top 20
-                    const date = u.lastActive ? new Date(u.lastActive).toLocaleString() : 'Never';
-                    const shortId = u.id.substring(0, 8) + '...';
-                    const latLon = u.lat && u.lon ? `${u.lat.toFixed(4)}, ${u.lon.toFixed(4)}` : 'Hidden/N/A';
+                db.ref('users').on('value', (snapshot) => {
+                    const users = snapshot.val();
                     
-                    const row = `
-                        <tr class="border-b border-gray-800 hover:bg-white/5">
-                            <td class="p-3 font-mono text-yellow-600">${shortId}</td>
-                            <td class="p-3 text-gray-300">${u.device || 'Unknown'}</td>
-                            <td class="p-3 font-mono text-gray-400">${latLon}</td>
-                            <td class="p-3 text-gray-400">${date}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                });
-
-                // Update Map Markers
-                markers.forEach(m => map.removeLayer(m));
-                markers.length = 0;
-
-                userList.forEach(u => {
-                    if (u.lat && u.lon) {
-                        const marker = L.circleMarker([u.lat, u.lon], {
-                            radius: 6,
-                            fillColor: "#eab308", // Yellow-500
-                            color: "#fff",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        }).addTo(map);
-                        
-                        const dateStr = u.lastActive ? new Date(u.lastActive).toLocaleDateString() : 'Unknown';
-                        marker.bindPopup(`<b>User:</b> ${u.id.substring(0,6)}...<br><b>Last Seen:</b> ${dateStr}`);
-                        markers.push(marker);
+                    if (!users) {
+                        document.getElementById('totalUsers').textContent = "0";
+                        document.getElementById('activeUsers').textContent = "0";
+                        document.getElementById('userTableBody').innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">No users found yet.</td></tr>';
+                        return;
                     }
-                });
-            }, (error) => {
-                console.error(error);
-                statusEl.textContent = "Error: " + error.message;
-                statusEl.className = "text-red-500";
-            });
 
-        } catch (e) {
-            console.error("Firebase Error:", e);
-            document.getElementById('statusIndicator').textContent = "Config Error";
-            document.getElementById('statusIndicator').className = "text-red-500";
+                    const userList = Object.keys(users).map(key => ({ id: key, ...users[key] }));
+                    userList.sort((a, b) => (b.lastActive || 0) - (a.lastActive || 0));
+
+                    // Update Stats
+                    document.getElementById('totalUsers').textContent = userList.length;
+                    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+                    const activeCount = userList.filter(u => u.lastActive && u.lastActive > oneDayAgo).length;
+                    document.getElementById('activeUsers').textContent = activeCount;
+                    
+                    if(userList.length > 0 && userList[0].lastActive) {
+                        document.getElementById('lastActivity').textContent = new Date(userList[0].lastActive).toLocaleTimeString();
+                    }
+
+                    // Update Table
+                    const tbody = document.getElementById('userTableBody');
+                    tbody.innerHTML = '';
+                    userList.slice(0, 20).forEach(u => { 
+                        const date = u.lastActive ? new Date(u.lastActive).toLocaleString() : 'Never';
+                        const shortId = u.id.substring(0, 8) + '...';
+                        const latLon = u.lat && u.lon ? `${u.lat.toFixed(4)}, ${u.lon.toFixed(4)}` : 'Hidden/N/A';
+                        
+                        const row = `
+                            <tr class="border-b border-gray-800 hover:bg-white/5">
+                                <td class="p-3 font-mono text-yellow-600">${shortId}</td>
+                                <td class="p-3 text-gray-300">${u.device || 'Unknown'}</td>
+                                <td class="p-3 font-mono text-gray-400">${latLon}</td>
+                                <td class="p-3 text-gray-400">${date}</td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+
+                    // Update Map Markers
+                    markers.forEach(m => map.removeLayer(m));
+                    markers.length = 0;
+
+                    userList.forEach(u => {
+                        if (u.lat && u.lon) {
+                            const marker = L.circleMarker([u.lat, u.lon], {
+                                radius: 6,
+                                fillColor: "#eab308",
+                                color: "#fff",
+                                weight: 1,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            }).addTo(map);
+                            marker.bindPopup(`<b>User:</b> ${u.id.substring(0,6)}...<br><b>Last Seen:</b> ${u.lastActive ? new Date(u.lastActive).toLocaleDateString() : 'Unknown'}`);
+                            markers.push(marker);
+                        }
+                    });
+                });
+
+            } catch (e) {
+                console.error("Firebase Error:", e);
+                document.getElementById('statusIndicator').textContent = "Config Error";
+                document.getElementById('statusIndicator').className = "text-red-500";
+            }
         }
     </script>
 </body>
