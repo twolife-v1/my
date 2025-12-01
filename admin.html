@@ -164,54 +164,145 @@
                     document.getElementById('activeUsers').textContent = activeCount;
                     
                     if(userList.length > 0 && userList[0].lastActive) {
-                        document.getElementById('lastActivity').textContent = new Date(userList[0].lastActive).toLocaleTimeString();
-                    }
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-                    // Update Table
-                    const tbody = document.getElementById('userTableBody');
-                    tbody.innerHTML = '';
-                    userList.slice(0, 20).forEach(u => { 
-                        const date = u.lastActive ? new Date(u.lastActive).toLocaleString() : 'Never';
-                        const shortId = u.id.substring(0, 8) + '...';
-                        const latLon = u.lat && u.lon ? `${u.lat.toFixed(4)}, ${u.lon.toFixed(4)}` : 'Hidden/N/A';
-                        
-                        const row = `
-                            <tr class="border-b border-gray-800 hover:bg-white/5">
-                                <td class="p-3 font-mono text-yellow-600">${shortId}</td>
-                                <td class="p-3 text-gray-300">${u.device || 'Unknown'}</td>
-                                <td class="p-3 font-mono text-gray-400">${latLon}</td>
-                                <td class="p-3 text-gray-400">${date}</td>
-                            </tr>
-                        `;
-                        tbody.innerHTML += row;
-                    });
+<script>
+    // --- LOGIN LOGIC ---
+    const passInput = document.getElementById('adminPass');
+    passInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") checkLogin();
+    });
 
-                    // Update Map Markers
-                    markers.forEach(m => map.removeLayer(m));
-                    markers.length = 0;
+    function checkLogin() {
+        const val = passInput.value;
+        const msg = document.getElementById('loginMsg');
+        
+        if(val === '1234') { 
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainDashboard').style.display = 'block';
+            initDashboard(); 
+        } else {
+            msg.classList.remove('hidden');
+            passInput.value = '';
+            passInput.focus();
+        }
+    }
 
-                    userList.forEach(u => {
-                        if (u.lat && u.lon) {
-                            const marker = L.circleMarker([u.lat, u.lon], {
-                                radius: 6,
-                                fillColor: "#eab308",
-                                color: "#fff",
-                                weight: 1,
-                                opacity: 1,
-                                fillOpacity: 0.8
-                            }).addTo(map);
-                            marker.bindPopup(`<b>User:</b> ${u.id.substring(0,6)}...<br><b>Last Seen:</b> ${u.lastActive ? new Date(u.lastActive).toLocaleDateString() : 'Unknown'}`);
-                            markers.push(marker);
-                        }
-                    });
+    // --- FIREBASE CONFIG ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
+        authDomain: "waktusolatlite.firebaseapp.com",
+        projectId: "waktusolatlite",
+        storageBucket: "waktusolatlite.firebasestorage.app",
+        messagingSenderId: "86910439082",
+        appId: "1:86910439082:web:e482d01e1451e58179cad3"
+    };
+
+    // --- DASHBOARD LOGIC (With Debugging) ---
+    function initDashboard() {
+        // 1. Setup Map
+        const map = L.map('map').setView([3.1390, 101.6869], 6); 
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+        setTimeout(() => { map.invalidateSize(); }, 200);
+
+        const markers = [];
+        const statusEl = document.getElementById('statusIndicator');
+
+        try {
+            // 2. Prevent "App already exists" error
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            const db = firebase.database();
+
+            statusEl.textContent = "Connecting...";
+            
+            // 3. LISTEN FOR DATA
+            // Adding specific error logging here to see WHY it hangs
+            const usersRef = db.ref('users');
+            
+            usersRef.on('value', (snapshot) => {
+                statusEl.textContent = "Live";
+                statusEl.className = "text-green-500";
+                
+                const users = snapshot.val();
+                
+                // If database is empty (users is null)
+                if (!users) {
+                    document.getElementById('totalUsers').textContent = "0";
+                    document.getElementById('activeUsers').textContent = "0";
+                    document.getElementById('userTableBody').innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">Database connected, but no users found yet.<br>Open index.html to create data.</td></tr>';
+                    return;
+                }
+
+                // If we have data, process it
+                const userList = Object.keys(users).map(key => ({ id: key, ...users[key] }));
+                userList.sort((a, b) => (b.lastActive || 0) - (a.lastActive || 0));
+
+                // Update Stats
+                document.getElementById('totalUsers').textContent = userList.length;
+                const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+                const activeCount = userList.filter(u => u.lastActive && u.lastActive > oneDayAgo).length;
+                document.getElementById('activeUsers').textContent = activeCount;
+                
+                if(userList.length > 0 && userList[0].lastActive) {
+                    document.getElementById('lastActivity').textContent = new Date(userList[0].lastActive).toLocaleTimeString();
+                }
+
+                // Update Table
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '';
+                userList.slice(0, 20).forEach(u => { 
+                    const date = u.lastActive ? new Date(u.lastActive).toLocaleString() : 'Never';
+                    const shortId = u.id.substring(0, 8) + '...';
+                    const latLon = u.lat && u.lon ? `${u.lat.toFixed(4)}, ${u.lon.toFixed(4)}` : 'Hidden';
+                    
+                    const row = `
+                        <tr class="border-b border-gray-800 hover:bg-white/5">
+                            <td class="p-3 font-mono text-yellow-600">${shortId}</td>
+                            <td class="p-3 text-gray-300">${u.device || 'Unknown'}</td>
+                            <td class="p-3 font-mono text-gray-400">${latLon}</td>
+                            <td class="p-3 text-gray-400">${date}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
                 });
 
-            } catch (e) {
-                console.error("Firebase Error:", e);
-                document.getElementById('statusIndicator').textContent = "Config Error";
-                document.getElementById('statusIndicator').className = "text-red-500";
-            }
+                // Update Map
+                markers.forEach(m => map.removeLayer(m));
+                markers.length = 0;
+                userList.forEach(u => {
+                    if (u.lat && u.lon) {
+                        const marker = L.circleMarker([u.lat, u.lon], {
+                            radius: 6, fillColor: "#eab308", color: "#fff", weight: 1, opacity: 1, fillOpacity: 0.8
+                        }).addTo(map);
+                        marker.bindPopup(`<b>User:</b> ${u.id.substring(0,6)}...<br><b>Last Seen:</b> ${u.lastActive ? new Date(u.lastActive).toLocaleDateString() : 'Unknown'}`);
+                        markers.push(marker);
+                    }
+                });
+
+            }, (error) => {
+                // --- ERROR HANDLER ---
+                console.error(error);
+                statusEl.textContent = "Error: " + error.code;
+                statusEl.className = "text-red-500";
+                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="4" class="p-3 text-center text-red-500">Firebase Error:<br>${error.message}</td></tr>`;
+            });
+
+        } catch (e) {
+            console.error("Config Error:", e);
+            statusEl.textContent = "Config Error";
+            statusEl.className = "text-red-500";
+            alert("Configuration Error: " + e.message);
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
