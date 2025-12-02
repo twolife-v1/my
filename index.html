@@ -404,6 +404,14 @@
         Fajr: "images/subuh.jpg", Dhuhr: "images/zohor.jpg", Asr: "images/asar.jpg", 
         Maghrib: "images/maghrib.jpg", Isha: "images/isyak.jpg", Default: "images/isyak.jpg"
     };
+    
+    // CUSTOM HIJRI MONTH NAMES
+    const HIJRI_MONTHS = [
+        "Muharram", "Safar", "Rabiul-Awal", "Rabiul-Akhir", 
+        "Jamadil-Awal", "Jamadil-Akhir", "Rejab", "Syaaban", 
+        "Ramadhan", "Shawal", "Dzul-Qaedah", "Dzul-Hijjah"
+    ];
+
     const PANDUAN_DATA = [
         {title: "Panduan Wudhu", id:"wudhu", icon: "💧"},
         {title: "Panduan Solat", id:"solat", icon: "🤲"},
@@ -634,7 +642,11 @@
             // SAVE CACHE
             localStorage.setItem('wsl_cached_times', JSON.stringify(STATE.prayerTimes));
             
-            document.getElementById('hijriDate').textContent = `${d.data.date.hijri.day} ${d.data.date.hijri.month.en} ${d.data.date.hijri.year}`;
+            // USE CUSTOM MONTH NAMES
+            const monthNum = d.data.date.hijri.month.number - 1; // API returns 1-12
+            const montName = HIJRI_MONTHS[monthNum] || d.data.date.hijri.month.en;
+            document.getElementById('hijriDate').textContent = `${d.data.date.hijri.day} ${montName} ${d.data.date.hijri.year}`;
+
             renderPrayerList(); 
             renderHeroPrayers(STATE.prayerTimes); 
             updateHero(STATE.prayerTimes);
