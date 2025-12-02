@@ -19,7 +19,7 @@
         .then(r => r.json())
         .then(data => {
             let html = `<div style="padding-bottom:20px; text-align:center; font-size:13px; color:#888;">Paparan awal 100 hadis pertama (Sahih Muslim)</div><hr style="opacity:0.2; margin-bottom:20px;">`;
-            data.hadiths.slice(0, 100).forEach(h => {
+            data.hadiths.slice(0, 500).forEach(h => {
                 html += `<div class="ayah-block"><div class="meta">Hadis No. ${h.hadithnumber}</div><div class="ayah-trans">${h.text}</div></div>`;
             });
             document.getElementById('content').innerHTML = html;
