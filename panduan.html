@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ms" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS YANG SAMA DENGAN MAIN APP UNTUK KEKALKAN KONSEP */
+        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; }
+        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+        /* Grid Menu */
+        .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .tool-btn { 
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px; 
+            padding: 20px; text-align: center; cursor: pointer; display: flex; flex-direction: column; 
+            align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s;
+        }
+        .tool-btn:active { transform: scale(0.98); }
+        .tool-btn div { font-size: 32px; }
+        .tool-btn span { font-size: 13px; font-weight: 700; }
+
+        /* Article View */
+        #articleView { display: none; animation: fadeIn 0.3s; }
+        .back-btn { 
+            display: flex; align-items: center; gap: 10px; margin-bottom: 20px; 
+            background: var(--surface); border: 1px solid var(--border); padding: 10px 15px; 
+            border-radius: 10px; width: fit-content; cursor: pointer; font-weight: 600; font-size: 13px;
+        }
+        .content-guide-item { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .content-guide-title { font-weight: 700; margin-bottom: 8px; color: var(--primary); font-size: 15px; }
+        .content-guide-item p { margin: 0 0 5px 0; line-height: 1.6; font-size: 14px; opacity: 0.9; }
+        
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="menuView">
+        <div class="guide-grid" id="gridContainer">
+            </div>
+    </div>
+
+    <div id="articleView">
+        <div class="back-btn" onclick="showMenu()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Kembali ke Menu
+        </div>
+        <div id="articleTitle" style="font-size:20px; font-weight:800; margin-bottom:5px;"></div>
+        <div id="articleSubtitle" style="font-size:12px; color:var(--text-muted); margin-bottom:20px; text-transform:uppercase; letter-spacing:1px;">Islamic Guide</div>
+        <div id="articleContent"></div>
+    </div>
+
+<script>
+    // 1. SYNC THEME (Baca dari LocalStorage parent supaya sama dengan app utama)
+    const savedTheme = localStorage.getItem('wsl_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // 2. DATA PANDUAN (Semua teks panjang letak di sini)
+    const PANDUAN_DATA = [
+        {
+            id: 'jenazah', 
+            title: 'Solat Jenazah', 
+            icon: '⚰️',
+            content: `
+                <div style="background:#FEF3C7; padding:15px; border-radius:10px; margin-bottom:20px; font-size:13px; color:#92400E; border-left:4px solid #F59E0B;">
+                    <strong>Info:</strong> Solat Jenazah dilakukan dengan berdiri tegak (4 Takbir) tanpa rukuk atau sujud.
+                </div>
+                <div class="content-guide-item">
+                    <div class="content-guide-title">1. Takbir Pertama (Niat & Al-Fatihah)</div>
+                    <p>Lafaz <strong>"Allahu Akbar"</strong> sambil berniat:</p>
+                    <p style="font-style:italic; background:var(--surface); padding:8px; border-radius:6px; margin:5px 0;">"Sahaja aku solat ke atas mayat ini kerana Allah Ta'ala."</p>
+                    <p>Kemudian membaca <strong>Surah Al-Fatihah</strong>.</p>
+                </div>
+                <div class="content-guide-item">
+                    <div class="content-guide-title">2. Takbir Kedua (Selawat)</div>
+                    <p>Lafaz "Allahu Akbar", kemudian baca Selawat:</p>
+                    <p style="font-family:'Amiri', serif; font-size:22px; margin:10px 0; text-align:right;">اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ</p>
+                    <p>(Atau baca Selawat Ibrahimiyah yang lengkap).</p>
+                </div>
+                <div class="content-guide-item">
+                    <div class="content-guide-title">3. Takbir Ketiga (Doa)</div>
+                    <p>Lafaz "Allahu Akbar", kemudian baca doa ringkas untuk jenazah:</p>
+                    <ul style="padding-left:20px; margin-top:5px; font-size:14px;">
+                        <li style="margin-bottom:8px;"><strong>Lelaki:</strong> "Allahummaghfirlahu warhamhu..."</li>
+                        <li><strong>Perempuan:</strong> "Allahummaghfirlaha warhamha..."</li>
+                    </ul>
+                </div>
+                <div class="content-guide-item">
+                    <div class="content-guide-title">4. Takbir Keempat (Salam)</div>
+                    <p>Lafaz "Allahu Akbar", kemudian beri salam kanan dan kiri:</p>
+                    <p style="font-style:italic;">"Assalamualaikum warahmatullah"</p>
+                </div>
+            `
+        },
+        {
+            id: 'wudhu', 
+            title: 'Panduan Wudhu', 
+            icon: '💧',
+            content: `
+                <div class="content-guide-item"><div class="content-guide-title">1. Niat</div><p>Berniat di dalam hati untuk mengambil air wudhu.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">2. Membasuh Muka</div><p>Basuh muka rata-rata 3 kali.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">3. Membasuh Tangan</div><p>Basuh tangan hingga ke siku (kanan kemudian kiri) 3 kali.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">4. Menyapu Kepala</div><p>Sapu sedikit bahagian kepala dengan air.</p></div>
+                <div class="content-guide-item"><div class="content-guide-title">5. Membasuh Kaki</div><p>Basuh kaki hingga ke buku lali (kanan kemudian kiri) 3 kali.</p></div>
+            `
+        },
+        { id: 'solat', title: 'Solat Fardu', icon: '🤲', content: '<p style="text-align:center; padding:20px; color:var(--text-muted);">Akan dikemaskini...</p>' },
+        { id: 'puasa', title: 'Panduan Puasa', icon: '🌙', content: '<p style="text-align:center; padding:20px; color:var(--text-muted);">Akan dikemaskini...</p>' },
+        { id: 'zakat', title: 'Panduan Zakat', icon: '💰', content: '<p style="text-align:center; padding:20px; color:var(--text-muted);">Akan dikemaskini...</p>' }
+    ];
+
+    // 3. LOGIC NAVIGASI
+    const menuView = document.getElementById('menuView');
+    const articleView = document.getElementById('articleView');
+    const gridEl = document.getElementById('gridContainer');
+    const titleEl = document.getElementById('articleTitle');
+    const contentEl = document.getElementById('articleContent');
+
+    // Render Menu Butang
+    gridEl.innerHTML = PANDUAN_DATA.map(item => `
+        <div class="tool-btn" onclick="openArticle('${item.id}')">
+            <div>${item.icon}</div>
+            <span>${item.title}</span>
+        </div>
+    `).join('');
+
+    function openArticle(id) {
+        const data = PANDUAN_DATA.find(d => d.id === id);
+        if(!data) return;
+        
+        titleEl.textContent = data.title;
+        contentEl.innerHTML = data.content;
+        
+        menuView.style.display = 'none';
+        articleView.style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    function showMenu() {
+        articleView.style.display = 'none';
+        menuView.style.display = 'block';
+    }
+</script>
+</body>
+</html>
