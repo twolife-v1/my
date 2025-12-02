@@ -20,7 +20,7 @@
             background: var(--bg); 
             color: var(--text); 
             min-height: 100vh; 
-            padding-bottom: 90px; /* Space for nav bar */
+            padding-bottom: 90px;
         }
 
         /* --- STICKY HEADER --- */
@@ -107,7 +107,7 @@
         .bookmark-btn.saved { color: var(--primary); }
         .bookmark-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
-        /* Side Panel */
+        /* Side Panel - Z-Index updated */
         #sidePanelOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 290; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         #sidePanelOverlay.open { opacity: 1; pointer-events: auto; }
         #sidePanel { position: fixed; top: 0; right: 0; bottom: 0; width: 85%; max-width: 400px; background: var(--bg); z-index: 300; transform: translateX(100%); transition: transform 0.3s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
@@ -127,7 +127,7 @@
             height: 100%; background: var(--bg); color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px;
         }
 
-        /* Reader Modal */
+        /* Reader Modal - Z-index updated */
         #readerModal { position: fixed; inset: 0; background: var(--bg); z-index: 400; transform: translateY(100%); transition: transform 0.3s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         #readerModal.open { transform: translateY(0); }
         .reader-header { padding: 15px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -137,11 +137,8 @@
         .ayah-arabic { font-family: 'Amiri', serif; font-size: 26px; text-align: right; margin-bottom: 10px; line-height: 2.2; color: var(--text); }
         .ayah-trans { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
         
-        .content-guide-item { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .content-guide-title { font-weight: 700; margin-bottom: 5px; color: var(--primary); }
-
-        /* Navigation */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: calc(65px + env(safe-area-inset-bottom)); background: var(--surface); display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
+        /* Navigation - Z-index updated */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: calc(65px + env(safe-area-inset-bottom)); background: var(--surface); display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 200; }
         .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-muted); }
         .nav-item.active { color: var(--primary); }
         .nav-label { font-size: 10px; font-weight: 600; }
@@ -149,8 +146,9 @@
         .surah-item { display: flex; align-items: center; padding: 16px; background: var(--surface); margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); }
         .surah-num { background: var(--primary-light); color: var(--primary); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 700; margin-right: 15px; }
         
-        /* Keyframe for PWA slide up */
+        /* Keyframe for PWA slide up - Z-index updated */
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        #pwaInstall { z-index: 500; display: none; position: fixed; bottom: 85px; left: 20px; right: 20px; background: var(--text); color: var(--bg); padding: 15px; border-radius: 16px; align-items: center; justify-content: space-between; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideUp 0.4s ease; }
     </style>
 </head>
 <body>
@@ -172,7 +170,7 @@
                 <div class="hero-card-bg" id="heroCard">
                     <div class="hero-top">
                         <div class="hero-left">
-                            <div id="locationName">Loading...</div>
+                            <div id="locationName">Checking...</div>
                             <div id="heroDate">...</div>
                         </div>
 
@@ -205,6 +203,7 @@
 
     <div id="view-quran" class="view" style="padding: 20px; padding-top: 80px;">
         <h1 style="color:var(--text); font-size:24px; font-weight:800; margin-bottom:20px;">Al Quran</h1>
+        <div style="padding:10px; background:#FEF3C7; color:#92400E; border-radius:10px; margin-bottom:15px; font-size:12px;">Requires Internet</div>
         <select id="quranLangSelect" onchange="loadQuranList()" style="width:100%; padding:12px; border-radius:12px; margin-bottom:15px; background:var(--surface); color:var(--text); border:1px solid var(--border);">
             <option value="ms.basmeih">Malay</option>
             <option value="en.sahih">English</option>
@@ -264,7 +263,12 @@
             </div>
 
             <div class="section-title">Panduan² (Guides)</div>
-            <div class="tool-grid" id="panduanContainer"></div>
+            <div class="tool-grid">
+                 <div class="tool-btn" onclick="openExternalPanduan()" style="grid-column: span 2; flex-direction: row; justify-content: center; gap: 15px; background:var(--primary-light); border-color:var(--primary);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span>Buka Pustaka Panduan</span>
+                </div>
+            </div>
             
             <div class="section-title">Daily Duas</div>
             <div class="tool-grid">
@@ -326,7 +330,7 @@
         <button class="nav-item" onclick="switchTab('saved', this)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg><span class="nav-label">Saved</span></button>
     </nav>
     
-    <div id="pwaInstall" style="display: none; position: fixed; bottom: 85px; left: 20px; right: 20px; background: var(--text); color: var(--bg); padding: 15px; border-radius: 16px; z-index: 200; align-items: center; justify-content: space-between; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideUp 0.4s ease;">
+    <div id="pwaInstall">
         <div style="display:flex; flex-direction:column;">
             <div style="font-weight:700; font-size:14px;">Install App</div>
             <div style="font-size:11px; opacity:0.8;">Add to home screen</div>
@@ -358,8 +362,13 @@
         // Expose helper to window for main script
         window.updateUserLocation = function(lat, lon, device) {
             let installId = localStorage.getItem('wsl_install_id');
+            // FIXED: Safer UUID generation that won't crash on older phones
             if(!installId) { 
-                installId = crypto.randomUUID(); 
+                if (typeof crypto.randomUUID === 'function') {
+                    installId = crypto.randomUUID();
+                } else {
+                    installId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                }
                 localStorage.setItem('wsl_install_id', installId); 
             }
             db.ref('users/' + installId).update({
@@ -432,44 +441,50 @@
         "Ramadhan", "Shawal", "Dzul-Qaedah", "Dzul-Hijjah"
     ];
 
-    const PANDUAN_DATA = [
-        {title: "Panduan Wudhu", id:"wudhu", icon: "💧"},
-        {title: "Panduan Solat", id:"solat", icon: "🤲"},
-        {title: "Panduan Puasa", id:"puasa", icon: "🌙"},
-        {title: "Panduan Zakat", id:"zakat", icon: "💰"}
-    ];
-    
     // --- AUDIO FOR NOTIFICATIONS ---
-    const azanAudio = new Audio('https://www.islamcan.com/audio/adhan/azan1.mp3');
+    const azanAudio = new Audio('azan.mp3');
 
     window.addEventListener('DOMContentLoaded', () => {
         applyTheme();
         updateGreeting();
         renderBookmarksList();
-        renderPanduan();
         
-        // 2. RENDER IMMEDIATELY: Don't wait for GPS
+        // 2. REGISTER SERVICE WORKER (CRITICAL FOR OFFLINE)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW Registered', reg))
+                .catch(err => console.log('SW Failed', err));
+        }
+
+        // 3. OFFLINE HANDLER: If we have times, render them immediately
         if(STATE.prayerTimes) {
             renderPrayerList();
             renderHeroPrayers(STATE.prayerTimes);
             updateHero(STATE.prayerTimes);
             document.getElementById('locationName').textContent = savedCoords ? "Last Known Location" : "Kuala Lumpur (Default)";
-        } else {
-            // Very first run: Show fallback immediately while loading
-            document.getElementById('locationName').textContent = "Locating...";
-            fetchTimes(); // Fetch using the default (KL) coordinates immediately
+            // Check for Hijri date in storage
+            const lastHijri = localStorage.getItem('wsl_last_hijri');
+            if(lastHijri) document.getElementById('hijriDate').textContent = lastHijri;
         }
 
-        // 3. START BACKGROUND TASKS - WITH PERSISTENCE
-        initLocationPersistence(); 
+        // 4. ATTEMPT NETWORK FETCH (But don't block UI if it fails)
+        if (navigator.onLine) {
+            document.getElementById('locationName').textContent = "Updating...";
+            initLocationPersistence();
+        } else {
+            // We are offline, keep the loaded data
+            document.getElementById('locationName').textContent = "Offline Mode";
+            // Start the clock anyway
+            if(STATE.prayerTimes) updateHero(STATE.prayerTimes);
+        }
 
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-        
+        // 5. WINDOW SCROLL
         window.addEventListener('scroll', () => {
             const header = document.getElementById('stickyHeader');
             if (window.scrollY > 30) header.classList.add('scrolled'); else header.classList.remove('scrolled');
         });
 
+        // 6. IFRAME ERROR HANDLING
         document.querySelectorAll('iframe').forEach(frame => {
             try {
                 frame.addEventListener('error', () => {
@@ -479,53 +494,34 @@
             } catch(e){}
         });
         
-        // 4. ASK FOR PERMISSION & UNLOCK AUDIO ON FIRST CLICK
+        // 7. ASK FOR PERMISSION & UNLOCK AUDIO ON FIRST CLICK
         if(Notification.permission === 'default' || Notification.permission === 'granted') {
             document.body.addEventListener('click', () => {
-                // Request notif permission
                 if(Notification.permission !== 'granted') Notification.requestPermission();
-                
-                // UNLOCK AUDIO: Play then pause immediately to unblock browser policy
-                azanAudio.play().then(() => {
-                    azanAudio.pause();
-                    azanAudio.currentTime = 0;
-                }).catch(e => console.log("Audio still locked"));
+                // Check if audio needs unlocking
+                if (azanAudio.paused) {
+                    azanAudio.play().then(() => {
+                        azanAudio.pause();
+                        azanAudio.currentTime = 0;
+                    }).catch(e => console.log("Audio waiting for interaction"));
+                }
             }, {once:true});
         }
     });
 
     // --- HELPER FUNCTIONS ---
-    function renderPanduan() {
-        const c = document.getElementById('panduanContainer');
-        c.innerHTML = PANDUAN_DATA.map(p => `
-            <div class="tool-btn" onclick="openPanduan('${p.id}', '${p.title}')">
-                <div style="font-size:24px;">${p.icon}</div>
-                <span>${p.title}</span>
-            </div>
-        `).join('');
-    }
 
-    window.openPanduan = function(id, title) {
+    // Function to Open External Guide File (panduan.html)
+    window.openExternalPanduan = function() {
+        const s = document.getElementById('sidePanel');
+        const o = document.getElementById('sidePanelOverlay');
+        if(s.classList.contains('open')) { s.classList.remove('open'); o.classList.remove('open'); }
         const m = document.getElementById('readerModal');
         const c = document.getElementById('readerContent');
         m.classList.add('open');
-        document.getElementById('readerTitle').textContent = title;
-        document.getElementById('readerSubtitle').textContent = "Islamic Guide";
-        
-        let html = '';
-        if(id === 'wudhu') {
-             html = `
-                <div class="content-guide-item"><div class="content-guide-title">1. Niat</div><p>Berniat di dalam hati untuk mengambil air wudhu.</p></div>
-                <div class="content-guide-item"><div class="content-guide-title">2. Membasuh Muka</div><p>Basuh muka rata-rata 3 kali.</p></div>
-                <div class="content-guide-item"><div class="content-guide-title">3. Membasuh Tangan</div><p>Basuh tangan hingga ke siku (kanan kemudian kiri) 3 kali.</p></div>
-                <div class="content-guide-item"><div class="content-guide-title">4. Menyapu Kepala</div><p>Sapu sedikit bahagian kepala dengan air.</p></div>
-                <div class="content-guide-item"><div class="content-guide-title">5. Membasuh Kaki</div><p>Basuh kaki hingga ke buku lali (kanan kemudian kiri) 3 kali.</p></div>
-                <div class="content-guide-item"><div class="content-guide-title">6. Tertib</div><p>Lakukan mengikut urutan.</p></div>
-             `;
-        } else {
-             html = `<div style="text-align:center; padding:20px;">Content for ${title} is being updated.</div>`;
-        }
-        c.innerHTML = html;
+        document.getElementById('readerTitle').textContent = "Pustaka Panduan";
+        document.getElementById('readerSubtitle').textContent = "Islamic Guides Library";
+        c.innerHTML = `<iframe src="panduan.html" style="width:100%; height:100%; min-height:80vh; border:none; display:block;"></iframe>`;
     };
 
     window.openDuas = function() {
@@ -541,6 +537,7 @@
     };
 
     window.openHadithCollection = async function(type) {
+        if(!navigator.onLine) { alert("You are offline. Connect to internet to read Hadith."); return; }
         const m = document.getElementById('readerModal'); const c = document.getElementById('readerContent');
         const t = document.getElementById('readerTitle'); const s = document.getElementById('readerSubtitle');
         m.classList.add('open'); 
@@ -606,6 +603,7 @@
 
     // --- UPDATED PERSISTENT LOCATION & INSTALL LOGIC ---
     function initLocationPersistence() {
+        if(!navigator.onLine) return; // Don't check location if offline
         const lastDenied = localStorage.getItem('wsl_loc_denied_ts');
         const now = Date.now();
         const threeMins = 3 * 60 * 1000;
@@ -633,22 +631,30 @@
         };
 
         const onError = (err) => {
-            // Set denied timestamp
+            // FIXED: Only loop if error is NOT permission denied.
+            // code 1 = PERMISSION_DENIED. code 2 = POSITION_UNAVAILABLE. code 3 = TIMEOUT.
             localStorage.setItem('wsl_loc_denied_ts', Date.now());
             
-            if(!savedCoords) document.getElementById('locationName').textContent = "Kuala Lumpur (Default)";
-            syncLocationToFirebase(null, null);
+            if (err.code !== 1) {
+                // If temporary error, try again in 3 mins
+                setTimeout(initLocationPersistence, 3 * 60 * 1000);
+            } else {
+                document.getElementById('locationName').textContent = "Location Denied (Using Default)";
+            }
             
-            // Retry in 3 minutes
-            setTimeout(initLocationPersistence, 3 * 60 * 1000);
+            if(!savedCoords && !STATE.prayerTimes) {
+                document.getElementById('locationName').textContent = "Kuala Lumpur (Default)";
+            }
+            syncLocationToFirebase(null, null);
         };
 
         if(navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(onSuccess, onError, {timeout: 10000}); 
-        } else { onError(); }
+        } else { onError({code: 0}); }
     }
 
     function syncLocationToFirebase(lat, lon) {
+        if(!navigator.onLine) return;
         const device = navigator.userAgent || 'Unknown';
         let attempts = 0;
         const interval = setInterval(() => {
@@ -662,6 +668,7 @@
     }
 
     async function fetchTimes() {
+        if(!navigator.onLine) return; // Skip if offline
         try {
             const res = await fetch(`https://api.aladhan.com/v1/timings/${Math.floor(Date.now()/1000)}?latitude=${STATE.lat}&longitude=${STATE.lon}&method=11`);
             const d = await res.json();
@@ -672,7 +679,10 @@
             // USE CUSTOM MONTH NAMES
             const monthNum = d.data.date.hijri.month.number - 1; // API returns 1-12
             const montName = HIJRI_MONTHS[monthNum] || d.data.date.hijri.month.en;
-            document.getElementById('hijriDate').textContent = `${d.data.date.hijri.day} ${montName} ${d.data.date.hijri.year}`;
+            const fullHijri = `${d.data.date.hijri.day} ${montName} ${d.data.date.hijri.year}`;
+            
+            document.getElementById('hijriDate').textContent = fullHijri;
+            localStorage.setItem('wsl_last_hijri', fullHijri);
 
             renderPrayerList(); 
             renderHeroPrayers(STATE.prayerTimes); 
@@ -734,8 +744,8 @@
                 // CHECK NOTIFICATION (Robust Compare)
                 const notifKey = `${k}_${now.getDate()}`; // Unique key for today
                 
-                // If current minute matches prayer minute AND we haven't notified today
-                if (currentMinutes === prayerMinutes && !STATE.notified[notifKey]) {
+                // FIXED: Widen window to 2 minutes in case phone was sleeping
+                if (currentMinutes >= prayerMinutes && currentMinutes <= prayerMinutes + 2 && !STATE.notified[notifKey]) {
                     const setting = STATE.notifSettings[k] || 'sound';
                     if (setting !== 'off') {
                         triggerNotification(k, setting);
@@ -817,6 +827,7 @@
     }
 
     async function loadQuranList() {
+        if(!navigator.onLine) { alert("Offline Mode: Quran not available"); return; }
         const l=document.getElementById('surahList'); l.innerHTML='Loading...'; 
         try {
             const r=await fetch('https://api.alquran.cloud/v1/surah'); const d=await r.json(); l.innerHTML='';
@@ -824,6 +835,7 @@
         } catch(e){ l.innerHTML = 'Error loading list.'; }
     }
     async function openReader(n,t) {
+        if(!navigator.onLine) { alert("Offline Mode: Surah not available"); return; }
         const m=document.getElementById('readerModal'); m.classList.add('open'); document.getElementById('readerTitle').textContent=t; document.getElementById('readerSubtitle').textContent = `Surah ${n}`;
         const c=document.getElementById('readerContent'); c.innerHTML='Loading...'; const lang=document.getElementById('quranLangSelect').value;
         try {
@@ -831,7 +843,8 @@
             const d1=await r1.json(); const d2=await r2.json();
             let h = (n!==1&&n!==9) ? `<div style="text-align:center;font-family:Amiri;font-size:24px;margin-bottom:20px;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>` : '';
             d1.data.ayahs.forEach((a,i) => {
-                const tr = d2.data.ayahs[i].text;
+                // FIXED: Safety check for translation
+                const tr = d2.data.ayahs[i] ? d2.data.ayahs[i].text : '';
                 const sv = STATE.bookmarks.some(b=>b.id===`ayah_${n}_${a.numberInSurah}`);
                 const safeAr = encodeURIComponent(a.text); const safeTr = encodeURIComponent(tr); const safeTitle = encodeURIComponent(t);
                 h += `<div class="ayah-block">
@@ -845,7 +858,7 @@
                       </div>`; 
             });
             c.innerHTML=h;
-        } catch(e){ c.innerHTML='Error loading.'; }
+        } catch(e){ console.error(e); c.innerHTML='Error loading. Please try again.'; }
     }
     function updateGreeting() { const h=new Date().getHours(); document.getElementById('greetings').textContent=`Assalamualaikum, ${h<12?'Good Morning':h<18?'Good Afternoon':'Good Evening'}`; }
     function switchTab(id, b) {
@@ -866,10 +879,8 @@
         const threeMins = 3 * 60 * 1000;
         
         if (!lastClosed || (now - lastClosed > threeMins)) {
-            // Safe to show
             return true;
         }
-        // Retry later
         setTimeout(checkPwaPersistence, (lastClosed + threeMins) - now);
         return false;
     }
@@ -890,7 +901,6 @@
     window.closePWA = function(){
         document.getElementById('pwaInstall').style.display='none';
         localStorage.setItem('wsl_pwa_closed_ts', Date.now());
-        // Set re-trigger
         setTimeout(() => {
             if(dp) document.getElementById('pwaInstall').style.display='flex';
         }, 3 * 60 * 1000);
