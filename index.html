@@ -58,7 +58,6 @@
         .hero {
             position: absolute; inset: 0; background-color: var(--primary);
             background-size: cover; background-position: center; transition: background-image 1s ease-in-out;
-            /* CENTER ALIGNMENT - UPDATED TO FLEX-END */
             display: flex; align-items: flex-end; justify-content: center; 
             padding: 20px; padding-bottom: 40px;
         }
@@ -411,6 +410,9 @@
         {title: "Panduan Puasa", id:"puasa", icon: "🌙"},
         {title: "Panduan Zakat", id:"zakat", icon: "💰"}
     ];
+    
+    // --- AUDIO FOR NOTIFICATIONS ---
+    const azanAudio = new Audio('https://www.islamcan.com/audio/adhan/azan1.mp3');
 
     window.addEventListener('DOMContentLoaded', () => {
         applyTheme();
@@ -448,6 +450,13 @@
                 });
             } catch(e){}
         });
+        
+        // 4. ASK FOR PERMISSION ON FIRST CLICK (Required for Audio/Notifs)
+        if(Notification.permission === 'default') {
+            document.body.addEventListener('click', () => {
+                Notification.requestPermission();
+            }, {once:true});
+        }
     });
 
     // --- HELPER FUNCTIONS ---
@@ -661,30 +670,77 @@
             const timeEl = document.createElement('div'); timeEl.textContent = timings[key].split(' ')[0]; timesDiv.appendChild(timeEl);
         });
     }
+
+    // --- UPDATED NOTIFICATION LOGIC ---
     let heroInterval = null;
     function updateHero(timings) {
         if(heroInterval) clearInterval(heroInterval);
         updateHeroBackground(timings);
+        
         const tick = () => {
             const now = new Date();
+            // Ensure strict 24-hour format matching (e.g., "13:45")
+            const currentTimeStr = now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+            
             document.getElementById('heroTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
             document.getElementById('heroDate').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
+            
             let nextKey = 'Fajr'; let minDiff = Infinity;
+            
             ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
-                const [h,m] = timings[k].split(':');
+                const timeVal = timings[k].split(' ')[0]; // Clean the API string "HH:MM"
+                
+                // CHECK FOR NOTIFICATION
+                // If times match AND we haven't notified for this specific time today
+                const notifKey = k + currentTimeStr;
+                if (currentTimeStr === timeVal && !STATE.notified[notifKey]) {
+                    const setting = STATE.notifSettings[k] || 'sound';
+                    if (setting !== 'off') {
+                        triggerNotification(k, setting);
+                        STATE.notified[notifKey] = true; // Prevents double loop firing
+                        // Clean up old keys to save memory (optional but good practice)
+                        Object.keys(STATE.notified).forEach(key => { if(key !== notifKey) delete STATE.notified[key]; });
+                    }
+                }
+
+                const [h,m] = timeVal.split(':');
                 let t = new Date(); t.setHours(h,m,0,0);
                 if(t < now) t.setDate(t.getDate()+1);
                 const diff = t - now;
                 if(diff < minDiff) { minDiff = diff; nextKey = k; }
             });
+
             const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0');
             const mm = Math.floor((minDiff%3600000)/60000).toString().padStart(2,'0');
             const ss = Math.floor((minDiff%60000)/1000).toString().padStart(2,'0');
             document.getElementById('countdown').textContent = `- ${hh}:${mm}:${ss}`;
             document.getElementById('nextPrayer').textContent = `NEXT: ${prayerDisplayMap[nextKey]}`;
         };
-        tick(); heroInterval = setInterval(tick, 1000);
+        tick(); 
+        heroInterval = setInterval(tick, 1000);
     }
+
+    function triggerNotification(prayerKey, mode) {
+        const title = `Time for ${prayerDisplayMap[prayerKey]}`;
+        const body = `It is now ${convertTo12Hour(STATE.prayerTimes[prayerKey])}.`;
+
+        // 1. Browser Notification
+        if (Notification.permission === 'granted') {
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification(title, { body: body, icon: '/images/icon-512.png', vibrate: [200, 100, 200] });
+                });
+            } else {
+                new Notification(title, { body: body, icon: '/images/icon-512.png' });
+            }
+        }
+
+        // 2. Play Audio
+        if (mode === 'sound') {
+            azanAudio.play().catch(e => console.log("Audio blocked: user must interact with page first."));
+        }
+    }
+
     function updateHeroBackground(timings) {
         const hero = document.getElementById("hero"); const now = new Date();
         const timeToDate = (t) => { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h,m,0,0); return d; };
@@ -790,4 +846,3 @@
 </script>
 </body>
 </html>
-
