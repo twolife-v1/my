@@ -195,9 +195,9 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                     <span>40 Hadith</span>
                 </div>
-                <div class="tool-btn" onclick="openHadithCollection('qudsi')">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-                    <span>40 Hadis Qudsi</span>
+                <div class="tool-btn" onclick="openHadithCollection('asbabun')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span>Asbabun Nuzul</span>
                 </div>
             </div>
 
@@ -363,6 +363,7 @@
             if(lastHijri) document.getElementById('hijriDate').textContent = lastHijri; 
         }
         
+        // FIXED LOGIC: Only start persistence check. Do NOT force "Updating..." text here.
         if (navigator.onLine) { 
             initLocationPersistence(); 
         } else { 
@@ -402,9 +403,9 @@
         if(type === 'bukhari') { t.textContent = "Sahih Bukhari"; s.textContent = "Authentic Traditions"; }
         else if(type === 'muslim') { t.textContent = "Sahih Muslim"; s.textContent = "Authentic Traditions"; }
         else if(type === 'nawawi') { t.textContent = "40 Hadith Nawawi"; s.textContent = "Imam Nawawi's Collection"; }
-        // NEW QUDSI LOGIC
-        else if(type === 'qudsi') { t.textContent = "40 Hadis Qudsi"; s.textContent = "Himpunan Firman Allah"; }
+        else if(type === 'asbabun') { t.textContent = "Asbabun Nuzul"; s.textContent = "Context of Revelation"; }
         
+        // FIXED: Added min-height:85vh
         c.innerHTML = `<iframe src="hadith-${type}.html" style="width:100%; height:100%; min-height:85vh; border:none; display:block;"></iframe>`;
     };
 
@@ -468,6 +469,7 @@
         window.STATE.bookmarks.forEach(b => { l.innerHTML += `<div style="border-bottom:1px solid var(--border);padding:10px 0;font-size:13px;">${b.type==='ayah'?`<div><strong>${b.surahName} (${b.surahNum}:${b.ayahNum})</strong></div><div style="color:var(--text-muted)">${b.trText.substring(0,50)}...</div>`:`<div><strong>Hadith:</strong> ${b.text.substring(0,50)}...</div>`}</div>`; }); 
     }
 
+    // FIXED: Updated Logic to handle "Cool-down" vs "Active Update"
     function initLocationPersistence() { 
         if(!navigator.onLine) return; 
         const lastDenied = localStorage.getItem('wsl_loc_denied_ts'); 
@@ -475,9 +477,11 @@
         const threeMins = 3 * 60 * 1000; 
         
         if (!lastDenied || (now - lastDenied > threeMins)) { 
+            // Only show "Updating..." when we are actually about to fetch
             document.getElementById('locationName').textContent = "Updating...";
             getLocation(); 
         } else { 
+            // In Cool-down: Revert to "Last Known" or Default to avoid "Updating..." stuck state
             if(savedCoords) {
                 document.getElementById('locationName').textContent = "Last Known Location";
             } else {
