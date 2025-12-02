@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary:#A67734; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; color: var(--text); background: white; }
+        .ayah-block { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px dashed var(--border); }
+        .ayah-arabic { font-family: 'Amiri', serif; font-size: 22px; text-align: right; margin-bottom: 10px; line-height: 2; color: var(--text); }
+        .ayah-trans { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+        .meta { font-weight:700; color:var(--primary); font-size:12px; margin-bottom:10px; }
+    </style>
+</head>
+<body>
+    <div id="content">Loading 40 Hadith Nawawi...</div>
+    <script>
+        Promise.all([
+            fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-nawawi.json').then(r=>r.json()),
+            fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-nawawi.json').then(r=>r.json())
+        ]).then(([ar, en]) => {
+            let html = '';
+            ar.hadiths.forEach((h, i) => {
+                const enText = en.hadiths[i] ? en.hadiths[i].text : '';
+                html += `<div class="ayah-block"><div class="meta">Hadith ${h.hadithnumber}</div><div class="ayah-arabic">${h.text}</div><div class="ayah-trans">${enText}</div></div>`;
+            });
+            document.getElementById('content').innerHTML = html;
+        }).catch(e => document.getElementById('content').innerHTML = 'Error loading data.');
+    </script>
+</body>
+</html>
