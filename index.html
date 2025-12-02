@@ -226,6 +226,14 @@
         </div>
         <div class="panel-content">
             
+            <div class="section-title">Test Audio</div>
+            <div class="tool-grid">
+                <div class="tool-btn" onclick="testNotificationSound()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    <span>Test Sound</span>
+                </div>
+            </div>
+
             <div class="section-title">Daily Hadith</div>
             <div class="card" style="margin:0 0 20px 0; border-radius:16px;">
                 <div style="font-style:italic; font-size:14px; margin-bottom:8px; line-height:1.5;" id="hadithTextContent">Loading...</div>
@@ -471,10 +479,17 @@
             } catch(e){}
         });
         
-        // 4. ASK FOR PERMISSION ON FIRST CLICK (Required for Audio/Notifs)
-        if(Notification.permission === 'default') {
+        // 4. ASK FOR PERMISSION & UNLOCK AUDIO ON FIRST CLICK
+        if(Notification.permission === 'default' || Notification.permission === 'granted') {
             document.body.addEventListener('click', () => {
-                Notification.requestPermission();
+                // Request notif permission
+                if(Notification.permission !== 'granted') Notification.requestPermission();
+                
+                // UNLOCK AUDIO: Play then pause immediately to unblock browser policy
+                azanAudio.play().then(() => {
+                    azanAudio.pause();
+                    azanAudio.currentTime = 0;
+                }).catch(e => console.log("Audio still locked"));
             }, {once:true});
         }
     });
@@ -695,7 +710,7 @@
         });
     }
 
-    // --- UPDATED NOTIFICATION LOGIC ---
+    // --- ROBUST NOTIFICATION LOGIC ---
     let heroInterval = null;
     function updateHero(timings) {
         if(heroInterval) clearInterval(heroInterval);
@@ -703,31 +718,32 @@
         
         const tick = () => {
             const now = new Date();
-            // Ensure strict 24-hour format matching (e.g., "13:45")
-            const currentTimeStr = now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
-            
+            // Create "Minutes from Midnight" for current time
+            const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+
             document.getElementById('heroTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
             document.getElementById('heroDate').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
             
             let nextKey = 'Fajr'; let minDiff = Infinity;
             
             ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
-                const timeVal = timings[k].split(' ')[0]; // Clean the API string "HH:MM"
+                const timeStr = timings[k].split(' ')[0]; // "16:26"
+                const [h,m] = timeStr.split(':').map(Number);
+                const prayerMinutes = (h * 60) + m;
+
+                // CHECK NOTIFICATION (Robust Compare)
+                const notifKey = `${k}_${now.getDate()}`; // Unique key for today
                 
-                // CHECK FOR NOTIFICATION
-                // If times match AND we haven't notified for this specific time today
-                const notifKey = k + currentTimeStr;
-                if (currentTimeStr === timeVal && !STATE.notified[notifKey]) {
+                // If current minute matches prayer minute AND we haven't notified today
+                if (currentMinutes === prayerMinutes && !STATE.notified[notifKey]) {
                     const setting = STATE.notifSettings[k] || 'sound';
                     if (setting !== 'off') {
                         triggerNotification(k, setting);
-                        STATE.notified[notifKey] = true; // Prevents double loop firing
-                        // Clean up old keys to save memory (optional but good practice)
-                        Object.keys(STATE.notified).forEach(key => { if(key !== notifKey) delete STATE.notified[key]; });
+                        STATE.notified[notifKey] = true; 
                     }
                 }
 
-                const [h,m] = timeVal.split(':');
+                // Countdown Logic
                 let t = new Date(); t.setHours(h,m,0,0);
                 if(t < now) t.setDate(t.getDate()+1);
                 const diff = t - now;
@@ -761,9 +777,21 @@
 
         // 2. Play Audio
         if (mode === 'sound') {
-            azanAudio.play().catch(e => console.log("Audio blocked: user must interact with page first."));
+            azanAudio.currentTime = 0;
+            azanAudio.play().catch(e => console.log("Audio blocked. User interaction required."));
         }
     }
+    
+    // NEW: Test Button Function
+    window.testNotificationSound = function() {
+        if(Notification.permission === 'default') Notification.requestPermission();
+        azanAudio.currentTime = 0;
+        azanAudio.play().then(() => {
+            alert("Sound is working!");
+        }).catch(e => {
+            alert("Sound blocked by browser. Please interact with the page more.");
+        });
+    };
 
     function updateHeroBackground(timings) {
         const hero = document.getElementById("hero"); const now = new Date();
