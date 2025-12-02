@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,19 +14,19 @@
     </style>
 </head>
 <body>
-    <div id="content">Loading 40 Hadith Nawawi...</div>
+    <div id="content" style="text-align:center; color:var(--text-muted);">Sedang memuatkan Hadis 40 Imam Nawawi...</div>
     <script>
         Promise.all([
             fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-nawawi.json').then(r=>r.json()),
-            fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-nawawi.json').then(r=>r.json())
-        ]).then(([ar, en]) => {
+            fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ind-nawawi.json').then(r=>r.json())
+        ]).then(([ar, ms]) => {
             let html = '';
             ar.hadiths.forEach((h, i) => {
-                const enText = en.hadiths[i] ? en.hadiths[i].text : '';
-                html += `<div class="ayah-block"><div class="meta">Hadith ${h.hadithnumber}</div><div class="ayah-arabic">${h.text}</div><div class="ayah-trans">${enText}</div></div>`;
+                const msText = ms.hadiths[i] ? ms.hadiths[i].text : '';
+                html += `<div class="ayah-block"><div class="meta">Hadis Ke-${h.hadithnumber}</div><div class="ayah-arabic">${h.text}</div><div class="ayah-trans">${msText}</div></div>`;
             });
             document.getElementById('content').innerHTML = html;
-        }).catch(e => document.getElementById('content').innerHTML = 'Error loading data.');
+        }).catch(e => document.getElementById('content').innerHTML = 'Gagal memuatkan data.');
     </script>
 </body>
 </html>
