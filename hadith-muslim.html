@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,18 +13,18 @@
     </style>
 </head>
 <body>
-    <div id="content">Loading Sahih Muslim...</div>
+    <div id="content" style="text-align:center; color:var(--text-muted);">Sedang memuatkan Sahih Muslim...</div>
     <script>
-        fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-muslim.min.json')
+        fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ind-muslim.min.json')
         .then(r => r.json())
         .then(data => {
-            let html = `<div style="padding-bottom:20px; text-align:center; font-size:13px; color:#888;">Displaying preview of Sahih Muslim</div><hr style="opacity:0.2; margin-bottom:20px;">`;
+            let html = `<div style="padding-bottom:20px; text-align:center; font-size:13px; color:#888;">Paparan awal 100 hadis pertama (Sahih Muslim)</div><hr style="opacity:0.2; margin-bottom:20px;">`;
             data.hadiths.slice(0, 100).forEach(h => {
-                html += `<div class="ayah-block"><div class="meta">Hadith No. ${h.hadithnumber}</div><div class="ayah-trans">${h.text}</div></div>`;
+                html += `<div class="ayah-block"><div class="meta">Hadis No. ${h.hadithnumber}</div><div class="ayah-trans">${h.text}</div></div>`;
             });
             document.getElementById('content').innerHTML = html;
         })
-        .catch(e => document.getElementById('content').innerHTML = 'Error loading data.');
+        .catch(e => document.getElementById('content').innerHTML = 'Gagal memuatkan data. Sila periksa sambungan internet.');
     </script>
 </body>
 </html>
