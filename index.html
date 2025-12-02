@@ -49,7 +49,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s;
         }
 
-        /* --- HERO SECTION (UPDATED) --- */
+        /* --- HERO SECTION --- */
         .hero-wrapper {
             position: relative; width: 100%; min-height: 360px; overflow: hidden;
             border-bottom-left-radius: 32px; border-bottom-right-radius: 32px;
@@ -58,12 +58,9 @@
         .hero {
             position: absolute; inset: 0; background-color: var(--primary);
             background-size: cover; background-position: center; transition: background-image 1s ease-in-out;
-            /* CHANGED ALIGNMENT HERE */
-            display: flex; 
-            align-items: flex-end; /* Push card to bottom */
-            justify-content: center; 
-            padding: 20px;
-            padding-bottom: 40px; /* Add space at bottom */
+            /* CENTER ALIGNMENT - UPDATED TO FLEX-END */
+            display: flex; align-items: flex-end; justify-content: center; 
+            padding: 20px; padding-bottom: 40px;
         }
         .hero::before {
             content: ''; position: absolute; inset: 0;
@@ -325,16 +322,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
-    // --- CORRECTED FIREBASE CONFIG ---
     const firebaseConfig = {
-        apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
-        authDomain: "waktusolatlite.firebaseapp.com",
-        // Added the correct databaseURL to match admin.html
-        databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "waktusolatlite",
-        storageBucket: "waktusolatlite.firebasestorage.app",
-        messagingSenderId: "86910439082",
-        appId: "1:86910439082:web:e482d01e1451e58179cad3"
+      apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
+      authDomain: "waktusolatlite.firebaseapp.com",
+      databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "waktusolatlite",
+      storageBucket: "waktusolatlite.firebasestorage.app",
+      messagingSenderId: "86910439082",
+      appId: "1:86910439082:web:e482d01e1451e58179cad3"
     };
 
     try {
@@ -435,8 +430,8 @@
             fetchTimes(); // Fetch using the default (KL) coordinates immediately
         }
 
-        // 3. START BACKGROUND TASKS
-        getLocation(); 
+        // 3. START BACKGROUND TASKS - WITH PERSISTENCE
+        initLocationPersistence(); 
 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
         
@@ -565,20 +560,43 @@
         });
     }
 
-    // --- UPDATED LOCATION & FETCH LOGIC ---
+    // --- UPDATED PERSISTENT LOCATION & INSTALL LOGIC ---
+    function initLocationPersistence() {
+        const lastDenied = localStorage.getItem('wsl_loc_denied_ts');
+        const now = Date.now();
+        const threeMins = 3 * 60 * 1000;
+
+        if (!lastDenied || (now - lastDenied > threeMins)) {
+            getLocation();
+        } else {
+            console.log("Location prompt silenced for now. Next ask in:", ((lastDenied + threeMins) - now) / 1000, "s");
+            // Retry later
+            setTimeout(getLocation, (lastDenied + threeMins) - now);
+        }
+    }
+
     function getLocation() {
         const onSuccess = (p) => {
             STATE.lat = p.coords.latitude; 
             STATE.lon = p.coords.longitude;
             localStorage.setItem('wsl_coords', JSON.stringify({lat: STATE.lat, lon: STATE.lon}));
+            // Clear denied flag on success
+            localStorage.removeItem('wsl_loc_denied_ts');
+            
             document.getElementById('locationName').textContent = "Current Location";
             syncLocationToFirebase(STATE.lat, STATE.lon);
             fetchTimes(); 
         };
 
-        const onError = () => {
+        const onError = (err) => {
+            // Set denied timestamp
+            localStorage.setItem('wsl_loc_denied_ts', Date.now());
+            
             if(!savedCoords) document.getElementById('locationName').textContent = "Kuala Lumpur (Default)";
             syncLocationToFirebase(null, null);
+            
+            // Retry in 3 minutes
+            setTimeout(initLocationPersistence, 3 * 60 * 1000);
         };
 
         if(navigator.geolocation) {
@@ -731,20 +749,45 @@
     }
     window.closeReader = function(){ document.getElementById('readerModal').classList.remove('open'); };
     
-    // PWA INSTALL LOGIC
+    // PWA INSTALL LOGIC - WITH PERSISTENCE
     let dp; 
+    
+    function checkPwaPersistence() {
+        const lastClosed = localStorage.getItem('wsl_pwa_closed_ts');
+        const now = Date.now();
+        const threeMins = 3 * 60 * 1000;
+        
+        if (!lastClosed || (now - lastClosed > threeMins)) {
+            // Safe to show
+            return true;
+        }
+        // Retry later
+        setTimeout(checkPwaPersistence, (lastClosed + threeMins) - now);
+        return false;
+    }
+
     window.addEventListener('beforeinstallprompt',e=>{
         e.preventDefault();
         dp=e;
-        document.getElementById('pwaInstall').style.display='flex';
+        if(checkPwaPersistence()) {
+            document.getElementById('pwaInstall').style.display='flex';
+        }
     });
+    
     window.installPWA = function(){
         if(dp) dp.prompt();
         document.getElementById('pwaInstall').style.display='none';
     }
+    
     window.closePWA = function(){
         document.getElementById('pwaInstall').style.display='none';
+        localStorage.setItem('wsl_pwa_closed_ts', Date.now());
+        // Set re-trigger
+        setTimeout(() => {
+            if(dp) document.getElementById('pwaInstall').style.display='flex';
+        }, 3 * 60 * 1000);
     }
 </script>
 </body>
 </html>
+
