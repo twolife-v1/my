@@ -49,7 +49,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s;
         }
 
-        /* --- HERO SECTION --- */
+        /* --- HERO SECTION (UPDATED) --- */
         .hero-wrapper {
             position: relative; width: 100%; min-height: 360px; overflow: hidden;
             border-bottom-left-radius: 32px; border-bottom-right-radius: 32px;
@@ -58,9 +58,12 @@
         .hero {
             position: absolute; inset: 0; background-color: var(--primary);
             background-size: cover; background-position: center; transition: background-image 1s ease-in-out;
-            /* CENTER ALIGNMENT */
-            display: flex; align-items: center; justify-content: center; 
-            padding: 80px 20px;
+            /* CHANGED ALIGNMENT HERE */
+            display: flex; 
+            align-items: flex-end; /* Push card to bottom */
+            justify-content: center; 
+            padding: 20px;
+            padding-bottom: 40px; /* Add space at bottom */
         }
         .hero::before {
             content: ''; position: absolute; inset: 0;
@@ -322,16 +325,18 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
+    // --- CORRECTED FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
         authDomain: "waktusolatlite.firebaseapp.com",
-        // This must match index.html exactly:
+        // Added the correct databaseURL to match admin.html
         databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "waktusolatlite",
         storageBucket: "waktusolatlite.firebasestorage.app",
         messagingSenderId: "86910439082",
         appId: "1:86910439082:web:e482d01e1451e58179cad3"
     };
+
     try {
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
