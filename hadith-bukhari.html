@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary:#A67734; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; color: var(--text); background: white; }
+        .ayah-block { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px dashed var(--border); }
+        .ayah-trans { font-size: 14px; line-height: 1.6; color: var(--text); }
+        .meta { font-weight:700; color:var(--text-muted); font-size:12px; margin-bottom:5px; }
+    </style>
+</head>
+<body>
+    <div id="content">Loading Sahih Bukhari...</div>
+    <script>
+        fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-bukhari.min.json')
+        .then(r => r.json())
+        .then(data => {
+            let html = `<div style="padding-bottom:20px; text-align:center; font-size:13px; color:#888;">Displaying preview of Sahih Bukhari</div><hr style="opacity:0.2; margin-bottom:20px;">`;
+            data.hadiths.slice(0, 100).forEach(h => {
+                html += `<div class="ayah-block"><div class="meta">Hadith No. ${h.hadithnumber}</div><div class="ayah-trans">${h.text}</div></div>`;
+            });
+            document.getElementById('content').innerHTML = html;
+        })
+        .catch(e => document.getElementById('content').innerHTML = 'Error loading data.');
+    </script>
+</body>
+</html>
