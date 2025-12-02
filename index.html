@@ -14,64 +14,23 @@
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html { min-height: 100%; }
-        body { 
-            margin: 0; padding: 0; 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            min-height: 100vh; 
-            padding-bottom: 90px;
-        }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
 
-        /* --- STICKY HEADER --- */
-        .header-overlay {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            padding: 10px 20px; padding-top: max(10px, env(safe-area-inset-top));
-            display: flex; justify-content: space-between; align-items: center;
-            transition: all 0.3s ease;
-        }
-        .header-overlay.scrolled {
-            background: var(--header-scrolled);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding-bottom: 15px;
-        }
+        /* HEADER */
+        .header-overlay { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 10px 20px; padding-top: max(10px, env(safe-area-inset-top)); display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; }
+        .header-overlay.scrolled { background: var(--header-scrolled); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding-bottom: 15px; }
         .header-overlay.scrolled .header-greeting { color: var(--text-muted); text-shadow: none; }
         .header-overlay.scrolled .header-title-overlay { color: var(--header-text-scrolled); text-shadow: none; }
         .header-overlay.scrolled .icon-btn-glass { background: var(--bg); color: var(--text); border-color: var(--border); }
-        
         .header-greeting { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); transition: color 0.3s; }
         .header-title-overlay { font-size: 20px; font-weight: 800; color: white; margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.5); transition: color 0.3s; }
-        
-        .icon-btn-glass {
-            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white;
-            backdrop-filter: blur(4px); width: 36px; height: 36px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s;
-        }
+        .icon-btn-glass { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; backdrop-filter: blur(4px); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s; }
 
-        /* --- HERO SECTION --- */
-        .hero-wrapper {
-            position: relative; width: 100%; min-height: 360px; overflow: hidden;
-            border-bottom-left-radius: 32px; border-bottom-right-radius: 32px;
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3); margin-bottom: 25px;
-        }
-        .hero {
-            position: absolute; inset: 0; background-color: var(--primary);
-            background-size: cover; background-position: center; transition: background-image 1s ease-in-out;
-            display: flex; align-items: flex-end; justify-content: center; 
-            padding: 20px; padding-bottom: 40px;
-        }
-        .hero::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.3) 100%);
-            z-index: 1;
-        }
-        .hero-card-bg {
-            position: relative; z-index: 2; width: 100%; max-width: 500px;
-            background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px 20px;
-            color: var(--glass-text); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
+        /* HERO */
+        .hero-wrapper { position: relative; width: 100%; min-height: 360px; overflow: hidden; border-bottom-left-radius: 32px; border-bottom-right-radius: 32px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3); margin-bottom: 25px; }
+        .hero { position: absolute; inset: 0; background-color: var(--primary); background-size: cover; background-position: center; transition: background-image 1s ease-in-out; display: flex; align-items: flex-end; justify-content: center; padding: 20px; padding-bottom: 40px; }
+        .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.3) 100%); z-index: 1; }
+        .hero-card-bg { position: relative; z-index: 2; width: 100%; max-width: 500px; background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px 20px; color: var(--glass-text); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
         .hero-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .hero-left { display: flex; flex-direction: column; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .hero-right { text-align: right; display: flex; flex-direction: column; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
@@ -86,48 +45,39 @@
         #prayerNames div { font-size: 10px; opacity: 0.8; text-transform: uppercase; text-align: center; width: 16%; font-weight: 600; }
         #prayerTimes div { font-size: 13px; font-weight: 700; text-align: center; width: 16%; margin-top: 4px; }
 
-        /* --- REST OF APP LAYOUT --- */
+        /* LAYOUT */
         #app-container { padding: 0 20px; }
         .view { display: none; animation: fadeIn 0.3s ease; }
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
         .card { background: var(--surface); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--border); }
         .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
-
         .prayer-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
         .prayer-row:last-child { border-bottom: none; }
         .prayer-info { display: flex; gap: 15px; align-items: center; }
         .prayer-time { font-weight: 700; }
         .bell-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 5px; }
         .bell-btn.sound { color: var(--primary); }
-        
-        /* Bookmarks */
         .bookmark-btn { background: none; border: none; cursor: pointer; padding: 5px; color: var(--border); transition: color 0.2s; }
         .bookmark-btn.saved { color: var(--primary); }
         .bookmark-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
-        /* Side Panel - Z-Index updated */
+        /* SIDE PANEL */
         #sidePanelOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 290; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         #sidePanelOverlay.open { opacity: 1; pointer-events: auto; }
         #sidePanel { position: fixed; top: 0; right: 0; bottom: 0; width: 85%; max-width: 400px; background: var(--bg); z-index: 300; transform: translateX(100%); transition: transform 0.3s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         #sidePanel.open { transform: translateX(0); }
         .panel-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); }
         .panel-content { flex: 1; overflow-y: auto; padding: 20px; }
-
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .tool-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: var(--shadow); transition: transform 0.1s; }
         .tool-btn:active { transform: scale(0.98); }
         .tool-btn span { font-size: 12px; font-weight: 700; }
         .tool-btn svg { color: var(--primary); }
-
         .iframe-wrap { width: 100%; border: none; border-radius: 12px; background: white; margin-top: 10px; display: block; overflow: hidden; position: relative; }
-        .missing-file-placeholder {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; background: var(--bg); color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px;
-        }
+        .missing-file-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: var(--bg); color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px; }
 
-        /* Reader Modal - Z-index updated */
+        /* READER MODAL */
         #readerModal { position: fixed; inset: 0; background: var(--bg); z-index: 400; transform: translateY(100%); transition: transform 0.3s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         #readerModal.open { transform: translateY(0); }
         .reader-header { padding: 15px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -136,17 +86,15 @@
         .ayah-tools { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .ayah-arabic { font-family: 'Amiri', serif; font-size: 26px; text-align: right; margin-bottom: 10px; line-height: 2.2; color: var(--text); }
         .ayah-trans { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
-        
-        /* Navigation - Z-index updated */
+
+        /* NAVIGATION */
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: calc(65px + env(safe-area-inset-bottom)); background: var(--surface); display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 200; }
         .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-muted); }
         .nav-item.active { color: var(--primary); }
         .nav-label { font-size: 10px; font-weight: 600; }
-
         .surah-item { display: flex; align-items: center; padding: 16px; background: var(--surface); margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); }
         .surah-num { background: var(--primary-light); color: var(--primary); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 700; margin-right: 15px; }
-        
-        /* Keyframe for PWA slide up - Z-index updated */
+
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         #pwaInstall { z-index: 500; display: none; position: fixed; bottom: 85px; left: 20px; right: 20px; background: var(--text); color: var(--bg); padding: 15px; border-radius: 16px; align-items: center; justify-content: space-between; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideUp 0.4s ease; }
     </style>
@@ -173,16 +121,13 @@
                             <div id="locationName">Checking...</div>
                             <div id="heroDate">...</div>
                         </div>
-
                         <div class="hero-right">
                             <div id="heroTime">--:--</div>
                             <div id="countdown">--:--:--</div>
                             <div id="nextPrayer">Next: --</div>
                         </div>
                     </div>
-
                     <div class="hero-divider"></div>
-
                     <div id="heroPrayers">
                         <div id="prayerNames"></div>
                         <div id="prayerTimes"></div>
@@ -193,7 +138,6 @@
 
         <div id="app-container">
             <div id="announcementBanner" style="display:none; background:#FEF3C7; color:#92400E; padding:12px; margin-bottom:15px; border-radius:12px; border-left:4px solid #F59E0B; font-size:13px;"></div>
-            
             <div class="card">
                 <div class="section-title">Today's Schedule <span style="font-size:12px; color:var(--text-muted)" id="hijriDate"></span></div>
                 <div id="prayerList"></div>
@@ -225,14 +169,6 @@
         </div>
         <div class="panel-content">
             
-            <div class="section-title">Test Audio</div>
-            <div class="tool-grid">
-                <div class="tool-btn" onclick="testNotificationSound()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                    <span>Test Sound</span>
-                </div>
-            </div>
-
             <div class="section-title">Daily Hadith</div>
             <div class="card" style="margin:0 0 20px 0; border-radius:16px;">
                 <div style="font-style:italic; font-size:14px; margin-bottom:8px; line-height:1.5;" id="hadithTextContent">Loading...</div>
@@ -309,7 +245,6 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
             </a>
-
         </div>
     </aside>
 
@@ -345,566 +280,121 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
-      authDomain: "waktusolatlite.firebaseapp.com",
-      databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "waktusolatlite",
-      storageBucket: "waktusolatlite.firebasestorage.app",
-      messagingSenderId: "86910439082",
-      appId: "1:86910439082:web:e482d01e1451e58179cad3"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", authDomain: "waktusolatlite.firebaseapp.com", databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "waktusolatlite", storageBucket: "waktusolatlite.firebasestorage.app", messagingSenderId: "86910439082", appId: "1:86910439082:web:e482d01e1451e58179cad3" };
     try {
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        
-        // Expose helper to window for main script
         window.updateUserLocation = function(lat, lon, device) {
             let installId = localStorage.getItem('wsl_install_id');
-            // FIXED: Safer UUID generation that won't crash on older phones
             if(!installId) { 
-                if (typeof crypto.randomUUID === 'function') {
-                    installId = crypto.randomUUID();
-                } else {
-                    installId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                }
+                if (typeof crypto.randomUUID === 'function') { installId = crypto.randomUUID(); } else { installId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
                 localStorage.setItem('wsl_install_id', installId); 
             }
-            db.ref('users/' + installId).update({
-                lastActive: Date.now(),
-                lat: lat,
-                lon: lon,
-                device: device
-            });
+            db.ref('users/' + installId).update({ lastActive: Date.now(), lat: lat, lon: lon, device: device });
         };
-
-        // Initialize user tracking immediately if possible, or wait for trigger
         window.firebaseReady = true;
-
-        db.ref('announcement').on('value', (snap) => {
-            const d = snap.val(); 
-            const el = document.getElementById('announcementBanner');
-            if(d && d.show && d.text) { el.style.display='block'; el.textContent=d.text; } 
-            else el.style.display='none';
-        });
-
-        db.ref('hadiths').on('value', (snap) => {
-            const arr=[]; snap.forEach(c=>arr.push(c.val()));
-            if(arr.length>0) { 
-                const r=arr[Math.floor(Math.random()*arr.length)]; 
-                document.getElementById('hadithTextContent').textContent=`"${r.text}"`; 
-                document.getElementById('hadithSourceContent').textContent=r.source; 
-                if(window.checkHadithBookmark) window.checkHadithBookmark(); 
-            }
-        });
-
-        db.ref('duas').on('value', (snap) => { 
-            if(!window.STATE) window.STATE={}; 
-            window.STATE.duasCache=[]; 
-            if(snap.exists()) snap.forEach(x=>window.STATE.duasCache.push(x.val())); 
-        });
-
-    } catch(e) { 
-        console.error("Firebase Error", e); 
-    }
+        db.ref('announcement').on('value', (snap) => { const d = snap.val(); const el = document.getElementById('announcementBanner'); if(d && d.show && d.text) { el.style.display='block'; el.textContent=d.text; } else el.style.display='none'; });
+        db.ref('hadiths').on('value', (snap) => { const arr=[]; snap.forEach(c=>arr.push(c.val())); if(arr.length>0) { const r=arr[Math.floor(Math.random()*arr.length)]; document.getElementById('hadithTextContent').textContent=`"${r.text}"`; document.getElementById('hadithSourceContent').textContent=r.source; if(window.checkHadithBookmark) window.checkHadithBookmark(); } });
+        db.ref('duas').on('value', (snap) => { if(!window.STATE) window.STATE={}; window.STATE.duasCache=[]; if(snap.exists()) snap.forEach(x=>window.STATE.duasCache.push(x.val())); });
+    } catch(e) { console.error("Firebase Error", e); }
 </script>
 
 <script>
-    // 1. INSTANT LOAD: Read saved data immediately
     const savedCoords = JSON.parse(localStorage.getItem('wsl_coords'));
     const INITIAL_LAT = savedCoords ? savedCoords.lat : 3.1390;
     const INITIAL_LON = savedCoords ? savedCoords.lon : 101.6869;
-
-    const STATE = { 
-        lat: INITIAL_LAT, 
-        lon: INITIAL_LON, 
-        prayerTimes: JSON.parse(localStorage.getItem('wsl_cached_times') || 'null'), 
-        theme: localStorage.getItem('wsl_theme')||'light', 
-        notifSettings: JSON.parse(localStorage.getItem('wsl_notif_settings')||'{}'), 
-        notified: {}, 
-        bookmarks: JSON.parse(localStorage.getItem('wsl_bookmarks')||'[]'), 
-        duasCache: [] 
-    };
-
+    const STATE = { lat: INITIAL_LAT, lon: INITIAL_LON, prayerTimes: JSON.parse(localStorage.getItem('wsl_cached_times') || 'null'), theme: localStorage.getItem('wsl_theme')||'light', notifSettings: JSON.parse(localStorage.getItem('wsl_notif_settings')||'{}'), notified: {}, bookmarks: JSON.parse(localStorage.getItem('wsl_bookmarks')||'[]'), duasCache: [] };
     const prayerDisplayMap = { 'Imsak': 'Imsak', 'Fajr': 'Subuh', 'Dhuhr': 'Zohor', 'Asr': 'Asar', 'Maghrib': 'Maghrib', 'Isha': 'Isyak' };
     const prayerKeys = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']; 
-    const bgImages = {
-        Fajr: "images/subuh.jpg", Dhuhr: "images/zohor.jpg", Asr: "images/asar.jpg", 
-        Maghrib: "images/maghrib.jpg", Isha: "images/isyak.jpg", Default: "images/isyak.jpg"
-    };
-    
-    // CUSTOM HIJRI MONTH NAMES
-    const HIJRI_MONTHS = [
-        "Muharram", "Safar", "Rabiul-Awal", "Rabiul-Akhir", 
-        "Jamadil-Awal", "Jamadil-Akhir", "Rejab", "Syaaban", 
-        "Ramadhan", "Shawal", "Dzul-Qaedah", "Dzul-Hijjah"
-    ];
-
-    // --- AUDIO FOR NOTIFICATIONS ---
+    const bgImages = { Fajr: "images/subuh.jpg", Dhuhr: "images/zohor.jpg", Asr: "images/asar.jpg", Maghrib: "images/maghrib.jpg", Isha: "images/isyak.jpg", Default: "images/isyak.jpg" };
+    const HIJRI_MONTHS = [ "Muharram", "Safar", "Rabiul-Awal", "Rabiul-Akhir", "Jamadil-Awal", "Jamadil-Akhir", "Rejab", "Syaaban", "Ramadhan", "Shawal", "Dzul-Qaedah", "Dzul-Hijjah" ];
     const azanAudio = new Audio('azan.mp3');
 
     window.addEventListener('DOMContentLoaded', () => {
-        applyTheme();
-        updateGreeting();
-        renderBookmarksList();
-        
-        // 2. REGISTER SERVICE WORKER (CRITICAL FOR OFFLINE)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('SW Registered', reg))
-                .catch(err => console.log('SW Failed', err));
-        }
-
-        // 3. OFFLINE HANDLER: If we have times, render them immediately
-        if(STATE.prayerTimes) {
-            renderPrayerList();
-            renderHeroPrayers(STATE.prayerTimes);
-            updateHero(STATE.prayerTimes);
-            document.getElementById('locationName').textContent = savedCoords ? "Last Known Location" : "Kuala Lumpur (Default)";
-            // Check for Hijri date in storage
-            const lastHijri = localStorage.getItem('wsl_last_hijri');
-            if(lastHijri) document.getElementById('hijriDate').textContent = lastHijri;
-        }
-
-        // 4. ATTEMPT NETWORK FETCH (But don't block UI if it fails)
-        if (navigator.onLine) {
-            document.getElementById('locationName').textContent = "Updating...";
-            initLocationPersistence();
-        } else {
-            // We are offline, keep the loaded data
-            document.getElementById('locationName').textContent = "Offline Mode";
-            // Start the clock anyway
-            if(STATE.prayerTimes) updateHero(STATE.prayerTimes);
-        }
-
-        // 5. WINDOW SCROLL
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('stickyHeader');
-            if (window.scrollY > 30) header.classList.add('scrolled'); else header.classList.remove('scrolled');
-        });
-
-        // 6. IFRAME ERROR HANDLING
-        document.querySelectorAll('iframe').forEach(frame => {
-            try {
-                frame.addEventListener('error', () => {
-                    frame.style.display = 'none';
-                    frame.nextElementSibling.style.display = 'flex';
-                });
-            } catch(e){}
-        });
-        
-        // 7. ASK FOR PERMISSION & UNLOCK AUDIO ON FIRST CLICK
-        if(Notification.permission === 'default' || Notification.permission === 'granted') {
-            document.body.addEventListener('click', () => {
-                if(Notification.permission !== 'granted') Notification.requestPermission();
-                // Check if audio needs unlocking
-                if (azanAudio.paused) {
-                    azanAudio.play().then(() => {
-                        azanAudio.pause();
-                        azanAudio.currentTime = 0;
-                    }).catch(e => console.log("Audio waiting for interaction"));
-                }
-            }, {once:true});
-        }
+        applyTheme(); updateGreeting(); renderBookmarksList();
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').then(reg => console.log('SW Registered', reg)).catch(err => console.log('SW Failed', err)); }
+        if(STATE.prayerTimes) { renderPrayerList(); renderHeroPrayers(STATE.prayerTimes); updateHero(STATE.prayerTimes); document.getElementById('locationName').textContent = savedCoords ? "Last Known Location" : "Kuala Lumpur (Default)"; const lastHijri = localStorage.getItem('wsl_last_hijri'); if(lastHijri) document.getElementById('hijriDate').textContent = lastHijri; }
+        if (navigator.onLine) { document.getElementById('locationName').textContent = "Updating..."; initLocationPersistence(); } else { document.getElementById('locationName').textContent = "Offline Mode"; if(STATE.prayerTimes) updateHero(STATE.prayerTimes); }
+        window.addEventListener('scroll', () => { const header = document.getElementById('stickyHeader'); if (window.scrollY > 30) header.classList.add('scrolled'); else header.classList.remove('scrolled'); });
+        document.querySelectorAll('iframe').forEach(frame => { try { frame.addEventListener('error', () => { frame.style.display = 'none'; frame.nextElementSibling.style.display = 'flex'; }); } catch(e){} });
+        if(Notification.permission === 'default' || Notification.permission === 'granted') { document.body.addEventListener('click', () => { if(Notification.permission !== 'granted') Notification.requestPermission(); if (azanAudio.paused) { azanAudio.play().then(() => { azanAudio.pause(); azanAudio.currentTime = 0; }).catch(e => console.log("Audio waiting for interaction")); } }, {once:true}); }
     });
 
-    // --- HELPER FUNCTIONS ---
-
-    // Function to Open External Guide File (panduan.html)
-    window.openExternalPanduan = function() {
-        const s = document.getElementById('sidePanel');
-        const o = document.getElementById('sidePanelOverlay');
-        if(s.classList.contains('open')) { s.classList.remove('open'); o.classList.remove('open'); }
-        const m = document.getElementById('readerModal');
-        const c = document.getElementById('readerContent');
+    // --- UPDATED IFRAME HANDLER FOR HADITHS ---
+    window.openHadithCollection = function(type) {
+        const m = document.getElementById('readerModal'); const c = document.getElementById('readerContent');
+        const t = document.getElementById('readerTitle'); const s = document.getElementById('readerSubtitle');
         m.classList.add('open');
-        document.getElementById('readerTitle').textContent = "Pustaka Panduan";
-        document.getElementById('readerSubtitle').textContent = "Islamic Guides Library";
+        
+        // Remove padding from container to allow iframe full width
+        c.style.padding = '0';
+        c.style.overflow = 'hidden'; 
+
+        if(type === 'bukhari') { t.textContent = "Sahih Bukhari"; s.textContent = "Authentic Traditions"; }
+        else if(type === 'muslim') { t.textContent = "Sahih Muslim"; s.textContent = "Authentic Traditions"; }
+        else if(type === 'nawawi') { t.textContent = "40 Hadith Nawawi"; s.textContent = "Imam Nawawi's Collection"; }
+        else if(type === 'asbabun') { t.textContent = "Asbabun Nuzul"; s.textContent = "Context of Revelation"; }
+
+        c.innerHTML = `<iframe src="hadith-${type}.html" style="width:100%; height:100%; border:none; display:block;"></iframe>`;
+    };
+
+    window.openExternalPanduan = function() {
+        const s = document.getElementById('sidePanel'); const o = document.getElementById('sidePanelOverlay');
+        if(s.classList.contains('open')) { s.classList.remove('open'); o.classList.remove('open'); }
+        const m = document.getElementById('readerModal'); const c = document.getElementById('readerContent');
+        m.classList.add('open'); c.style.padding = '0'; c.style.overflow = 'hidden';
+        document.getElementById('readerTitle').textContent = "Pustaka Panduan"; document.getElementById('readerSubtitle').textContent = "Islamic Guides Library";
         c.innerHTML = `<iframe src="panduan.html" style="width:100%; height:100%; min-height:80vh; border:none; display:block;"></iframe>`;
     };
 
     window.openDuas = function() {
         const m = document.getElementById('readerModal'); const c = document.getElementById('readerContent');
-        m.classList.add('open');
-        document.getElementById('readerTitle').textContent = "Himpunan Doa";
-        document.getElementById('readerSubtitle').textContent = "Daily Duas";
+        m.classList.add('open'); c.style.padding = '20px'; c.style.overflowY = 'auto'; // Restore padding
+        document.getElementById('readerTitle').textContent = "Himpunan Doa"; document.getElementById('readerSubtitle').textContent = "Daily Duas";
         c.innerHTML = '';
         if(!STATE.duasCache || STATE.duasCache.length === 0) { c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Loading or no duas available...</div>'; return; }
-        STATE.duasCache.forEach(v => {
-            c.innerHTML += `<div class="card" style="padding:15px;margin-bottom:10px;"><div style="font-weight:700;font-size:16px;">${v.t}</div><div style="font-family:Amiri;text-align:right;font-size:20px;color:var(--primary);margin:10px 0;">${v.a}</div><div style="font-size:14px;color:var(--text-muted);line-height:1.5">${v.m}</div></div>`;
-        });
+        STATE.duasCache.forEach(v => { c.innerHTML += `<div class="card" style="padding:15px;margin-bottom:10px;"><div style="font-weight:700;font-size:16px;">${v.t}</div><div style="font-family:Amiri;text-align:right;font-size:20px;color:var(--primary);margin:10px 0;">${v.a}</div><div style="font-size:14px;color:var(--text-muted);line-height:1.5">${v.m}</div></div>`; });
     };
 
-    window.openHadithCollection = async function(type) {
-        if(!navigator.onLine) { alert("You are offline. Connect to internet to read Hadith."); return; }
-        const m = document.getElementById('readerModal'); const c = document.getElementById('readerContent');
-        const t = document.getElementById('readerTitle'); const s = document.getElementById('readerSubtitle');
-        m.classList.add('open'); 
-        t.textContent = type.replace('asbabun', 'Asbabun Nuzul').toUpperCase(); s.textContent = "Loading...";
-        c.innerHTML = '<div style="text-align:center; padding:20px;">Fetching trusted data...</div>';
-
-        if(type === 'asbabun') {
-            s.textContent = "Context of Revelation";
-            c.innerHTML = `<div class="card" style="padding:20px; text-align:center;"><h3>Asbabun Nuzul</h3><p style="color:var(--text-muted)">Historical context for specific Quranic verses.</p></div>`;
-            return;
-        }
-
-        try {
-            if(type === 'nawawi') {
-                const resAr = await fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-nawawi.json'); const dataAr = await resAr.json();
-                const resEn = await fetch('https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-nawawi.json'); const dataEn = await resEn.json();
-                s.textContent = `${dataAr.hadiths.length} Hadiths`;
-                let html = '';
-                dataAr.hadiths.forEach((h, i) => {
-                    const enText = dataEn.hadiths[i] ? dataEn.hadiths[i].text : '';
-                    html += `<div class="ayah-block"><div style="font-weight:700; margin-bottom:10px; color:var(--primary);">Hadith ${h.hadithnumber}</div><div class="ayah-arabic" style="font-size:20px;">${h.text}</div><div class="ayah-trans">${enText}</div></div>`;
-                });
-                c.innerHTML = html;
-            } else {
-                const book = type === 'bukhari' ? 'bukhari' : 'muslim';
-                s.textContent = `Selection from ${type}`;
-                const res = await fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-${book}.min.json`);
-                const data = await res.json();
-                let html = `<div style="padding:20px; text-align:center;"><p>Displaying first 50 hadiths preview.</p><hr></div>`;
-                data.hadiths.slice(0, 50).forEach(h => {
-                    html += `<div class="ayah-block"><div style="font-weight:700; color:var(--text-muted); font-size:12px;">No. ${h.hadithnumber}</div><div class="ayah-trans" style="margin-top:5px; color:var(--text);">${h.text}</div></div>`;
-                });
-                c.innerHTML = html;
-            }
-        } catch(e) { c.innerHTML = `<div style="color:red; text-align:center;">Error loading Hadith.</div>`; }
+    window.closeReader = function(){ 
+        const m = document.getElementById('readerModal'); 
+        m.classList.remove('open'); 
+        // Small timeout to clear iframe source to stop memory leaks
+        setTimeout(() => { document.getElementById('readerContent').innerHTML = ''; }, 300);
     };
 
-    window.togAyah = function(b,s,a,ar,tr,sn) {
-        ar = decodeURIComponent(ar); tr = decodeURIComponent(tr); sn = decodeURIComponent(sn);
-        const id=`ayah_${s}_${a}`; const i=STATE.bookmarks.findIndex(x=>x.id===id);
-        if(i>-1){STATE.bookmarks.splice(i,1);b.classList.remove('saved');}
-        else{STATE.bookmarks.push({id,type:'ayah',surahNum:s,ayahNum:a,arText:ar,trText:tr,surahName:sn});b.classList.add('saved');}
-        localStorage.setItem('wsl_bookmarks',JSON.stringify(STATE.bookmarks)); renderBookmarksList();
-    };
-    window.toggleHadithBookmark = function(b) {
-        const t=document.getElementById('hadithTextContent').textContent; const src=document.getElementById('hadithSourceContent').textContent;
-        const id=`hadith_${t.substring(0,10)}`; const i=STATE.bookmarks.findIndex(x=>x.id===id);
-        if(i>-1){STATE.bookmarks.splice(i,1);b.classList.remove('saved');}
-        else{STATE.bookmarks.push({id,type:'hadith',text:t,src:src});b.classList.add('saved');}
-        localStorage.setItem('wsl_bookmarks',JSON.stringify(STATE.bookmarks)); renderBookmarksList();
-    };
-    window.checkHadithBookmark = function() {
-        const t=document.getElementById('hadithTextContent').textContent; const b=document.getElementById('hadithBookmark');
-        if(!b) return;
-        if(STATE.bookmarks.some(x=>x.id===`hadith_${t.substring(0,10)}`)) b.classList.add('saved'); else b.classList.remove('saved');
-    };
-    function renderBookmarksList() {
-        const l=document.getElementById('bookmarksList'); if(STATE.bookmarks.length===0){l.innerHTML='<div style="color:var(--text-muted);font-size:13px;text-align:center;">No bookmarks.</div>';return;}
-        l.innerHTML=''; STATE.bookmarks.forEach(b => {
-            l.innerHTML += `<div style="border-bottom:1px solid var(--border);padding:10px 0;font-size:13px;">${b.type==='ayah'?`<div><strong>${b.surahName} (${b.surahNum}:${b.ayahNum})</strong></div><div style="color:var(--text-muted)">${b.trText.substring(0,50)}...</div>`:`<div><strong>Hadith:</strong> ${b.text.substring(0,50)}...</div>`}</div>`;
-        });
-    }
+    // --- REST OF APP LOGIC REMAINS THE SAME ---
+    window.togAyah = function(b,s,a,ar,tr,sn) { ar = decodeURIComponent(ar); tr = decodeURIComponent(tr); sn = decodeURIComponent(sn); const id=`ayah_${s}_${a}`; const i=STATE.bookmarks.findIndex(x=>x.id===id); if(i>-1){STATE.bookmarks.splice(i,1);b.classList.remove('saved');} else{STATE.bookmarks.push({id,type:'ayah',surahNum:s,ayahNum:a,arText:ar,trText:tr,surahName:sn});b.classList.add('saved');} localStorage.setItem('wsl_bookmarks',JSON.stringify(STATE.bookmarks)); renderBookmarksList(); };
+    window.toggleHadithBookmark = function(b) { const t=document.getElementById('hadithTextContent').textContent; const src=document.getElementById('hadithSourceContent').textContent; const id=`hadith_${t.substring(0,10)}`; const i=STATE.bookmarks.findIndex(x=>x.id===id); if(i>-1){STATE.bookmarks.splice(i,1);b.classList.remove('saved');} else{STATE.bookmarks.push({id,type:'hadith',text:t,src:src});b.classList.add('saved');} localStorage.setItem('wsl_bookmarks',JSON.stringify(STATE.bookmarks)); renderBookmarksList(); };
+    window.checkHadithBookmark = function() { const t=document.getElementById('hadithTextContent').textContent; const b=document.getElementById('hadithBookmark'); if(!b) return; if(STATE.bookmarks.some(x=>x.id===`hadith_${t.substring(0,10)}`)) b.classList.add('saved'); else b.classList.remove('saved'); };
+    function renderBookmarksList() { const l=document.getElementById('bookmarksList'); if(STATE.bookmarks.length===0){l.innerHTML='<div style="color:var(--text-muted);font-size:13px;text-align:center;">No bookmarks.</div>';return;} l.innerHTML=''; STATE.bookmarks.forEach(b => { l.innerHTML += `<div style="border-bottom:1px solid var(--border);padding:10px 0;font-size:13px;">${b.type==='ayah'?`<div><strong>${b.surahName} (${b.surahNum}:${b.ayahNum})</strong></div><div style="color:var(--text-muted)">${b.trText.substring(0,50)}...</div>`:`<div><strong>Hadith:</strong> ${b.text.substring(0,50)}...</div>`}</div>`; }); }
 
-    // --- UPDATED PERSISTENT LOCATION & INSTALL LOGIC ---
-    function initLocationPersistence() {
-        if(!navigator.onLine) return; // Don't check location if offline
-        const lastDenied = localStorage.getItem('wsl_loc_denied_ts');
-        const now = Date.now();
-        const threeMins = 3 * 60 * 1000;
-
-        if (!lastDenied || (now - lastDenied > threeMins)) {
-            getLocation();
-        } else {
-            console.log("Location prompt silenced for now. Next ask in:", ((lastDenied + threeMins) - now) / 1000, "s");
-            // Retry later
-            setTimeout(getLocation, (lastDenied + threeMins) - now);
-        }
-    }
-
-    function getLocation() {
-        const onSuccess = (p) => {
-            STATE.lat = p.coords.latitude; 
-            STATE.lon = p.coords.longitude;
-            localStorage.setItem('wsl_coords', JSON.stringify({lat: STATE.lat, lon: STATE.lon}));
-            // Clear denied flag on success
-            localStorage.removeItem('wsl_loc_denied_ts');
-            
-            document.getElementById('locationName').textContent = "Current Location";
-            syncLocationToFirebase(STATE.lat, STATE.lon);
-            fetchTimes(); 
-        };
-
-        const onError = (err) => {
-            // FIXED: Only loop if error is NOT permission denied.
-            // code 1 = PERMISSION_DENIED. code 2 = POSITION_UNAVAILABLE. code 3 = TIMEOUT.
-            localStorage.setItem('wsl_loc_denied_ts', Date.now());
-            
-            if (err.code !== 1) {
-                // If temporary error, try again in 3 mins
-                setTimeout(initLocationPersistence, 3 * 60 * 1000);
-            } else {
-                document.getElementById('locationName').textContent = "Location Denied (Using Default)";
-            }
-            
-            if(!savedCoords && !STATE.prayerTimes) {
-                document.getElementById('locationName').textContent = "Kuala Lumpur (Default)";
-            }
-            syncLocationToFirebase(null, null);
-        };
-
-        if(navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(onSuccess, onError, {timeout: 10000}); 
-        } else { onError({code: 0}); }
-    }
-
-    function syncLocationToFirebase(lat, lon) {
-        if(!navigator.onLine) return;
-        const device = navigator.userAgent || 'Unknown';
-        let attempts = 0;
-        const interval = setInterval(() => {
-            if(window.updateUserLocation) {
-                window.updateUserLocation(lat, lon, device);
-                clearInterval(interval);
-            }
-            attempts++;
-            if(attempts > 20) clearInterval(interval);
-        }, 500);
-    }
-
-    async function fetchTimes() {
-        if(!navigator.onLine) return; // Skip if offline
-        try {
-            const res = await fetch(`https://api.aladhan.com/v1/timings/${Math.floor(Date.now()/1000)}?latitude=${STATE.lat}&longitude=${STATE.lon}&method=11`);
-            const d = await res.json();
-            STATE.prayerTimes = d.data.timings;
-            // SAVE CACHE
-            localStorage.setItem('wsl_cached_times', JSON.stringify(STATE.prayerTimes));
-            
-            // USE CUSTOM MONTH NAMES
-            const monthNum = d.data.date.hijri.month.number - 1; // API returns 1-12
-            const montName = HIJRI_MONTHS[monthNum] || d.data.date.hijri.month.en;
-            const fullHijri = `${d.data.date.hijri.day} ${montName} ${d.data.date.hijri.year}`;
-            
-            document.getElementById('hijriDate').textContent = fullHijri;
-            localStorage.setItem('wsl_last_hijri', fullHijri);
-
-            renderPrayerList(); 
-            renderHeroPrayers(STATE.prayerTimes); 
-            updateHero(STATE.prayerTimes);
-        } catch(e) { console.error(e); }
-    }
-
-    function renderPrayerList() {
-        const l = document.getElementById('prayerList'); l.innerHTML = '';
-        prayerKeys.forEach(k => {
-            const s = STATE.notifSettings[k]||'sound';
-            l.innerHTML += `<div class="prayer-row"><div class="prayer-info"><span>${prayerDisplayMap[k]}</span><span class="prayer-time">${convertTo12Hour(STATE.prayerTimes[k])}</span></div><button class="bell-btn ${s}" onclick="cycleNotif('${k}')">${getBellIcon(s)}</button></div>`;
-        });
-    }
-    function getBellIcon(m) {
-        if(m==='sound') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`;
-        if(m==='silent') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
-    }
-    function cycleNotif(k) {
-        if(Notification.permission === 'default') Notification.requestPermission();
-        const m=['sound','silent','off']; const c=STATE.notifSettings[k]||'sound';
-        STATE.notifSettings[k] = m[(m.indexOf(c)+1)%3];
-        localStorage.setItem('wsl_notif_settings', JSON.stringify(STATE.notifSettings)); renderPrayerList();
-    }
+    function initLocationPersistence() { if(!navigator.onLine) return; const lastDenied = localStorage.getItem('wsl_loc_denied_ts'); const now = Date.now(); const threeMins = 3 * 60 * 1000; if (!lastDenied || (now - lastDenied > threeMins)) { getLocation(); } else { setTimeout(getLocation, (lastDenied + threeMins) - now); } }
+    function getLocation() { const onSuccess = (p) => { STATE.lat = p.coords.latitude; STATE.lon = p.coords.longitude; localStorage.setItem('wsl_coords', JSON.stringify({lat: STATE.lat, lon: STATE.lon})); localStorage.removeItem('wsl_loc_denied_ts'); document.getElementById('locationName').textContent = "Current Location"; syncLocationToFirebase(STATE.lat, STATE.lon); fetchTimes(); }; const onError = (err) => { localStorage.setItem('wsl_loc_denied_ts', Date.now()); if (err.code !== 1) { setTimeout(initLocationPersistence, 3 * 60 * 1000); } else { document.getElementById('locationName').textContent = "Location Denied (Using Default)"; } if(!savedCoords && !STATE.prayerTimes) { document.getElementById('locationName').textContent = "Kuala Lumpur (Default)"; } syncLocationToFirebase(null, null); }; if(navigator.geolocation) { navigator.geolocation.getCurrentPosition(onSuccess, onError, {timeout: 10000}); } else { onError({code: 0}); } }
+    function syncLocationToFirebase(lat, lon) { if(!navigator.onLine) return; const device = navigator.userAgent || 'Unknown'; let attempts = 0; const interval = setInterval(() => { if(window.updateUserLocation) { window.updateUserLocation(lat, lon, device); clearInterval(interval); } attempts++; if(attempts > 20) clearInterval(interval); }, 500); }
+    async function fetchTimes() { if(!navigator.onLine) return; try { const res = await fetch(`https://api.aladhan.com/v1/timings/${Math.floor(Date.now()/1000)}?latitude=${STATE.lat}&longitude=${STATE.lon}&method=11`); const d = await res.json(); STATE.prayerTimes = d.data.timings; localStorage.setItem('wsl_cached_times', JSON.stringify(STATE.prayerTimes)); const monthNum = d.data.date.hijri.month.number - 1; const montName = HIJRI_MONTHS[monthNum] || d.data.date.hijri.month.en; const fullHijri = `${d.data.date.hijri.day} ${montName} ${d.data.date.hijri.year}`; document.getElementById('hijriDate').textContent = fullHijri; localStorage.setItem('wsl_last_hijri', fullHijri); renderPrayerList(); renderHeroPrayers(STATE.prayerTimes); updateHero(STATE.prayerTimes); } catch(e) { console.error(e); } }
+    function renderPrayerList() { const l = document.getElementById('prayerList'); l.innerHTML = ''; prayerKeys.forEach(k => { const s = STATE.notifSettings[k]||'sound'; l.innerHTML += `<div class="prayer-row"><div class="prayer-info"><span>${prayerDisplayMap[k]}</span><span class="prayer-time">${convertTo12Hour(STATE.prayerTimes[k])}</span></div><button class="bell-btn ${s}" onclick="cycleNotif('${k}')">${getBellIcon(s)}</button></div>`; }); }
+    function getBellIcon(m) { if(m==='sound') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`; if(m==='silent') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`; return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`; }
+    function cycleNotif(k) { if(Notification.permission === 'default') Notification.requestPermission(); const m=['sound','silent','off']; const c=STATE.notifSettings[k]||'sound'; STATE.notifSettings[k] = m[(m.indexOf(c)+1)%3]; localStorage.setItem('wsl_notif_settings', JSON.stringify(STATE.notifSettings)); renderPrayerList(); }
     function convertTo12Hour(t) { let [h,m]=t.split(':'); h=parseInt(h); const am=h>=12?'PM':'AM'; h=h%12||12; return `${h}:${m} ${am}`; }
-
-    function renderHeroPrayers(timings) {
-        const order = ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'];
-        const namesDiv = document.getElementById('prayerNames'); const timesDiv = document.getElementById('prayerTimes');
-        namesDiv.innerHTML=''; timesDiv.innerHTML='';
-        order.forEach(key => {
-            const nameEl = document.createElement('div'); nameEl.textContent = prayerDisplayMap[key].substring(0,3); namesDiv.appendChild(nameEl);
-            const timeEl = document.createElement('div'); timeEl.textContent = timings[key].split(' ')[0]; timesDiv.appendChild(timeEl);
-        });
-    }
-
-    // --- ROBUST NOTIFICATION LOGIC ---
+    function renderHeroPrayers(timings) { const order = ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha']; const namesDiv = document.getElementById('prayerNames'); const timesDiv = document.getElementById('prayerTimes'); namesDiv.innerHTML=''; timesDiv.innerHTML=''; order.forEach(key => { const nameEl = document.createElement('div'); nameEl.textContent = prayerDisplayMap[key].substring(0,3); namesDiv.appendChild(nameEl); const timeEl = document.createElement('div'); timeEl.textContent = timings[key].split(' ')[0]; timesDiv.appendChild(timeEl); }); }
     let heroInterval = null;
-    function updateHero(timings) {
-        if(heroInterval) clearInterval(heroInterval);
-        updateHeroBackground(timings);
-        
-        const tick = () => {
-            const now = new Date();
-            // Create "Minutes from Midnight" for current time
-            const currentMinutes = (now.getHours() * 60) + now.getMinutes();
-
-            document.getElementById('heroTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
-            document.getElementById('heroDate').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
-            
-            let nextKey = 'Fajr'; let minDiff = Infinity;
-            
-            ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
-                const timeStr = timings[k].split(' ')[0]; // "16:26"
-                const [h,m] = timeStr.split(':').map(Number);
-                const prayerMinutes = (h * 60) + m;
-
-                // CHECK NOTIFICATION (Robust Compare)
-                const notifKey = `${k}_${now.getDate()}`; // Unique key for today
-                
-                // FIXED: Widen window to 2 minutes in case phone was sleeping
-                if (currentMinutes >= prayerMinutes && currentMinutes <= prayerMinutes + 2 && !STATE.notified[notifKey]) {
-                    const setting = STATE.notifSettings[k] || 'sound';
-                    if (setting !== 'off') {
-                        triggerNotification(k, setting);
-                        STATE.notified[notifKey] = true; 
-                    }
-                }
-
-                // Countdown Logic
-                let t = new Date(); t.setHours(h,m,0,0);
-                if(t < now) t.setDate(t.getDate()+1);
-                const diff = t - now;
-                if(diff < minDiff) { minDiff = diff; nextKey = k; }
-            });
-
-            const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0');
-            const mm = Math.floor((minDiff%3600000)/60000).toString().padStart(2,'0');
-            const ss = Math.floor((minDiff%60000)/1000).toString().padStart(2,'0');
-            document.getElementById('countdown').textContent = `- ${hh}:${mm}:${ss}`;
-            document.getElementById('nextPrayer').textContent = `NEXT: ${prayerDisplayMap[nextKey]}`;
-        };
-        tick(); 
-        heroInterval = setInterval(tick, 1000);
-    }
-
-    function triggerNotification(prayerKey, mode) {
-        const title = `Time for ${prayerDisplayMap[prayerKey]}`;
-        const body = `It is now ${convertTo12Hour(STATE.prayerTimes[prayerKey])}.`;
-
-        // 1. Browser Notification
-        if (Notification.permission === 'granted') {
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.showNotification(title, { body: body, icon: '/images/icon-512.png', vibrate: [200, 100, 200] });
-                });
-            } else {
-                new Notification(title, { body: body, icon: '/images/icon-512.png' });
-            }
-        }
-
-        // 2. Play Audio
-        if (mode === 'sound') {
-            azanAudio.currentTime = 0;
-            azanAudio.play().catch(e => console.log("Audio blocked. User interaction required."));
-        }
-    }
-    
-    // NEW: Test Button Function
-    window.testNotificationSound = function() {
-        if(Notification.permission === 'default') Notification.requestPermission();
-        azanAudio.currentTime = 0;
-        azanAudio.play().then(() => {
-            alert("Sound is working!");
-        }).catch(e => {
-            alert("Sound blocked by browser. Please interact with the page more.");
-        });
-    };
-
-    function updateHeroBackground(timings) {
-        const hero = document.getElementById("hero"); const now = new Date();
-        const timeToDate = (t) => { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h,m,0,0); return d; };
-        let currentBg = bgImages.Default;
-        if(now >= timeToDate(timings.Fajr) && now < timeToDate(timings.Dhuhr)) currentBg = bgImages.Fajr;
-        else if(now >= timeToDate(timings.Dhuhr) && now < timeToDate(timings.Asr)) currentBg = bgImages.Dhuhr;
-        else if(now >= timeToDate(timings.Asr) && now < timeToDate(timings.Maghrib)) currentBg = bgImages.Asr;
-        else if(now >= timeToDate(timings.Maghrib) && now < timeToDate(timings.Isha)) currentBg = bgImages.Maghrib;
-        else currentBg = bgImages.Isha; 
-        hero.style.backgroundImage = `url('${currentBg}')`;
-    }
-
+    function updateHero(timings) { if(heroInterval) clearInterval(heroInterval); updateHeroBackground(timings); const tick = () => { const now = new Date(); const currentMinutes = (now.getHours() * 60) + now.getMinutes(); document.getElementById('heroTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true}); document.getElementById('heroDate').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'}); let nextKey = 'Fajr'; let minDiff = Infinity; ['Imsak', 'Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => { const timeStr = timings[k].split(' ')[0]; const [h,m] = timeStr.split(':').map(Number); const prayerMinutes = (h * 60) + m; const notifKey = `${k}_${now.getDate()}`; if (currentMinutes >= prayerMinutes && currentMinutes <= prayerMinutes + 2 && !STATE.notified[notifKey]) { const setting = STATE.notifSettings[k] || 'sound'; if (setting !== 'off') { triggerNotification(k, setting); STATE.notified[notifKey] = true; } } let t = new Date(); t.setHours(h,m,0,0); if(t < now) t.setDate(t.getDate()+1); const diff = t - now; if(diff < minDiff) { minDiff = diff; nextKey = k; } }); const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0'); const mm = Math.floor((minDiff%3600000)/60000).toString().padStart(2,'0'); const ss = Math.floor((minDiff%60000)/1000).toString().padStart(2,'0'); document.getElementById('countdown').textContent = `- ${hh}:${mm}:${ss}`; document.getElementById('nextPrayer').textContent = `NEXT: ${prayerDisplayMap[nextKey]}`; }; tick(); heroInterval = setInterval(tick, 1000); }
+    function triggerNotification(prayerKey, mode) { const title = `Time for ${prayerDisplayMap[prayerKey]}`; const body = `It is now ${convertTo12Hour(STATE.prayerTimes[prayerKey])}.`; if (Notification.permission === 'granted') { if ('serviceWorker' in navigator && navigator.serviceWorker.controller) { navigator.serviceWorker.ready.then(reg => { reg.showNotification(title, { body: body, icon: '/images/icon-512.png', vibrate: [200, 100, 200] }); }); } else { new Notification(title, { body: body, icon: '/images/icon-512.png' }); } } if (mode === 'sound') { azanAudio.currentTime = 0; azanAudio.play().catch(e => console.log("Audio blocked. User interaction required.")); } }
+    function updateHeroBackground(timings) { const hero = document.getElementById("hero"); const now = new Date(); const timeToDate = (t) => { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h,m,0,0); return d; }; let currentBg = bgImages.Default; if(now >= timeToDate(timings.Fajr) && now < timeToDate(timings.Dhuhr)) currentBg = bgImages.Fajr; else if(now >= timeToDate(timings.Dhuhr) && now < timeToDate(timings.Asr)) currentBg = bgImages.Dhuhr; else if(now >= timeToDate(timings.Asr) && now < timeToDate(timings.Maghrib)) currentBg = bgImages.Asr; else if(now >= timeToDate(timings.Maghrib) && now < timeToDate(timings.Isha)) currentBg = bgImages.Maghrib; else currentBg = bgImages.Isha; hero.style.backgroundImage = `url('${currentBg}')`; }
     function toggleTheme() { STATE.theme = STATE.theme==='light'?'dark':'light'; localStorage.setItem('wsl_theme', STATE.theme); applyTheme(); }
-    function applyTheme() {
-        document.documentElement.setAttribute('data-theme', STATE.theme);
-        document.getElementById('themeIcon').innerHTML = STATE.theme==='dark' ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>' : '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-    }
-    function toggleSidePanel() {
-        const p = document.getElementById('sidePanel'); const o = document.getElementById('sidePanelOverlay');
-        if(p.classList.contains('open')) { p.classList.remove('open'); o.classList.remove('open'); }
-        else { p.classList.add('open'); o.classList.add('open'); }
-    }
-
-    async function loadQuranList() {
-        if(!navigator.onLine) { alert("Offline Mode: Quran not available"); return; }
-        const l=document.getElementById('surahList'); l.innerHTML='Loading...'; 
-        try {
-            const r=await fetch('https://api.alquran.cloud/v1/surah'); const d=await r.json(); l.innerHTML='';
-            d.data.forEach(s => { l.innerHTML += `<div class="surah-item" onclick="openReader(${s.number},'${s.englishName}')"><div class="surah-num">${s.number}</div><div style="flex:1"><div style="font-weight:700">${s.englishName}</div><div style="font-size:12px;color:var(--text-muted)">${s.englishNameTranslation}</div></div><div class="surah-arabic">${s.name}</div></div>`; });
-        } catch(e){ l.innerHTML = 'Error loading list.'; }
-    }
-    async function openReader(n,t) {
-        if(!navigator.onLine) { alert("Offline Mode: Surah not available"); return; }
-        const m=document.getElementById('readerModal'); m.classList.add('open'); document.getElementById('readerTitle').textContent=t; document.getElementById('readerSubtitle').textContent = `Surah ${n}`;
-        const c=document.getElementById('readerContent'); c.innerHTML='Loading...'; const lang=document.getElementById('quranLangSelect').value;
-        try {
-            const [r1,r2]=await Promise.all([fetch(`https://api.alquran.cloud/v1/surah/${n}`), fetch(`https://api.alquran.cloud/v1/surah/${n}/${lang}`)]);
-            const d1=await r1.json(); const d2=await r2.json();
-            let h = (n!==1&&n!==9) ? `<div style="text-align:center;font-family:Amiri;font-size:24px;margin-bottom:20px;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>` : '';
-            d1.data.ayahs.forEach((a,i) => {
-                // FIXED: Safety check for translation
-                const tr = d2.data.ayahs[i] ? d2.data.ayahs[i].text : '';
-                const sv = STATE.bookmarks.some(b=>b.id===`ayah_${n}_${a.numberInSurah}`);
-                const safeAr = encodeURIComponent(a.text); const safeTr = encodeURIComponent(tr); const safeTitle = encodeURIComponent(t);
-                h += `<div class="ayah-block">
-                        <div class="ayah-tools">
-                            <span style="font-size:12px;color:var(--text-muted)">${n}:${a.numberInSurah}</span>
-                            <button class="bookmark-btn ${sv?'saved':''}" onclick="togAyah(this,${n},${a.numberInSurah},'${safeAr}','${safeTr}','${safeTitle}')">
-                                <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                            </button>
-                        </div>
-                        <div class="ayah-arabic">${a.text}</div><div class="ayah-trans">${tr}</div>
-                      </div>`; 
-            });
-            c.innerHTML=h;
-        } catch(e){ console.error(e); c.innerHTML='Error loading. Please try again.'; }
-    }
+    function applyTheme() { document.documentElement.setAttribute('data-theme', STATE.theme); document.getElementById('themeIcon').innerHTML = STATE.theme==='dark' ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>' : '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>'; }
+    function toggleSidePanel() { const p = document.getElementById('sidePanel'); const o = document.getElementById('sidePanelOverlay'); if(p.classList.contains('open')) { p.classList.remove('open'); o.classList.remove('open'); } else { p.classList.add('open'); o.classList.add('open'); } }
+    async function loadQuranList() { if(!navigator.onLine) { alert("Offline Mode: Quran not available"); return; } const l=document.getElementById('surahList'); l.innerHTML='Loading...'; try { const r=await fetch('https://api.alquran.cloud/v1/surah'); const d=await r.json(); l.innerHTML=''; d.data.forEach(s => { l.innerHTML += `<div class="surah-item" onclick="openReader(${s.number},'${s.englishName}')"><div class="surah-num">${s.number}</div><div style="flex:1"><div style="font-weight:700">${s.englishName}</div><div style="font-size:12px;color:var(--text-muted)">${s.englishNameTranslation}</div></div><div class="surah-arabic">${s.name}</div></div>`; }); } catch(e){ l.innerHTML = 'Error loading list.'; } }
+    async function openReader(n,t) { if(!navigator.onLine) { alert("Offline Mode: Surah not available"); return; } const m=document.getElementById('readerModal'); const c=document.getElementById('readerContent'); m.classList.add('open'); c.style.padding = '20px'; c.style.overflowY = 'auto'; document.getElementById('readerTitle').textContent=t; document.getElementById('readerSubtitle').textContent = `Surah ${n}`; c.innerHTML='Loading...'; const lang=document.getElementById('quranLangSelect').value; try { const [r1,r2]=await Promise.all([fetch(`https://api.alquran.cloud/v1/surah/${n}`), fetch(`https://api.alquran.cloud/v1/surah/${n}/${lang}`)]); const d1=await r1.json(); const d2=await r2.json(); let h = (n!==1&&n!==9) ? `<div style="text-align:center;font-family:Amiri;font-size:24px;margin-bottom:20px;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>` : ''; d1.data.ayahs.forEach((a,i) => { const tr = d2.data.ayahs[i] ? d2.data.ayahs[i].text : ''; const sv = STATE.bookmarks.some(b=>b.id===`ayah_${n}_${a.numberInSurah}`); const safeAr = encodeURIComponent(a.text); const safeTr = encodeURIComponent(tr); const safeTitle = encodeURIComponent(t); h += `<div class="ayah-block"><div class="ayah-tools"><span style="font-size:12px;color:var(--text-muted)">${n}:${a.numberInSurah}</span><button class="bookmark-btn ${sv?'saved':''}" onclick="togAyah(this,${n},${a.numberInSurah},'${safeAr}','${safeTr}','${safeTitle}')"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button></div><div class="ayah-arabic">${a.text}</div><div class="ayah-trans">${tr}</div></div>`; }); c.innerHTML=h; } catch(e){ console.error(e); c.innerHTML='Error loading. Please try again.'; } }
     function updateGreeting() { const h=new Date().getHours(); document.getElementById('greetings').textContent=`Assalamualaikum, ${h<12?'Good Morning':h<18?'Good Afternoon':'Good Evening'}`; }
-    function switchTab(id, b) {
-        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById('view-'+id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); b.classList.add('active');
-        const h = document.getElementById('stickyHeader');
-        if(id!=='home') { h.classList.add('scrolled'); h.style.background='var(--surface)'; } else { h.style.background=''; h.classList.remove('scrolled'); }
-        if(id==='quran') loadQuranList();
-    }
-    window.closeReader = function(){ document.getElementById('readerModal').classList.remove('open'); };
+    function switchTab(id, b) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById('view-'+id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); b.classList.add('active'); const h = document.getElementById('stickyHeader'); if(id!=='home') { h.classList.add('scrolled'); h.style.background='var(--surface)'; } else { h.style.background=''; h.classList.remove('scrolled'); } if(id==='quran') loadQuranList(); }
     
-    // PWA INSTALL LOGIC - WITH PERSISTENCE
     let dp; 
-    
-    function checkPwaPersistence() {
-        const lastClosed = localStorage.getItem('wsl_pwa_closed_ts');
-        const now = Date.now();
-        const threeMins = 3 * 60 * 1000;
-        
-        if (!lastClosed || (now - lastClosed > threeMins)) {
-            return true;
-        }
-        setTimeout(checkPwaPersistence, (lastClosed + threeMins) - now);
-        return false;
-    }
-
-    window.addEventListener('beforeinstallprompt',e=>{
-        e.preventDefault();
-        dp=e;
-        if(checkPwaPersistence()) {
-            document.getElementById('pwaInstall').style.display='flex';
-        }
-    });
-    
-    window.installPWA = function(){
-        if(dp) dp.prompt();
-        document.getElementById('pwaInstall').style.display='none';
-    }
-    
-    window.closePWA = function(){
-        document.getElementById('pwaInstall').style.display='none';
-        localStorage.setItem('wsl_pwa_closed_ts', Date.now());
-        setTimeout(() => {
-            if(dp) document.getElementById('pwaInstall').style.display='flex';
-        }, 3 * 60 * 1000);
-    }
+    function checkPwaPersistence() { const lastClosed = localStorage.getItem('wsl_pwa_closed_ts'); const now = Date.now(); const threeMins = 3 * 60 * 1000; if (!lastClosed || (now - lastClosed > threeMins)) { return true; } setTimeout(checkPwaPersistence, (lastClosed + threeMins) - now); return false; }
+    window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); dp=e; if(checkPwaPersistence()) { document.getElementById('pwaInstall').style.display='flex'; } });
+    window.installPWA = function(){ if(dp) dp.prompt(); document.getElementById('pwaInstall').style.display='none'; }
+    window.closePWA = function(){ document.getElementById('pwaInstall').style.display='none'; localStorage.setItem('wsl_pwa_closed_ts', Date.now()); setTimeout(() => { if(dp) document.getElementById('pwaInstall').style.display='flex'; }, 3 * 60 * 1000); }
 </script>
 </body>
 </html>
