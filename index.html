@@ -283,12 +283,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
-    // --- 1. INITIALIZE GLOBAL STATE FIRST (To Fix Scope & Race Conditions) ---
+    // --- 1. INITIALIZE GLOBAL STATE FIRST ---
     const savedCoords = JSON.parse(localStorage.getItem('wsl_coords'));
     const INITIAL_LAT = savedCoords ? savedCoords.lat : 3.1390;
     const INITIAL_LON = savedCoords ? savedCoords.lon : 101.6869;
 
-    // Define window.STATE explicitly so Firebase and App Logic share the same object
     window.STATE = { 
         lat: INITIAL_LAT, 
         lon: INITIAL_LON, 
@@ -297,7 +296,7 @@
         notifSettings: JSON.parse(localStorage.getItem('wsl_notif_settings')||'{}'), 
         notified: {}, 
         bookmarks: JSON.parse(localStorage.getItem('wsl_bookmarks')||'[]'), 
-        duasCache: [] // Initialize empty for Firebase to fill
+        duasCache: [] 
     };
 
     // --- 2. FIREBASE SETUP ---
@@ -334,7 +333,7 @@
         });
         
         db.ref('duas').on('value', (snap) => { 
-            window.STATE.duasCache=[]; // Clear before filling
+            window.STATE.duasCache=[]; 
             if(snap.exists()) snap.forEach(x=>window.STATE.duasCache.push(x.val())); 
         });
     } catch(e) { console.error("Firebase Error", e); }
@@ -348,7 +347,6 @@
     
     const azanAudio = new Audio('azan.mp3');
 
-    // Global variables for timers/prompts
     let heroInterval = null;
     let dp = null;
 
@@ -365,8 +363,8 @@
             if(lastHijri) document.getElementById('hijriDate').textContent = lastHijri; 
         }
         
+        // FIXED LOGIC: Only start persistence check. Do NOT force "Updating..." text here.
         if (navigator.onLine) { 
-            document.getElementById('locationName').textContent = "Updating..."; 
             initLocationPersistence(); 
         } else { 
             document.getElementById('locationName').textContent = "Offline Mode"; 
@@ -407,7 +405,7 @@
         else if(type === 'nawawi') { t.textContent = "40 Hadith Nawawi"; s.textContent = "Imam Nawawi's Collection"; }
         else if(type === 'asbabun') { t.textContent = "Asbabun Nuzul"; s.textContent = "Context of Revelation"; }
         
-        // FIXED: Added min-height:85vh to prevent layout collapse.
+        // FIXED: Added min-height:85vh
         c.innerHTML = `<iframe src="hadith-${type}.html" style="width:100%; height:100%; min-height:85vh; border:none; display:block;"></iframe>`;
     };
 
@@ -471,13 +469,26 @@
         window.STATE.bookmarks.forEach(b => { l.innerHTML += `<div style="border-bottom:1px solid var(--border);padding:10px 0;font-size:13px;">${b.type==='ayah'?`<div><strong>${b.surahName} (${b.surahNum}:${b.ayahNum})</strong></div><div style="color:var(--text-muted)">${b.trText.substring(0,50)}...</div>`:`<div><strong>Hadith:</strong> ${b.text.substring(0,50)}...</div>`}</div>`; }); 
     }
 
+    // FIXED: Updated Logic to handle "Cool-down" vs "Active Update"
     function initLocationPersistence() { 
         if(!navigator.onLine) return; 
         const lastDenied = localStorage.getItem('wsl_loc_denied_ts'); 
         const now = Date.now(); 
         const threeMins = 3 * 60 * 1000; 
-        if (!lastDenied || (now - lastDenied > threeMins)) { getLocation(); } 
-        else { setTimeout(initLocationPersistence, (lastDenied + threeMins) - now); } 
+        
+        if (!lastDenied || (now - lastDenied > threeMins)) { 
+            // Only show "Updating..." when we are actually about to fetch
+            document.getElementById('locationName').textContent = "Updating...";
+            getLocation(); 
+        } else { 
+            // In Cool-down: Revert to "Last Known" or Default to avoid "Updating..." stuck state
+            if(savedCoords) {
+                document.getElementById('locationName').textContent = "Last Known Location";
+            } else {
+                document.getElementById('locationName').textContent = "Kuala Lumpur (Default)";
+            }
+            setTimeout(initLocationPersistence, (lastDenied + threeMins) - now); 
+        } 
     }
     
     function getLocation() { 
