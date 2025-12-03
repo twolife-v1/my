@@ -53,6 +53,7 @@
 
         let DUA_DATA = [];
 
+        // Load Duas
         db.ref('duas_content').on('value', snap => {
             DUA_DATA = [];
             document.getElementById('loading').style.display='none';
