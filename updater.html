@@ -82,7 +82,7 @@
                         </div>
                     </div>
                     <div class="alert alert-light border shadow-sm mb-4">
-                        <i class="fas fa-info-circle text-primary me-2"></i> This manages buttons in the side panel. "Pustaka Panduan" and "Himpunan Doa" will open their respective HTML files.
+                        <i class="fas fa-info-circle text-primary me-2"></i> This manages buttons in the side panel.
                     </div>
                     <div id="menuContainer">Loading...</div>
                 </div>
@@ -91,7 +91,7 @@
                 <div class="tab-pane fade" id="tab-guides">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Pustaka Panduan Manager</h3>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#guideModal" onclick="resetGuideModal()"><i class="fas fa-plus me-1"></i> Add Guide</button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contentModal" onclick="setupContentModal('guide')"><i class="fas fa-plus me-1"></i> Add Guide</button>
                     </div>
                     <div id="guideList" class="row g-3">Loading...</div>
                 </div>
@@ -100,7 +100,7 @@
                 <div class="tab-pane fade" id="tab-duas">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Himpunan Doa Manager</h3>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#duaModal" onclick="resetDuaModal()"><i class="fas fa-plus me-1"></i> Add Dua</button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contentModal" onclick="setupContentModal('dua')"><i class="fas fa-plus me-1"></i> Add Dua</button>
                     </div>
                     <div id="duaList" class="row g-3">Loading...</div>
                 </div>
@@ -149,41 +149,54 @@
         </div>
     </div>
 
-    <!-- Guide Modal -->
-    <div class="modal fade" id="guideModal" tabindex="-1">
+    <!-- Unified Content Modal (For both Guides and Duas) -->
+    <div class="modal fade" id="contentModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Guide Editor</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header"><h5 class="modal-title" id="contentModalTitle">Edit Content</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <input type="hidden" id="guideId">
-                    <div class="mb-3"><label class="fw-bold">Title</label><input id="guideTitle" class="form-control" placeholder="e.g. Panduan Solat Jenazah"></div>
-                    <div class="mb-3"><label class="fw-bold">Icon (Emoji)</label><input id="guideIcon" class="form-control" placeholder="e.g. ⚰️"></div>
+                    <input type="hidden" id="contentId">
+                    <input type="hidden" id="contentType"> <!-- 'guide' or 'dua' -->
+                    
                     <div class="mb-3">
-                        <label class="fw-bold">Content (HTML Supported)</label>
-                        <textarea id="guideContent" class="form-control" rows="10" placeholder="Type here... Use <b>bold</b> or <br> for new lines."></textarea>
+                        <label class="fw-bold">Title</label>
+                        <input id="contentTitle" class="form-control" placeholder="e.g. Panduan Solat Jenazah">
                     </div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-primary" onclick="saveGuide()">Save Guide</button></div>
-            </div>
-        </div>
-    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold">Icon</label>
+                        <input id="contentIcon" class="form-control" placeholder="Emoji (⚰️) or leave blank">
+                        <small class="text-muted">You can use an Emoji, URL to PNG image, or leave blank.</small>
+                    </div>
 
-    <!-- Dua Modal -->
-    <div class="modal fade" id="duaModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Dua Editor</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <input type="hidden" id="duaId">
-                    <div class="mb-3"><label class="fw-bold">Title</label><input id="duaTitle" class="form-control" placeholder="e.g. Doa Masuk Masjid"></div>
-                    <div class="mb-3"><label class="fw-bold">Icon (Emoji)</label><input id="duaIcon" class="form-control" placeholder="e.g. 🕌"></div>
                     <div class="mb-3">
-                        <label class="fw-bold">Content (HTML Supported)</label>
-                        <textarea id="duaContent" class="form-control" rows="10" placeholder="Use <div class='content-guide-item'>...</div> structure for consistency."></textarea>
-                        <small class="text-muted">Tip: Use Arabic text inside HTML for better formatting.</small>
+                        <label class="fw-bold">Content Format</label>
+                        <select id="contentFormat" class="form-select" onchange="toggleContentField()">
+                            <option value="html">HTML / Text Code</option>
+                            <option value="image">Image URL</option>
+                            <option value="url">External Link (Redirect)</option>
+                        </select>
                     </div>
+
+                    <div class="mb-3" id="fieldHtml">
+                        <label class="fw-bold">HTML Content</label>
+                        <textarea id="contentHtml" class="form-control" rows="8" placeholder="Type text here... Use <br> for new lines."></textarea>
+                    </div>
+
+                    <div class="mb-3 d-none" id="fieldImage">
+                        <label class="fw-bold">Image URL</label>
+                        <input id="contentImage" class="form-control" placeholder="https://example.com/image.jpg">
+                        <small class="text-muted">Direct link to an image file.</small>
+                    </div>
+
+                    <div class="mb-3 d-none" id="fieldUrl">
+                        <label class="fw-bold">External URL</label>
+                        <input id="contentUrl" class="form-control" placeholder="https://youtube.com/...">
+                        <small class="text-muted">User will be redirected to this link.</small>
+                    </div>
+
                 </div>
-                <div class="modal-footer"><button class="btn btn-primary" onclick="saveDua()">Save Dua</button></div>
+                <div class="modal-footer"><button class="btn btn-primary" onclick="saveContent()">Save</button></div>
             </div>
         </div>
     </div>
@@ -207,15 +220,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // DEFAULT DATA 
-        const defaultGuides = {
-            "g1": { title: "Solat Jenazah", icon: "⚰️", content: "<p>Panduan lengkap solat jenazah...</p>" },
-            "g2": { title: "Panduan Wudhu", icon: "💧", content: "<p>Cara mengambil wudhu...</p>" }
-        };
-        const defaultDuas = {
-            "d1": { title: "Doa Qunut", icon: "🤲", content: "<p>Bacaan doa qunut...</p>" },
-            "d2": { title: "Doa Selepas Solat", icon: "📿", content: "<p>Wirid dan doa ringkas...</p>" }
-        };
+        // DEFAULT MENU 
         const defaultMenu = [
             { title: "Hadith Collections", items: [ { label: "Sahih Bukhari", type: "function", action: "openHadithCollection('bukhari')", icon: "fas fa-book" }, { label: "Sahih Muslim", type: "function", action: "openHadithCollection('muslim')", icon: "fas fa-book-open" }, { label: "40 Hadith", type: "function", action: "openHadithCollection('nawawi')", icon: "fas fa-scroll" }, { label: "Asbabun Nuzul", type: "function", action: "openHadithCollection('asbabun')", icon: "fas fa-lightbulb" } ] },
             { title: "Panduan & Rujukan", items: [ { label: "Pustaka Panduan", type: "function", action: "openExternalPanduan()", icon: "fas fa-mosque" } ] },
@@ -226,16 +231,14 @@
         window.onload = function() { loadMenu(); loadGuides(); loadDuas(); loadHadiths(); loadAnnouncement(); }
 
         function restoreDefaults() {
-            if(confirm("Reset menu and inject default data for Guides and Duas?")) {
-                Promise.all([
-                    db.ref('dynamicMenu').set(defaultMenu),
-                    // db.ref('guides').set(defaultGuides), // Optional: Uncomment to reset guides content
-                    // db.ref('duas_content').set(defaultDuas) // Optional: Uncomment to reset duas content
-                ]).then(() => alert("Restored!")).catch(e => alert(e.message));
+            if(confirm("Reset menu to default?")) {
+                db.ref('dynamicMenu').set(defaultMenu)
+                .then(() => alert("Menu restored!"))
+                .catch(e => alert(e.message));
             }
         }
 
-        // MENU
+        // MENU LOGIC
         function loadMenu() { db.ref('dynamicMenu').on('value', snap => { menuData = snap.val() || []; renderMenu(); }); }
         function renderMenu() {
             const c = document.getElementById('menuContainer'); c.innerHTML = '';
@@ -267,29 +270,105 @@
             db.ref('dynamicMenu').set(menuData); bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
         }
 
-        // GUIDES MANAGER (PANDUAN)
-        function loadGuides() {
-            db.ref('guides').on('value', snap => {
-                const list = document.getElementById('guideList'); list.innerHTML = '';
-                if(!snap.exists()) return;
-                snap.forEach(c => { const g=c.val(); list.innerHTML += `<div class="col-md-6"><div class="card p-3"><h5>${g.icon} ${g.title}</h5><button class="btn btn-sm btn-outline-secondary mt-2" onclick="editGuide('${c.key}')">Edit Content</button></div></div>`; });
-            });
-        }
-        window.resetGuideModal=()=>{document.getElementById('guideId').value='';document.getElementById('guideTitle').value='';document.getElementById('guideIcon').value='';document.getElementById('guideContent').value='';}
-        window.editGuide=(k)=>{db.ref('guides/'+k).once('value').then(s=>{const v=s.val();document.getElementById('guideId').value=k;document.getElementById('guideTitle').value=v.title;document.getElementById('guideIcon').value=v.icon;document.getElementById('guideContent').value=v.content;new bootstrap.Modal(document.getElementById('guideModal')).show()})};
-        window.saveGuide=()=>{const k=document.getElementById('guideId').value;const d={title:document.getElementById('guideTitle').value,icon:document.getElementById('guideIcon').value,content:document.getElementById('guideContent').value};if(k)db.ref('guides/'+k).update(d);else db.ref('guides').push(d);bootstrap.Modal.getInstance(document.getElementById('guideModal')).hide()};
+        // --- UNIFIED CONTENT MANAGER (GUIDES & DUAS) ---
+        function loadGuides() { loadContent('guides', 'guideList', 'guide'); }
+        function loadDuas() { loadContent('duas_content', 'duaList', 'dua'); }
 
-        // DUAS MANAGER (DOA) - Uses 'duas_content' node to distinguish from simple notifications
-        function loadDuas() {
-            db.ref('duas_content').on('value', snap => {
-                const list = document.getElementById('duaList'); list.innerHTML = '';
+        function loadContent(dbPath, elementId, type) {
+            db.ref(dbPath).on('value', snap => {
+                const list = document.getElementById(elementId); list.innerHTML = '';
                 if(!snap.exists()) return;
-                snap.forEach(c => { const g=c.val(); list.innerHTML += `<div class="col-md-6"><div class="card p-3"><h5>${g.icon} ${g.title}</h5><button class="btn btn-sm btn-outline-secondary mt-2" onclick="editDua('${c.key}')">Edit Content</button></div></div>`; });
+                snap.forEach(c => { 
+                    const g=c.val(); 
+                    let iconDisplay = g.icon;
+                    if(g.icon && g.icon.startsWith('http')) {
+                        iconDisplay = `<img src="${g.icon}" style="width:24px; height:24px; object-fit:contain;">`;
+                    }
+                    
+                    list.innerHTML += `
+                        <div class="col-md-6">
+                            <div class="card p-3">
+                                <h5>${iconDisplay} ${g.title}</h5>
+                                <div class="text-muted small mb-2">${g.format || 'html'}</div>
+                                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="editContent('${dbPath}', '${c.key}', '${type}')">Edit Content</button>
+                                <button class="btn btn-sm btn-outline-danger mt-2 ms-1" onclick="deleteContent('${dbPath}', '${c.key}')">Delete</button>
+                            </div>
+                        </div>`; 
+                });
             });
         }
-        window.resetDuaModal=()=>{document.getElementById('duaId').value='';document.getElementById('duaTitle').value='';document.getElementById('duaIcon').value='';document.getElementById('duaContent').value='';}
-        window.editDua=(k)=>{db.ref('duas_content/'+k).once('value').then(s=>{const v=s.val();document.getElementById('duaId').value=k;document.getElementById('duaTitle').value=v.title;document.getElementById('duaIcon').value=v.icon;document.getElementById('duaContent').value=v.content;new bootstrap.Modal(document.getElementById('duaModal')).show()})};
-        window.saveDua=()=>{const k=document.getElementById('duaId').value;const d={title:document.getElementById('duaTitle').value,icon:document.getElementById('duaIcon').value,content:document.getElementById('duaContent').value};if(k)db.ref('duas_content/'+k).update(d);else db.ref('duas_content').push(d);bootstrap.Modal.getInstance(document.getElementById('duaModal')).hide()};
+
+        window.setupContentModal = (type) => {
+            document.getElementById('contentType').value = type;
+            document.getElementById('contentId').value = '';
+            document.getElementById('contentTitle').value = '';
+            document.getElementById('contentIcon').value = '';
+            document.getElementById('contentFormat').value = 'html';
+            toggleContentField();
+            document.getElementById('contentHtml').value = '';
+            document.getElementById('contentImage').value = '';
+            document.getElementById('contentUrl').value = '';
+            document.getElementById('contentModalTitle').textContent = type === 'guide' ? 'Add Guide' : 'Add Dua';
+        }
+
+        window.toggleContentField = () => {
+            const fmt = document.getElementById('contentFormat').value;
+            document.getElementById('fieldHtml').classList.toggle('d-none', fmt !== 'html');
+            document.getElementById('fieldImage').classList.toggle('d-none', fmt !== 'image');
+            document.getElementById('fieldUrl').classList.toggle('d-none', fmt !== 'url');
+        }
+
+        window.editContent = (dbPath, key, type) => {
+            db.ref(dbPath + '/' + key).once('value').then(s => {
+                const v = s.val();
+                document.getElementById('contentType').value = type; // Store type for save
+                document.getElementById('contentId').value = key;
+                document.getElementById('contentTitle').value = v.title;
+                document.getElementById('contentIcon').value = v.icon || '';
+                document.getElementById('contentFormat').value = v.format || 'html';
+                toggleContentField();
+                
+                // Populate correct field
+                document.getElementById('contentHtml').value = '';
+                document.getElementById('contentImage').value = '';
+                document.getElementById('contentUrl').value = '';
+                
+                if(v.format === 'image') document.getElementById('contentImage').value = v.content;
+                else if(v.format === 'url') document.getElementById('contentUrl').value = v.content;
+                else document.getElementById('contentHtml').value = v.content; // Default html
+
+                document.getElementById('contentModalTitle').textContent = 'Edit ' + (type === 'guide' ? 'Guide' : 'Dua');
+                new bootstrap.Modal(document.getElementById('contentModal')).show();
+            });
+        }
+
+        window.saveContent = () => {
+            const type = document.getElementById('contentType').value;
+            const dbPath = type === 'guide' ? 'guides' : 'duas_content';
+            const k = document.getElementById('contentId').value;
+            const fmt = document.getElementById('contentFormat').value;
+            
+            let contentVal = '';
+            if(fmt === 'html') contentVal = document.getElementById('contentHtml').value;
+            else if(fmt === 'image') contentVal = document.getElementById('contentImage').value;
+            else if(fmt === 'url') contentVal = document.getElementById('contentUrl').value;
+
+            const d = {
+                title: document.getElementById('contentTitle').value,
+                icon: document.getElementById('contentIcon').value,
+                format: fmt,
+                content: contentVal
+            };
+
+            if(k) db.ref(dbPath + '/' + k).update(d);
+            else db.ref(dbPath).push(d);
+            
+            bootstrap.Modal.getInstance(document.getElementById('contentModal')).hide();
+        }
+
+        window.deleteContent = (dbPath, key) => {
+            if(confirm("Delete this content?")) db.ref(dbPath + '/' + key).remove();
+        }
 
         // ... (Keep Hadith/Announcement logic same as before) ...
         function loadHadiths(){db.ref('hadiths').on('value',s=>{const d=document.getElementById('hadithList');d.innerHTML='';s.forEach(x=>{d.innerHTML+=`<div class="item-row"><span>${x.val().text.substr(0,30)}...</span><button class="btn btn-sm btn-danger" onclick="db.ref('hadiths/${x.key}').remove()">X</button></div>`})})}
@@ -299,4 +378,44 @@
     </script>
 </body>
 </html>
+
+Important Update to panduan.html and doa.html
+Since we added support for image and url formats in the updater, the viewer files (panduan.html and doa.html) need a small update to handle these new formats.
+Update openArticle function in both panduan.html and doa.html with this logic:
+// Replace the openArticle function in both panduan.html and doa.html with this:
+
+function openArticle(index) {
+    let data;
+    // Determine which array to use based on the file context (Panduan or Dua)
+    if (typeof PANDUAN_DATA !== 'undefined') data = PANDUAN_DATA[index];
+    else if (typeof DUA_DATA !== 'undefined') data = DUA_DATA[index];
+    
+    if(!data) return;
+
+    // Handle different formats
+    if (data.format === 'url') {
+        // Direct redirect for URL type
+        window.open(data.content, '_blank');
+        return;
+    }
+
+    // Set Title
+    document.getElementById('articleTitle').textContent = data.title;
+
+    // Set Content based on format
+    const contentEl = document.getElementById('articleContent');
+    
+    if (data.format === 'image') {
+        // Render Image
+        contentEl.innerHTML = `<img src="${data.content}" style="width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">`;
+    } else {
+        // Render HTML (Default)
+        contentEl.innerHTML = data.content;
+    }
+
+    document.getElementById('menuView').style.display = 'none';
+    document.getElementById('articleView').style.display = 'block';
+    window.scrollTo(0,0);
+}
+
 
