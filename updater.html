@@ -14,7 +14,10 @@
         .nav-link.active { background: #fff8ee; color: var(--primary); border-right: 3px solid var(--primary); }
         .card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 20px; }
         .btn-primary { background: var(--primary); border: none; }
+        .btn-primary:hover { background: #8e652b; }
         .item-row { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        
+        /* LOCK SCREEN */
         #authOverlay { position: fixed; inset: 0; background: #212529; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         #authOverlay.unlocked { transform: translateY(-100%); pointer-events: none; }
         .pin-display { font-size: 32px; letter-spacing: 15px; margin-bottom: 30px; min-height: 40px; font-weight: bold; color: var(--primary); }
@@ -29,7 +32,7 @@
     <div id="authOverlay">
         <div class="mb-3"><i class="fas fa-user-shield fa-4x text-muted"></i></div>
         <h3 class="mb-1">Admin Access</h3>
-        <p class="text-white-50 mb-4">Sila masukkan PIN keselamatan</p>
+        <p class="text-white-50 mb-4">Enter PIN</p>
         <div class="pin-display" id="pinDisplay"></div>
         <div class="numpad">
             <button class="num-btn" onclick="pressPin('1')">1</button>
@@ -55,8 +58,7 @@
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto" id="pills-tab" role="tablist">
-                <li class="nav-item"><button class="nav-link active w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-menu"><i class="fas fa-bars me-3"></i>Menu Panel</button></li>
-                <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-guides"><i class="fas fa-book-open me-3"></i>Pustaka Panduan</button></li>
+                <li class="nav-item"><button class="nav-link active w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-menu"><i class="fas fa-bars me-3"></i>Menu Layout</button></li>
                 <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-duas"><i class="fas fa-hands-praying me-3"></i>Himpunan Doa</button></li>
                 <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-hadith"><i class="fas fa-quote-right me-3"></i>Hadith Pool</button></li>
                 <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-announce"><i class="fas fa-bullhorn me-3"></i>Announcement</button></li>
@@ -70,22 +72,14 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Side Panel Menu</h3>
                         <div>
-                            <button class="btn btn-warning text-white me-2" onclick="restoreDefaults()"><i class="fas fa-sync-alt me-1"></i> Restore Original + Data</button>
+                            <button class="btn btn-warning text-white me-2" onclick="restoreDefaults()"><i class="fas fa-sync-alt me-1"></i> Restore Default Menu</button>
                             <button class="btn btn-primary" onclick="addSection()"><i class="fas fa-plus me-1"></i> New Section</button>
                         </div>
                     </div>
                     <div class="alert alert-light border shadow-sm mb-4">
-                        <i class="fas fa-info-circle text-primary me-2"></i> Butang kuning di atas akan <b>memulihkan menu asal</b> dan <b>memasukkan data panduan lengkap</b> (Jenazah, Wudhu, dll) ke dalam database secara automatik.
+                        <i class="fas fa-info-circle text-primary me-2"></i> The "Restore" button will link the <b>Pustaka Panduan</b> button back to your <code>panduan.html</code> file.
                     </div>
                     <div id="menuContainer">Loading...</div>
-                </div>
-
-                <div class="tab-pane fade" id="tab-guides">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3>Pustaka Panduan (Guide Manager)</h3>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#guideModal" onclick="resetGuideModal()"><i class="fas fa-plus me-1"></i> Add Guide</button>
-                    </div>
-                    <div id="guideList" class="row g-3">Loading...</div>
                 </div>
 
                 <div class="tab-pane fade" id="tab-duas">
@@ -101,6 +95,7 @@
                     <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#hadithModal"><i class="fas fa-plus"></i> Add Hadith</button>
                     <div id="hadithList"></div>
                 </div>
+
                 <div class="tab-pane fade" id="tab-announce">
                     <h3>Home Screen Banner</h3>
                     <div class="card p-4 shadow-sm">
@@ -126,33 +121,15 @@
                     <div class="mb-2"><label>Label</label><input type="text" class="form-control" id="itemLabel"></div>
                     <div class="mb-2"><label>Icon (FontAwesome)</label><input type="text" class="form-control" id="itemIcon" placeholder="fas fa-book"></div>
                     <div class="mb-2"><label>Type</label><select class="form-select" id="itemType" onchange="toggleAction()"><option value="function">Internal Function</option><option value="link">External Link (URL)</option></select></div>
-                    <div class="mb-2" id="fieldFunc"><label>Function Name</label><input type="text" class="form-control" id="itemFunction"></div>
-                    <div class="mb-2 d-none" id="fieldLink"><label>URL</label><input type="text" class="form-control" id="itemUrl"></div>
+                    <div class="mb-2" id="fieldFunc"><label>Function Name</label><input type="text" class="form-control" id="itemFunction" placeholder="openExternalPanduan()"></div>
+                    <div class="mb-2 d-none" id="fieldLink"><label>URL</label><input type="text" class="form-control" id="itemUrl" placeholder="https://..."></div>
                 </div>
                 <div class="modal-footer"><button class="btn btn-primary" onclick="saveItemChange()">Save Changes</button></div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="guideModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Guide Editor</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <input type="hidden" id="guideId">
-                    <div class="mb-3"><label class="fw-bold">Title</label><input id="guideTitle" class="form-control" placeholder="e.g. Panduan Solat Jenazah"></div>
-                    <div class="mb-3">
-                        <label class="fw-bold">Content (HTML Supported)</label>
-                        <textarea id="guideContent" class="form-control" rows="12" placeholder="Copy HTML content here... Use <br>, <b>, <div class='content-guide-item'> etc."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-primary" onclick="saveGuide()">Save Guide</button></div>
-            </div>
-        </div>
-    </div>
-
     <div class="modal fade" id="duaModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><input id="newDTitle" class="form-control mb-2" placeholder="Title"><textarea id="newDArab" class="form-control mb-2" placeholder="Arabic" style="direction:rtl; font-family:serif"></textarea><textarea id="newDMean" class="form-control" placeholder="Meaning"></textarea></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewDua()">Add</button></div></div></div></div>
-    
     <div class="modal fade" id="hadithModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><textarea id="newHText" class="form-control mb-2" placeholder="Hadith Text"></textarea><input id="newHSource" class="form-control" placeholder="Source (e.g. Bukhari)"></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewHadith()">Add</button></div></div></div></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -171,34 +148,25 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // DEFAULT DATA (FORMAT CANTIK)
-        const defaultGuidesData = {
-            "guide_jenazah": {
-                title: "Panduan Solat Jenazah",
-                content: `<div style="background:#FEF3C7; padding:15px; border-radius:10px; margin-bottom:20px; font-size:13px; color:#92400E; border-left:4px solid #F59E0B;"><strong>Info:</strong> Solat Jenazah dilakukan dengan berdiri tegak (4 Takbir) tanpa rukuk atau sujud.</div><div class="content-guide-item"><div class="content-guide-title">1. Takbir Pertama (Niat & Al-Fatihah)</div><p>Lafaz <strong>"Allahu Akbar"</strong> sambil berniat:</p><p style="font-style:italic; background:var(--bg); padding:8px; border-radius:6px; margin:5px 0;">"Sahaja aku solat ke atas mayat ini kerana Allah Ta'ala."</p><p>Kemudian membaca <strong>Surah Al-Fatihah</strong>.</p></div><div class="content-guide-item"><div class="content-guide-title">2. Takbir Kedua (Selawat)</div><p>Lafaz "Allahu Akbar", kemudian baca Selawat:</p><p style="font-family:'Amiri', serif; font-size:22px; margin:10px 0; text-align:right;">اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ</p></div><div class="content-guide-item"><div class="content-guide-title">3. Takbir Ketiga (Doa)</div><p>Lafaz "Allahu Akbar", kemudian baca doa ringkas untuk jenazah.</p></div><div class="content-guide-item"><div class="content-guide-title">4. Takbir Keempat (Salam)</div><p>Lafaz "Allahu Akbar", kemudian beri salam kanan dan kiri.</p></div>`
-            },
-            "guide_wudhu": {
-                title: "Panduan Wudhu",
-                content: `<div class="content-guide-item"><div class="content-guide-title">1. Niat</div><p>Berniat di dalam hati untuk mengambil air wudhu.</p></div><div class="content-guide-item"><div class="content-guide-title">2. Membasuh Muka</div><p>Basuh muka rata-rata 3 kali.</p></div><div class="content-guide-item"><div class="content-guide-title">3. Membasuh Tangan</div><p>Basuh tangan hingga ke siku (kanan kemudian kiri) 3 kali.</p></div><div class="content-guide-item"><div class="content-guide-title">4. Menyapu Kepala</div><p>Sapu sedikit bahagian kepala dengan air.</p></div><div class="content-guide-item"><div class="content-guide-title">5. Membasuh Kaki</div><p>Basuh kaki hingga ke buku lali (kanan kemudian kiri) 3 kali.</p></div>`
-            }
-        };
-
+        // DEFAULT MENU (With openExternalPanduan)
         const defaultMenu = [
             { title: "Hadith Collections", items: [ { label: "Sahih Bukhari", type: "function", action: "openHadithCollection('bukhari')", icon: "fas fa-book" }, { label: "Sahih Muslim", type: "function", action: "openHadithCollection('muslim')", icon: "fas fa-book-open" }, { label: "40 Hadith", type: "function", action: "openHadithCollection('nawawi')", icon: "fas fa-scroll" }, { label: "Asbabun Nuzul", type: "function", action: "openHadithCollection('asbabun')", icon: "fas fa-lightbulb" } ] },
-            { title: "Panduan & Rujukan", items: [ { label: "Pustaka Panduan", type: "function", action: "openGuidesList()", icon: "fas fa-mosque" } ] },
+            { title: "Panduan & Rujukan", items: [ { label: "Pustaka Panduan", type: "function", action: "openExternalPanduan()", icon: "fas fa-mosque" } ] },
             { title: "Amalan Harian", items: [ { label: "Himpunan Doa", type: "function", action: "openDuas()", icon: "fas fa-hands-praying" } ] }
         ];
 
         let menuData = [];
-        window.onload = function() { loadMenu(); loadGuides(); loadDuas(); loadHadiths(); loadAnnouncement(); }
+        window.onload = function() { loadMenu(); loadDuas(); loadHadiths(); loadAnnouncement(); }
 
         function restoreDefaults() {
-            if(confirm("AWAS: Reset menu & panduan kepada asal?")) {
-                Promise.all([ db.ref('dynamicMenu').set(defaultMenu), db.ref('guides').set(defaultGuidesData) ])
-                .then(() => alert("Berjaya! Data telah dimasukkan.")).catch(e => alert("Gagal: " + e.message));
+            if(confirm("AWAS: Ini akan reset menu. Pastikan fail 'panduan.html' telah di-upload ke hosting.")) {
+                db.ref('dynamicMenu').set(defaultMenu)
+                .then(() => alert("Berjaya! Menu telah dipautkan semula ke panduan.html"))
+                .catch(e => alert("Gagal: " + e.message));
             }
         }
 
+        // MENU LOGIC
         function loadMenu() { db.ref('dynamicMenu').on('value', snap => { menuData = snap.val() || []; renderMenu(); }); }
         function renderMenu() {
             const c = document.getElementById('menuContainer'); c.innerHTML = ''; if(menuData.length===0) return;
@@ -229,19 +197,7 @@
             db.ref('dynamicMenu').set(menuData); bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
         }
 
-        // GUIDES
-        function loadGuides(){
-            db.ref('guides').on('value', snap => {
-                const list = document.getElementById('guideList'); list.innerHTML = ''; if(!snap.exists()){list.innerHTML='<div class="col-12 text-center text-muted">Tiada data.</div>';return;}
-                snap.forEach(child => { const g=child.val(); list.innerHTML += `<div class="col-md-6"><div class="card p-3 h-100"><h5 class="fw-bold text-truncate">${g.title}</h5><div class="text-muted small mb-3 text-truncate">${g.content.replace(/<[^>]*>?/gm,'')}</div><div class="mt-auto"><button class="btn btn-sm btn-outline-secondary" onclick="editGuide('${child.key}')">Edit</button><button class="btn btn-sm btn-outline-danger" onclick="deleteGuide('${child.key}')">Del</button></div></div></div>`; });
-            });
-        }
-        window.resetGuideModal=()=>{document.getElementById('guideId').value='';document.getElementById('guideTitle').value='';document.getElementById('guideContent').value='';}
-        window.editGuide=(k)=>{db.ref('guides/'+k).once('value').then(s=>{document.getElementById('guideId').value=k;document.getElementById('guideTitle').value=s.val().title;document.getElementById('guideContent').value=s.val().content;new bootstrap.Modal(document.getElementById('guideModal')).show()})};
-        window.saveGuide=()=>{const id=document.getElementById('guideId').value;const data={title:document.getElementById('guideTitle').value,content:document.getElementById('guideContent').value};if(id)db.ref('guides/'+id).update(data);else db.ref('guides').push(data);bootstrap.Modal.getInstance(document.getElementById('guideModal')).hide()};
-        window.deleteGuide=(k)=>{if(confirm("Padam?"))db.ref('guides/'+k).remove()};
-
-        // OTHERS
+        // DUA, HADITH, ANNOUNCE
         function loadDuas(){db.ref('duas').on('value',s=>{const d=document.getElementById('duaList');d.innerHTML='';s.forEach(x=>{d.innerHTML+=`<div class="item-row"><span>${x.val().t}</span><button class="btn btn-sm btn-danger" onclick="db.ref('duas/${x.key}').remove()">X</button></div>`})})}
         window.saveNewDua=()=>{db.ref('duas').push({t:document.getElementById('newDTitle').value,a:document.getElementById('newDArab').value,m:document.getElementById('newDMean').value});bootstrap.Modal.getInstance(document.getElementById('duaModal')).hide()}
         function loadHadiths(){db.ref('hadiths').on('value',s=>{const d=document.getElementById('hadithList');d.innerHTML='';s.forEach(x=>{d.innerHTML+=`<div class="item-row"><span>${x.val().text.substr(0,30)}...</span><button class="btn btn-sm btn-danger" onclick="db.ref('hadiths/${x.key}').remove()">X</button></div>`})})}
