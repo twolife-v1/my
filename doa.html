@@ -11,11 +11,14 @@
         :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+        
         .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .tool-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s; }
         .tool-btn:active { transform: scale(0.98); }
-        .tool-btn div { font-size: 32px; }
+        .tool-btn div { font-size: 32px; display:flex; align-items:center; justify-content:center; }
+        .tool-btn img { width: 32px; height: 32px; object-fit: contain; }
         .tool-btn span { font-size: 13px; font-weight: 700; }
+
         #articleView { display: none; animation: fadeIn 0.3s; }
         .back-btn { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); padding: 10px 15px; border-radius: 10px; width: fit-content; cursor: pointer; font-weight: 600; font-size: 13px; }
         .content-guide-item { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
@@ -62,18 +65,40 @@
 
         function renderGrid() {
             const gridEl = document.getElementById('gridContainer');
-            gridEl.innerHTML = DUA_DATA.map((item, index) => `
+            gridEl.innerHTML = DUA_DATA.map((item, index) => {
+                let iconHtml = item.icon || '🤲';
+                if(item.icon && item.icon.startsWith('http')) {
+                    iconHtml = `<img src="${item.icon}">`;
+                }
+                return `
                 <div class="tool-btn" onclick="openArticle(${index})">
-                    <div>${item.icon}</div>
+                    <div>${iconHtml}</div>
                     <span>${item.title}</span>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
 
         function openArticle(index) {
             const data = DUA_DATA[index];
+            if(!data) return;
+
+            // Handle URL redirect
+            if(data.format === 'url') {
+                window.open(data.content, '_blank');
+                return;
+            }
+
             document.getElementById('articleTitle').textContent = data.title;
-            document.getElementById('articleContent').innerHTML = data.content;
+            const contentEl = document.getElementById('articleContent');
+
+            // Handle Image Format
+            if(data.format === 'image') {
+                contentEl.innerHTML = `<img src="${data.content}" style="width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">`;
+            } else {
+                // Default HTML
+                contentEl.innerHTML = data.content;
+            }
+
             document.getElementById('menuView').style.display = 'none';
             document.getElementById('articleView').style.display = 'block';
             window.scrollTo(0,0);
@@ -86,4 +111,5 @@
     </script>
 </body>
 </html>
+
 
