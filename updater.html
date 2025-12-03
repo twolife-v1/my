@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WSL Admin (Search Ready)</title>
+    <title>WSL Admin (Cloudinary)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,6 +17,7 @@
         .btn-primary:hover { background: #8e652b; }
         .item-row { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
         
+        /* LOCK SCREEN */
         #authOverlay { position: fixed; inset: 0; background: #212529; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         #authOverlay.unlocked { transform: translateY(-100%); pointer-events: none; }
         .pin-display { font-size: 32px; letter-spacing: 15px; margin-bottom: 30px; min-height: 40px; font-weight: bold; color: var(--primary); }
@@ -74,7 +75,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Side Panel Menu</h3>
                         <div>
-                            <button class="btn btn-warning text-white me-2" onclick="restoreDefaults()"><i class="fas fa-sync-alt me-1"></i> Restore Defaults</button>
+                            <button class="btn btn-warning text-white me-2" onclick="restoreDefaults()"><i class="fas fa-sync-alt me-1"></i> Restore Default Data</button>
                             <button class="btn btn-primary" onclick="addSection()"><i class="fas fa-plus me-1"></i> New Section</button>
                         </div>
                     </div>
@@ -84,7 +85,7 @@
                 <div class="tab-pane fade" id="tab-guides">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Pustaka Panduan Manager</h3>
-                        <button class="btn btn-primary" onclick="openAddModal('guide')"><i class="fas fa-plus me-1"></i> Add Guide</button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contentModal" onclick="setupContentModal('guide')"><i class="fas fa-plus me-1"></i> Add Guide</button>
                     </div>
                     <div id="guideList" class="row g-3">Loading...</div>
                 </div>
@@ -92,7 +93,7 @@
                 <div class="tab-pane fade" id="tab-duas">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Himpunan Doa Manager</h3>
-                        <button class="btn btn-primary" onclick="openAddModal('dua')"><i class="fas fa-plus me-1"></i> Add Dua</button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contentModal" onclick="setupContentModal('dua')"><i class="fas fa-plus me-1"></i> Add Dua</button>
                     </div>
                     <div id="duaList" class="row g-3">Loading...</div>
                 </div>
@@ -106,7 +107,7 @@
                 <div class="tab-pane fade" id="tab-announce">
                     <h3>Home Screen Banner</h3>
                     <div class="card p-4 shadow-sm">
-                        <textarea class="form-control mb-3" id="announceText" rows="3" placeholder="Contoh: Selamat Hari Raya..."></textarea>
+                        <textarea class="form-control mb-3" id="announceText" rows="3" placeholder="Contoh: Selamat Hari Raya Aidilfitri..."></textarea>
                         <div class="form-check form-switch mb-4">
                             <input class="form-check-input" type="checkbox" id="announceActive">
                             <label class="form-check-label" for="announceActive">Show Banner</label>
@@ -144,22 +145,22 @@
                     <input type="hidden" id="contentId">
                     <input type="hidden" id="contentType">
                     
-                    <div class="mb-3"><label class="fw-bold">Title</label><input id="contentTitle" class="form-control" placeholder="Title"></div>
-                    
-                    <div class="mb-3"><label class="fw-bold">Search Keywords (Tags)</label><input id="contentTags" class="form-control" placeholder="e.g. funeral, death, mayat (Comma separated)"><small class="text-muted">These words will help the search bar find this item.</small></div>
-                    
-                    <div class="mb-3"><label class="fw-bold">Icon</label><input id="contentIcon" class="form-control" placeholder="Emoji (⚰️) or URL"><small class="text-muted">Emoji or URL to PNG icon.</small></div>
-                    <div class="mb-3"><label class="fw-bold">Format</label><select id="contentFormat" class="form-select" onchange="toggleContentField()"><option value="html">HTML / Text</option><option value="image">Cloudinary Image</option><option value="url">External Link</option></select></div>
+                    <div class="mb-3"><label class="fw-bold">Title</label><input id="contentTitle" class="form-control" placeholder="e.g. Panduan Solat Jenazah"></div>
+                    <div class="mb-3"><label class="fw-bold">Icon</label><input id="contentIcon" class="form-control" placeholder="Emoji (⚰️) or leave blank"><small class="text-muted">You can use an Emoji, URL to PNG image, or leave blank.</small></div>
+                    <div class="mb-3"><label class="fw-bold">Content Format</label><select id="contentFormat" class="form-select" onchange="toggleContentField()"><option value="html">HTML / Text Code</option><option value="image">Upload Image (Cloudinary)</option><option value="url">External Link (Redirect)</option></select></div>
 
-                    <div class="mb-3" id="fieldHtml"><label class="fw-bold">HTML Content</label><textarea id="contentHtml" class="form-control" rows="8"></textarea></div>
+                    <div class="mb-3" id="fieldHtml"><label class="fw-bold">HTML Content</label><textarea id="contentHtml" class="form-control" rows="8" placeholder="Type text here... Use <br> for new lines."></textarea></div>
+
                     <div class="mb-3 d-none" id="fieldImage">
                         <label class="fw-bold">Upload Image</label>
                         <input type="file" id="contentFile" class="form-control" accept="image/*">
                         <input type="hidden" id="existingImageUrl">
                         <div id="imgPreviewBox"></div>
                         <div id="uploadStatus" class="small text-primary mt-1"></div>
+                        <small class="text-muted">Uses Cloudinary Free Hosting.</small>
                     </div>
-                    <div class="mb-3 d-none" id="fieldUrl"><label class="fw-bold">Redirect URL</label><input id="contentUrl" class="form-control" placeholder="https://..."></div>
+
+                    <div class="mb-3 d-none" id="fieldUrl"><label class="fw-bold">External URL</label><input id="contentUrl" class="form-control" placeholder="https://youtube.com/..."></div>
 
                 </div>
                 <div class="modal-footer">
@@ -180,46 +181,113 @@
         // ==========================================
         // CONFIGURATION - ENTER YOUR DETAILS HERE
         // ==========================================
-        const CLOUDINARY_CLOUD_NAME = "YOUR_CLOUD_NAME"; 
-        const CLOUDINARY_UPLOAD_PRESET = "YOUR_UPLOAD_PRESET"; 
+        const CLOUDINARY_CLOUD_NAME = "djrerbwjh"; // e.g., "demo"
+        const CLOUDINARY_UPLOAD_PRESET = "twolife"; // e.g., "ml_default" (Must be Unsigned)
         // ==========================================
 
+        // PIN LOCK
         let currentPin = ""; const CORRECT_PIN = "1234";
         function pressPin(n){ if(currentPin.length<4){ currentPin+=n; document.getElementById('pinDisplay').innerHTML='*'.repeat(currentPin.length); } }
         function clearPin(){ currentPin=""; document.getElementById('pinDisplay').innerHTML=""; }
         function submitPin(){ if(currentPin===CORRECT_PIN){ document.getElementById('authOverlay').classList.add('unlocked'); }else{ alert("Incorrect PIN!"); clearPin(); } }
 
+        // FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", authDomain: "waktusolatlite.firebaseapp.com", databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "waktusolatlite", storageBucket: "waktusolatlite.firebasestorage.app", messagingSenderId: "86910439082", appId: "1:86910439082:web:e482d01e1451e58179cad3" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        window.openAddModal = (type) => {
-            document.getElementById('contentId').value = ""; 
+        // DEFAULT MENU 
+        const defaultMenu = [
+            { title: "Hadith Collections", items: [ { label: "Sahih Bukhari", type: "function", action: "openHadithCollection('bukhari')", icon: "fas fa-book" }, { label: "Sahih Muslim", type: "function", action: "openHadithCollection('muslim')", icon: "fas fa-book-open" }, { label: "40 Hadith", type: "function", action: "openHadithCollection('nawawi')", icon: "fas fa-scroll" }, { label: "Asbabun Nuzul", type: "function", action: "openHadithCollection('asbabun')", icon: "fas fa-lightbulb" } ] },
+            { title: "Panduan & Rujukan", items: [ { label: "Pustaka Panduan", type: "function", action: "openExternalPanduan()", icon: "fas fa-mosque" } ] },
+            { title: "Amalan Harian", items: [ { label: "Himpunan Doa", type: "function", action: "openExternalDoa()", icon: "fas fa-hands-praying" } ] }
+        ];
+
+        let menuData = [];
+        window.onload = function() { loadMenu(); loadGuides(); loadDuas(); loadHadiths(); loadAnnouncement(); }
+
+        function restoreDefaults() {
+            if(confirm("Reset menu to default?")) {
+                db.ref('dynamicMenu').set(defaultMenu).then(() => alert("Menu restored!")).catch(e => alert(e.message));
+            }
+        }
+
+        function loadMenu() { db.ref('dynamicMenu').on('value', snap => { menuData = snap.val() || []; renderMenu(); }); }
+        function renderMenu() {
+            const c = document.getElementById('menuContainer'); c.innerHTML = '';
+            menuData.forEach((sec, sIdx) => {
+                let items = ''; (sec.items||[]).forEach((it, iIdx) => { items += `<div class="item-row"><div><i class="${it.icon} text-primary me-2"></i>${it.label}</div><div><button class="btn btn-sm btn-light border" onclick="editItem(${sIdx},${iIdx})">Edit</button></div></div>`; });
+                c.innerHTML += `<div class="card p-3"><h5>${sec.title}</h5>${items}</div>`;
+            });
+        }
+        
+        window.addSection=()=>db.ref('dynamicMenu').set([...menuData, {title:"New Section", items:[]}]);
+        window.addItem=(s)=>setupModal(s,'new'); window.editItem=(s,i)=>setupModal(s,i);
+        function setupModal(s,i){
+            document.getElementById('editSectionIndex').value=s; document.getElementById('editItemIndex').value=i;
+            const item=(i==='new')?{label:'',icon:'',type:'function',action:''}:menuData[s].items[i];
+            document.getElementById('itemLabel').value=item.label; document.getElementById('itemIcon').value=item.icon; document.getElementById('itemType').value=item.type;
+            toggleAction();
+            if(item.type==='link') document.getElementById('itemUrl').value=item.action; else document.getElementById('itemFunction').value=item.action;
+            new bootstrap.Modal(document.getElementById('itemModal')).show();
+        }
+        window.toggleAction=()=>{const t=document.getElementById('itemType').value;document.getElementById('fieldLink').classList.toggle('d-none',t!=='link');document.getElementById('fieldFunc').classList.toggle('d-none',t!=='function')};
+        window.saveItemChange=()=>{
+            const s=document.getElementById('editSectionIndex').value, i=document.getElementById('editItemIndex').value, t=document.getElementById('itemType').value;
+            const act=t==='link'?document.getElementById('itemUrl').value:document.getElementById('itemFunction').value;
+            const obj={label:document.getElementById('itemLabel').value,icon:document.getElementById('itemIcon').value,type:t,action:act};
+            if(!menuData[s].items)menuData[s].items=[]; if(i==='new')menuData[s].items.push(obj); else menuData[s].items[i]=obj;
+            db.ref('dynamicMenu').set(menuData); bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
+        }
+
+        // --- CONTENT MANAGER (GUIDES & DUAS) ---
+        function loadGuides() { loadContent('guides', 'guideList', 'guide'); }
+        function loadDuas() { loadContent('duas_content', 'duaList', 'dua'); }
+
+        function loadContent(dbPath, elementId, type) {
+            db.ref(dbPath).on('value', snap => {
+                const list = document.getElementById(elementId); list.innerHTML = '';
+                if(!snap.exists()) return;
+                snap.forEach(c => { 
+                    const g=c.val(); 
+                    let iconDisplay = g.icon;
+                    if(g.icon && g.icon.startsWith('http')) {
+                        iconDisplay = `<img src="${g.icon}" style="width:24px; height:24px; object-fit:contain;">`;
+                    }
+                    list.innerHTML += `<div class="col-md-6"><div class="card p-3"><h5>${iconDisplay} ${g.title}</h5><div class="text-muted small mb-2">${g.format || 'html'}</div><button class="btn btn-sm btn-outline-secondary mt-2" onclick="editContent('${dbPath}', '${c.key}', '${type}')">Edit Content</button><button class="btn btn-sm btn-outline-danger mt-2 ms-1" onclick="deleteContent('${dbPath}', '${c.key}')">Delete</button></div></div>`; 
+                });
+            });
+        }
+
+        window.setupContentModal = (type) => {
             document.getElementById('contentType').value = type;
+            document.getElementById('contentId').value = '';
             document.getElementById('contentTitle').value = '';
-            document.getElementById('contentTags').value = ''; // Clear Tags
             document.getElementById('contentIcon').value = '';
             document.getElementById('contentFormat').value = 'html';
             toggleContentField();
-            
             document.getElementById('contentHtml').value = '';
             document.getElementById('contentFile').value = '';
             document.getElementById('existingImageUrl').value = '';
             document.getElementById('imgPreviewBox').innerHTML = '';
             document.getElementById('uploadStatus').innerHTML = '';
             document.getElementById('contentUrl').value = '';
-            
-            document.getElementById('contentModalTitle').textContent = type === 'guide' ? 'Add New Guide' : 'Add New Dua';
-            new bootstrap.Modal(document.getElementById('contentModal')).show();
+            document.getElementById('contentModalTitle').textContent = type === 'guide' ? 'Add Guide' : 'Add Dua';
+        }
+
+        window.toggleContentField = () => {
+            const fmt = document.getElementById('contentFormat').value;
+            document.getElementById('fieldHtml').classList.toggle('d-none', fmt !== 'html');
+            document.getElementById('fieldImage').classList.toggle('d-none', fmt !== 'image');
+            document.getElementById('fieldUrl').classList.toggle('d-none', fmt !== 'url');
         }
 
         window.editContent = (dbPath, key, type) => {
             db.ref(dbPath + '/' + key).once('value').then(s => {
                 const v = s.val();
-                document.getElementById('contentId').value = key; 
                 document.getElementById('contentType').value = type;
+                document.getElementById('contentId').value = key;
                 document.getElementById('contentTitle').value = v.title;
-                document.getElementById('contentTags').value = v.tags || ''; // Load Tags
                 document.getElementById('contentIcon').value = v.icon || '';
                 document.getElementById('contentFormat').value = v.format || 'html';
                 toggleContentField();
@@ -239,11 +307,11 @@
                 } else {
                     document.getElementById('contentHtml').value = v.content;
                 }
-                document.getElementById('contentModalTitle').textContent = 'Edit ' + (type === 'guide' ? 'Guide' : 'Dua');
                 new bootstrap.Modal(document.getElementById('contentModal')).show();
             });
         }
 
+        // --- NEW CLOUDINARY UPLOAD FUNCTION ---
         window.saveContent = async () => {
             const btn = document.getElementById('btnSaveContent');
             const statusDiv = document.getElementById('uploadStatus');
@@ -257,7 +325,9 @@
                 
                 let contentVal = '';
                 
-                if(fmt === 'html') { contentVal = document.getElementById('contentHtml').value; } 
+                if(fmt === 'html') {
+                    contentVal = document.getElementById('contentHtml').value;
+                } 
                 else if(fmt === 'image') {
                     const fileInput = document.getElementById('contentFile');
                     if(fileInput.files.length > 0) {
@@ -266,72 +336,37 @@
                         const formData = new FormData();
                         formData.append('file', file);
                         formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                            method: 'POST',
+                            body: formData
+                        });
                         const data = await res.json();
                         if(data.error) throw new Error(data.error.message);
                         contentVal = data.secure_url;
                     } else {
                         contentVal = document.getElementById('existingImageUrl').value;
-                        if(!contentVal && fmt==='image') throw new Error("Please select an image.");
+                        if(!contentVal) throw new Error("Please select an image.");
                     }
                 } 
-                else if(fmt === 'url') { contentVal = document.getElementById('contentUrl').value; }
+                else if(fmt === 'url') {
+                    contentVal = document.getElementById('contentUrl').value;
+                }
 
-                // Save Data with TAGS
-                const d = { 
-                    title: document.getElementById('contentTitle').value, 
-                    tags: document.getElementById('contentTags').value.toLowerCase(), // Save Tags
-                    icon: document.getElementById('contentIcon').value, 
-                    format: fmt, 
-                    content: contentVal 
-                };
-
-                if(k && k.length > 0) await db.ref(dbPath + '/' + k).update(d);
-                else await db.ref(dbPath).push(d);
+                const d = { title: document.getElementById('contentTitle').value, icon: document.getElementById('contentIcon').value, format: fmt, content: contentVal };
+                if(k) await db.ref(dbPath + '/' + k).update(d); else await db.ref(dbPath).push(d);
                 
                 bootstrap.Modal.getInstance(document.getElementById('contentModal')).hide();
 
-            } catch (error) { alert("Error: " + error.message); console.error(error); } 
-            finally { btn.disabled = false; btn.innerHTML = 'Save'; statusDiv.innerHTML = ''; }
+            } catch (error) {
+                alert("Error: " + error.message);
+                console.error(error);
+            } finally {
+                btn.disabled = false; btn.innerHTML = 'Save'; statusDiv.innerHTML = '';
+            }
         }
 
-        window.toggleContentField = () => {
-            const fmt = document.getElementById('contentFormat').value;
-            document.getElementById('fieldHtml').classList.toggle('d-none', fmt !== 'html');
-            document.getElementById('fieldImage').classList.toggle('d-none', fmt !== 'image');
-            document.getElementById('fieldUrl').classList.toggle('d-none', fmt !== 'url');
-        }
-
-        function loadGuides() { loadContent('guides', 'guideList', 'guide'); }
-        function loadDuas() { loadContent('duas_content', 'duaList', 'dua'); }
-
-        function loadContent(dbPath, elementId, type) {
-            db.ref(dbPath).on('value', snap => {
-                const list = document.getElementById(elementId); list.innerHTML = '';
-                if(!snap.exists()) return;
-                snap.forEach(c => { 
-                    const g=c.val(); 
-                    let iconDisplay = g.icon;
-                    if(g.icon && g.icon.startsWith('http')) iconDisplay = `<img src="${g.icon}" style="width:24px; height:24px; object-fit:contain;">`;
-                    list.innerHTML += `<div class="col-md-6"><div class="card p-3"><h5>${iconDisplay} ${g.title}</h5><div class="text-muted small mb-2">${g.format || 'html'}</div><button class="btn btn-sm btn-outline-secondary mt-2" onclick="editContent('${dbPath}', '${c.key}', '${type}')">Edit Content</button><button class="btn btn-sm btn-outline-danger mt-2 ms-1" onclick="deleteContent('${dbPath}', '${c.key}')">Delete</button></div></div>`; 
-                });
-            });
-        }
-        
         window.deleteContent = (dbPath, key) => { if(confirm("Delete this content?")) db.ref(dbPath + '/' + key).remove(); }
-
-        const defaultMenu = [ { title: "Panduan & Rujukan", items: [ { label: "Pustaka Panduan", type: "function", action: "openExternalPanduan()", icon: "fas fa-mosque" } ] } ];
-        let menuData = [];
-        window.onload = function() { loadMenu(); loadGuides(); loadDuas(); loadHadiths(); loadAnnouncement(); }
-        function restoreDefaults() { if(confirm("Reset menu?")) db.ref('dynamicMenu').set(defaultMenu); }
-        function loadMenu() { db.ref('dynamicMenu').on('value', snap => { menuData = snap.val() || []; renderMenu(); }); }
-        function renderMenu() { const c = document.getElementById('menuContainer'); c.innerHTML = ''; menuData.forEach((sec, sIdx) => { let items = ''; (sec.items||[]).forEach((it, iIdx) => { items += `<div class="item-row"><div><i class="${it.icon} text-primary me-2"></i>${it.label}</div><div><button class="btn btn-sm btn-light border" onclick="editItem(${sIdx},${iIdx})">Edit</button></div></div>`; }); c.innerHTML += `<div class="card p-3"><h5>${sec.title}</h5>${items}</div>`; }); }
-        window.addSection=()=>db.ref('dynamicMenu').set([...menuData, {title:"New Section", items:[]}]);
-        window.addItem=(s)=>setupModal(s,'new'); window.editItem=(s,i)=>setupModal(s,i);
-        function setupModal(s,i){ document.getElementById('editSectionIndex').value=s; document.getElementById('editItemIndex').value=i; const item=(i==='new')?{label:'',icon:'',type:'function',action:''}:menuData[s].items[i]; document.getElementById('itemLabel').value=item.label; document.getElementById('itemIcon').value=item.icon; document.getElementById('itemType').value=item.type; toggleAction(); if(item.type==='link') document.getElementById('itemUrl').value=item.action; else document.getElementById('itemFunction').value=item.action; new bootstrap.Modal(document.getElementById('itemModal')).show(); }
-        window.toggleAction=()=>{const t=document.getElementById('itemType').value;document.getElementById('fieldLink').classList.toggle('d-none',t!=='link');document.getElementById('fieldFunc').classList.toggle('d-none',t!=='function')};
-        window.saveItemChange=()=>{ const s=document.getElementById('editSectionIndex').value, i=document.getElementById('editItemIndex').value, t=document.getElementById('itemType').value; const act=t==='link'?document.getElementById('itemUrl').value:document.getElementById('itemFunction').value; const obj={label:document.getElementById('itemLabel').value,icon:document.getElementById('itemIcon').value,type:t,action:act}; if(!menuData[s].items)menuData[s].items=[]; if(i==='new')menuData[s].items.push(obj); else menuData[s].items[i]=obj; db.ref('dynamicMenu').set(menuData); bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide(); }
-        
         function loadHadiths(){db.ref('hadiths').on('value',s=>{const d=document.getElementById('hadithList');d.innerHTML='';s.forEach(x=>{d.innerHTML+=`<div class="item-row"><span>${x.val().text.substr(0,30)}...</span><button class="btn btn-sm btn-danger" onclick="db.ref('hadiths/${x.key}').remove()">X</button></div>`})})}
         window.saveNewHadith=()=>{db.ref('hadiths').push({text:document.getElementById('newHText').value,source:document.getElementById('newHSource').value});bootstrap.Modal.getInstance(document.getElementById('hadithModal')).hide()}
         function loadAnnouncement(){db.ref('announcement').on('value',s=>{const v=s.val()||{};document.getElementById('announceText').value=v.text||'';document.getElementById('announceActive').checked=v.show})}
