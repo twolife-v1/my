@@ -54,6 +54,7 @@
 
         let PANDUAN_DATA = [];
 
+        // Load Guides
         db.ref('guides').on('value', snap => {
             PANDUAN_DATA = [];
             document.getElementById('loading').style.display='none';
@@ -62,7 +63,7 @@
                 snap.forEach(c => PANDUAN_DATA.push(c.val()));
                 renderGrid();
             } else {
-                document.getElementById('gridContainer').innerHTML = '<div style="grid-column:span 2; text-align:center; color:gray">Tiada panduan.</div>';
+                document.getElementById('gridContainer').innerHTML = '<div style="grid-column:span 2; text-align:center; color:gray">Tiada panduan dijumpai.</div>';
             }
         });
 
@@ -70,6 +71,7 @@
             const gridEl = document.getElementById('gridContainer');
             gridEl.innerHTML = PANDUAN_DATA.map((item, index) => {
                 let iconHtml = item.icon || '📘';
+                // If icon starts with http, it is an image, otherwise it is an emoji
                 if(item.icon && item.icon.startsWith('http')) {
                     iconHtml = `<img src="${item.icon}">`;
                 }
