@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ms" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Exact same styles as panduan.html for consistency */
+        :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --border:#E5E7EB; }
+        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+        .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .tool-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s; }
+        .tool-btn:active { transform: scale(0.98); }
+        .tool-btn div { font-size: 32px; }
+        .tool-btn span { font-size: 13px; font-weight: 700; }
+        #articleView { display: none; animation: fadeIn 0.3s; }
+        .back-btn { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); padding: 10px 15px; border-radius: 10px; width: fit-content; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .content-guide-item { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .content-guide-title { font-weight: 700; margin-bottom: 8px; color: var(--primary); font-size: 15px; }
+        .content-guide-item p { margin: 0 0 5px 0; line-height: 1.6; font-size: 14px; opacity: 0.9; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="loading" style="text-align:center; padding:50px; color:gray;">Loading duas...</div>
+    <div id="menuView" style="display:none">
+        <div class="guide-grid" id="gridContainer"></div>
+    </div>
+    <div id="articleView">
+        <div class="back-btn" onclick="showMenu()"><i class="fas fa-arrow-left"></i> Kembali</div>
+        <div id="articleTitle" style="font-size:20px; font-weight:800; margin-bottom:5px;"></div>
+        <div id="articleSubtitle" style="font-size:12px; opacity:0.7; margin-bottom:20px; text-transform:uppercase; letter-spacing:1px;">Himpunan Doa</div>
+        <div id="articleContent"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const savedTheme = localStorage.getItem('wsl_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        const firebaseConfig = { apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", authDomain: "waktusolatlite.firebaseapp.com", databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "waktusolatlite", storageBucket: "waktusolatlite.firebasestorage.app", messagingSenderId: "86910439082", appId: "1:86910439082:web:e482d01e1451e58179cad3" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let DUA_DATA = [];
+
+        db.ref('duas_content').on('value', snap => {
+            DUA_DATA = [];
+            document.getElementById('loading').style.display='none';
+            document.getElementById('menuView').style.display='block';
+            if(snap.exists()){
+                snap.forEach(c => DUA_DATA.push(c.val()));
+                renderGrid();
+            } else {
+                document.getElementById('gridContainer').innerHTML = '<div style="grid-column:span 2; text-align:center; color:gray">Tiada doa dijumpai.</div>';
+            }
+        });
+
+        function renderGrid() {
+            const gridEl = document.getElementById('gridContainer');
+            gridEl.innerHTML = DUA_DATA.map((item, index) => `
+                <div class="tool-btn" onclick="openArticle(${index})">
+                    <div>${item.icon}</div>
+                    <span>${item.title}</span>
+                </div>
+            `).join('');
+        }
+
+        function openArticle(index) {
+            const data = DUA_DATA[index];
+            document.getElementById('articleTitle').textContent = data.title;
+            document.getElementById('articleContent').innerHTML = data.content;
+            document.getElementById('menuView').style.display = 'none';
+            document.getElementById('articleView').style.display = 'block';
+            window.scrollTo(0,0);
+        }
+
+        function showMenu() {
+            document.getElementById('articleView').style.display = 'none';
+            document.getElementById('menuView').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
