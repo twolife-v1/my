@@ -25,11 +25,13 @@
         .num-btn { width: 70px; height: 70px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 24px; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; justify-content:center; }
         .num-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
         .num-btn.submit { background: var(--primary); border-color: var(--primary); }
+        
+        /* Image Preview */
+        #imgPreviewBox img { max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- LOCK SCREEN -->
     <div id="authOverlay">
         <div class="mb-3"><i class="fas fa-user-shield fa-4x text-muted"></i></div>
         <h3 class="mb-1">Admin Access</h3>
@@ -53,7 +55,6 @@
     </div>
 
     <div class="d-flex">
-        <!-- Sidebar -->
         <div class="sidebar d-flex flex-column flex-shrink-0 p-3" style="width: 260px;">
             <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
                 <span class="fs-4 fw-bold ps-2" style="color:var(--primary)">WSL Admin</span>
@@ -68,11 +69,9 @@
             </ul>
         </div>
 
-        <!-- Content -->
         <div class="flex-grow-1 p-4">
             <div class="tab-content">
                 
-                <!-- MENU TAB -->
                 <div class="tab-pane fade show active" id="tab-menu">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Side Panel Menu</h3>
@@ -87,7 +86,6 @@
                     <div id="menuContainer">Loading...</div>
                 </div>
 
-                <!-- GUIDES TAB -->
                 <div class="tab-pane fade" id="tab-guides">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Pustaka Panduan Manager</h3>
@@ -96,7 +94,6 @@
                     <div id="guideList" class="row g-3">Loading...</div>
                 </div>
 
-                <!-- DUA TAB -->
                 <div class="tab-pane fade" id="tab-duas">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3>Himpunan Doa Manager</h3>
@@ -105,14 +102,12 @@
                     <div id="duaList" class="row g-3">Loading...</div>
                 </div>
 
-                <!-- HADITH TAB -->
                 <div class="tab-pane fade" id="tab-hadith">
                     <h3>Daily Hadith Pool</h3>
                     <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#hadithModal"><i class="fas fa-plus"></i> Add Hadith</button>
                     <div id="hadithList"></div>
                 </div>
 
-                <!-- ANNOUNCEMENT TAB -->
                 <div class="tab-pane fade" id="tab-announce">
                     <h3>Home Screen Banner</h3>
                     <div class="card p-4 shadow-sm">
@@ -129,9 +124,6 @@
         </div>
     </div>
 
-    <!-- MODALS -->
-    
-    <!-- Edit Menu Item Modal -->
     <div class="modal fade" id="itemModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -149,16 +141,13 @@
         </div>
     </div>
 
-    <!-- Unified Content Modal (For both Guides and Duas) -->
     <div class="modal fade" id="contentModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header"><h5 class="modal-title" id="contentModalTitle">Edit Content</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="contentId">
-                    <input type="hidden" id="contentType"> <!-- 'guide' or 'dua' -->
-                    
-                    <div class="mb-3">
+                    <input type="hidden" id="contentType"> <div class="mb-3">
                         <label class="fw-bold">Title</label>
                         <input id="contentTitle" class="form-control" placeholder="e.g. Panduan Solat Jenazah">
                     </div>
@@ -173,7 +162,7 @@
                         <label class="fw-bold">Content Format</label>
                         <select id="contentFormat" class="form-select" onchange="toggleContentField()">
                             <option value="html">HTML / Text Code</option>
-                            <option value="image">Image URL</option>
+                            <option value="image">Upload Image (Storage)</option>
                             <option value="url">External Link (Redirect)</option>
                         </select>
                     </div>
@@ -184,9 +173,12 @@
                     </div>
 
                     <div class="mb-3 d-none" id="fieldImage">
-                        <label class="fw-bold">Image URL</label>
-                        <input id="contentImage" class="form-control" placeholder="https://example.com/image.jpg">
-                        <small class="text-muted">Direct link to an image file.</small>
+                        <label class="fw-bold">Upload Image</label>
+                        <input type="file" id="contentFile" class="form-control" accept="image/*">
+                        <input type="hidden" id="existingImageUrl">
+                        <div id="imgPreviewBox"></div>
+                        <div id="uploadStatus" class="small text-primary mt-1"></div>
+                        <small class="text-muted">Select a file to upload. If editing, leave empty to keep current image.</small>
                     </div>
 
                     <div class="mb-3 d-none" id="fieldUrl">
@@ -196,17 +188,19 @@
                     </div>
 
                 </div>
-                <div class="modal-footer"><button class="btn btn-primary" onclick="saveContent()">Save</button></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="btnSaveContent" class="btn btn-primary" onclick="saveContent()">Save</button>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Hadith Modal -->
     <div class="modal fade" id="hadithModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><textarea id="newHText" class="form-control mb-2" placeholder="Hadith Text"></textarea><input id="newHSource" class="form-control" placeholder="Source (e.g. Bukhari)"></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewHadith()">Add</button></div></div></div></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         // PIN LOCK
@@ -219,6 +213,7 @@
         const firebaseConfig = { apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", authDomain: "waktusolatlite.firebaseapp.com", databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "waktusolatlite", storageBucket: "waktusolatlite.firebasestorage.app", messagingSenderId: "86910439082", appId: "1:86910439082:web:e482d01e1451e58179cad3" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const storage = firebase.storage(); // Init Storage
 
         // DEFAULT MENU 
         const defaultMenu = [
@@ -247,11 +242,8 @@
                 c.innerHTML += `<div class="card p-3"><h5>${sec.title}</h5>${items}</div>`;
             });
         }
-        // ... (Keep existing menu add/edit functions) ... 
+        
         window.addSection=()=>db.ref('dynamicMenu').set([...menuData, {title:"New Section", items:[]}]);
-        window.delSec=(i)=>{if(confirm("Del?")){menuData.splice(i,1);db.ref('dynamicMenu').set(menuData)}};
-        window.updTitle=(i,v)=>{menuData[i].title=v;db.ref('dynamicMenu').set(menuData)};
-        window.delItem=(s,i)=>{if(confirm("Del?")){menuData[s].items.splice(i,1);db.ref('dynamicMenu').set(menuData)}};
         window.addItem=(s)=>setupModal(s,'new'); window.editItem=(s,i)=>setupModal(s,i);
         function setupModal(s,i){
             document.getElementById('editSectionIndex').value=s; document.getElementById('editItemIndex').value=i;
@@ -305,9 +297,15 @@
             document.getElementById('contentIcon').value = '';
             document.getElementById('contentFormat').value = 'html';
             toggleContentField();
+            
+            // Clear fields
             document.getElementById('contentHtml').value = '';
-            document.getElementById('contentImage').value = '';
+            document.getElementById('contentFile').value = ''; // Clear file input
+            document.getElementById('existingImageUrl').value = '';
+            document.getElementById('imgPreviewBox').innerHTML = '';
+            document.getElementById('uploadStatus').innerHTML = '';
             document.getElementById('contentUrl').value = '';
+            
             document.getElementById('contentModalTitle').textContent = type === 'guide' ? 'Add Guide' : 'Add Dua';
         }
 
@@ -321,56 +319,106 @@
         window.editContent = (dbPath, key, type) => {
             db.ref(dbPath + '/' + key).once('value').then(s => {
                 const v = s.val();
-                document.getElementById('contentType').value = type; // Store type for save
+                document.getElementById('contentType').value = type;
                 document.getElementById('contentId').value = key;
                 document.getElementById('contentTitle').value = v.title;
                 document.getElementById('contentIcon').value = v.icon || '';
                 document.getElementById('contentFormat').value = v.format || 'html';
                 toggleContentField();
                 
-                // Populate correct field
+                // Clear all
                 document.getElementById('contentHtml').value = '';
-                document.getElementById('contentImage').value = '';
+                document.getElementById('contentFile').value = '';
+                document.getElementById('existingImageUrl').value = '';
+                document.getElementById('imgPreviewBox').innerHTML = '';
+                document.getElementById('uploadStatus').innerHTML = '';
                 document.getElementById('contentUrl').value = '';
-                
-                if(v.format === 'image') document.getElementById('contentImage').value = v.content;
-                else if(v.format === 'url') document.getElementById('contentUrl').value = v.content;
-                else document.getElementById('contentHtml').value = v.content; // Default html
+
+                if(v.format === 'image') {
+                    document.getElementById('existingImageUrl').value = v.content;
+                    document.getElementById('imgPreviewBox').innerHTML = `<img src="${v.content}">`;
+                }
+                else if(v.format === 'url') {
+                    document.getElementById('contentUrl').value = v.content;
+                }
+                else {
+                    document.getElementById('contentHtml').value = v.content;
+                }
 
                 document.getElementById('contentModalTitle').textContent = 'Edit ' + (type === 'guide' ? 'Guide' : 'Dua');
                 new bootstrap.Modal(document.getElementById('contentModal')).show();
             });
         }
 
-        window.saveContent = () => {
-            const type = document.getElementById('contentType').value;
-            const dbPath = type === 'guide' ? 'guides' : 'duas_content';
-            const k = document.getElementById('contentId').value;
-            const fmt = document.getElementById('contentFormat').value;
+        window.saveContent = async () => {
+            const btn = document.getElementById('btnSaveContent');
+            const statusDiv = document.getElementById('uploadStatus');
             
-            let contentVal = '';
-            if(fmt === 'html') contentVal = document.getElementById('contentHtml').value;
-            else if(fmt === 'image') contentVal = document.getElementById('contentImage').value;
-            else if(fmt === 'url') contentVal = document.getElementById('contentUrl').value;
+            // Lock button
+            btn.disabled = true;
+            btn.innerHTML = 'Saving...';
 
-            const d = {
-                title: document.getElementById('contentTitle').value,
-                icon: document.getElementById('contentIcon').value,
-                format: fmt,
-                content: contentVal
-            };
+            try {
+                const type = document.getElementById('contentType').value;
+                const dbPath = type === 'guide' ? 'guides' : 'duas_content';
+                const k = document.getElementById('contentId').value;
+                const fmt = document.getElementById('contentFormat').value;
+                
+                let contentVal = '';
+                
+                if(fmt === 'html') {
+                    contentVal = document.getElementById('contentHtml').value;
+                } 
+                else if(fmt === 'image') {
+                    const fileInput = document.getElementById('contentFile');
+                    // Check if new file selected
+                    if(fileInput.files.length > 0) {
+                        statusDiv.innerHTML = "Uploading image...";
+                        const file = fileInput.files[0];
+                        const storageRef = storage.ref('content_images/' + Date.now() + '_' + file.name);
+                        
+                        // Upload
+                        const snapshot = await storageRef.put(file);
+                        contentVal = await snapshot.ref.getDownloadURL();
+                    } else {
+                        // Use existing
+                        contentVal = document.getElementById('existingImageUrl').value;
+                        if(!contentVal) {
+                            throw new Error("Please select an image to upload.");
+                        }
+                    }
+                } 
+                else if(fmt === 'url') {
+                    contentVal = document.getElementById('contentUrl').value;
+                }
 
-            if(k) db.ref(dbPath + '/' + k).update(d);
-            else db.ref(dbPath).push(d);
-            
-            bootstrap.Modal.getInstance(document.getElementById('contentModal')).hide();
+                const d = {
+                    title: document.getElementById('contentTitle').value,
+                    icon: document.getElementById('contentIcon').value,
+                    format: fmt,
+                    content: contentVal
+                };
+
+                if(k) await db.ref(dbPath + '/' + k).update(d);
+                else await db.ref(dbPath).push(d);
+                
+                bootstrap.Modal.getInstance(document.getElementById('contentModal')).hide();
+
+            } catch (error) {
+                alert("Error: " + error.message);
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Save';
+                statusDiv.innerHTML = '';
+            }
         }
 
         window.deleteContent = (dbPath, key) => {
             if(confirm("Delete this content?")) db.ref(dbPath + '/' + key).remove();
         }
 
-        // ... (Keep Hadith/Announcement logic same as before) ...
+        // ... (Keep Hadith/Announcement logic) ...
         function loadHadiths(){db.ref('hadiths').on('value',s=>{const d=document.getElementById('hadithList');d.innerHTML='';s.forEach(x=>{d.innerHTML+=`<div class="item-row"><span>${x.val().text.substr(0,30)}...</span><button class="btn btn-sm btn-danger" onclick="db.ref('hadiths/${x.key}').remove()">X</button></div>`})})}
         window.saveNewHadith=()=>{db.ref('hadiths').push({text:document.getElementById('newHText').value,source:document.getElementById('newHSource').value});bootstrap.Modal.getInstance(document.getElementById('hadithModal')).hide()}
         function loadAnnouncement(){db.ref('announcement').on('value',s=>{const v=s.val()||{};document.getElementById('announceText').value=v.text||'';document.getElementById('announceActive').checked=v.show})}
@@ -378,44 +426,3 @@
     </script>
 </body>
 </html>
-
-Important Update to panduan.html and doa.html
-Since we added support for image and url formats in the updater, the viewer files (panduan.html and doa.html) need a small update to handle these new formats.
-Update openArticle function in both panduan.html and doa.html with this logic:
-// Replace the openArticle function in both panduan.html and doa.html with this:
-
-function openArticle(index) {
-    let data;
-    // Determine which array to use based on the file context (Panduan or Dua)
-    if (typeof PANDUAN_DATA !== 'undefined') data = PANDUAN_DATA[index];
-    else if (typeof DUA_DATA !== 'undefined') data = DUA_DATA[index];
-    
-    if(!data) return;
-
-    // Handle different formats
-    if (data.format === 'url') {
-        // Direct redirect for URL type
-        window.open(data.content, '_blank');
-        return;
-    }
-
-    // Set Title
-    document.getElementById('articleTitle').textContent = data.title;
-
-    // Set Content based on format
-    const contentEl = document.getElementById('articleContent');
-    
-    if (data.format === 'image') {
-        // Render Image
-        contentEl.innerHTML = `<img src="${data.content}" style="width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">`;
-    } else {
-        // Render HTML (Default)
-        contentEl.innerHTML = data.content;
-    }
-
-    document.getElementById('menuView').style.display = 'none';
-    document.getElementById('articleView').style.display = 'block';
-    window.scrollTo(0,0);
-}
-
-
