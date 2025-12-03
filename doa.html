@@ -9,101 +9,187 @@
     <style>
         :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --border:#E5E7EB; }
         :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
         
-        .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .tool-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s; }
-        .tool-btn:active { transform: scale(0.98); }
-        .tool-btn div { font-size: 32px; display:flex; align-items:center; justify-content:center; }
-        .tool-btn img { width: 32px; height: 32px; object-fit: contain; }
-        .tool-btn span { font-size: 13px; font-weight: 700; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+        
+        /* Loading State */
+        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; color: #999; }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
+        /* Grid Layout */
+        .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        /* Card Button */
+        .tool-btn { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            padding: 20px; 
+            text-align: center; 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 12px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            transition: all 0.2s ease; 
+        }
+        .tool-btn:active { transform: scale(0.96); }
+        
+        /* Icons */
+        .icon-box { 
+            width: 50px; height: 50px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 28px; 
+        }
+        .icon-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+        
+        .tool-btn span { font-size: 14px; font-weight: 700; line-height: 1.3; }
+
+        /* Article View */
         #articleView { display: none; animation: fadeIn 0.3s; }
-        .back-btn { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); padding: 10px 15px; border-radius: 10px; width: fit-content; cursor: pointer; font-weight: 600; font-size: 13px; }
-        .content-guide-item { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .content-guide-title { font-weight: 700; margin-bottom: 8px; color: var(--primary); font-size: 15px; }
-        .content-guide-item p { margin: 0 0 5px 0; line-height: 1.6; font-size: 14px; opacity: 0.9; }
+        .back-btn { 
+            display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; 
+            background: var(--surface); border: 1px solid var(--border); 
+            padding: 10px 20px; border-radius: 50px; 
+            cursor: pointer; font-weight: 600; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        /* Content Styling */
+        #articleContent { background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border); min-height: 300px; }
+        #articleContent img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 10px auto; }
+        #articleContent p { line-height: 1.7; margin-bottom: 15px; font-size: 15px; }
+        #articleContent h1, #articleContent h2, #articleContent h3 { color: var(--primary); margin-top: 20px; }
+        
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="loading" style="text-align:center; padding:50px; color:gray;">Loading duas...</div>
-    
+
+    <div id="loading" class="loading-container">
+        <div class="spinner"></div>
+        <div>Memuatkan himpunan doa...</div>
+    </div>
+
     <div id="menuView" style="display:none">
+        <h3 style="margin: 0 0 20px 0; font-weight: 800; color: var(--primary);">Himpunan Doa</h3>
         <div class="guide-grid" id="gridContainer"></div>
     </div>
 
     <div id="articleView">
-        <div class="back-btn" onclick="showMenu()"><i class="fas fa-arrow-left"></i> Kembali</div>
-        <div id="articleTitle" style="font-size:20px; font-weight:800; margin-bottom:5px;"></div>
-        <div id="articleSubtitle" style="font-size:12px; opacity:0.7; margin-bottom:20px; text-transform:uppercase; letter-spacing:1px;">Himpunan Doa</div>
-        <div id="articleContent"></div>
+        <div class="back-btn" onclick="showMenu()">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </div>
+        <div style="padding: 0 5px;">
+            <div id="articleSubtitle" style="font-size:12px; opacity:0.7; text-transform:uppercase; letter-spacing:1px; color:var(--primary);">Himpunan Doa</div>
+            <div id="articleTitle" style="font-size:24px; font-weight:800; margin-bottom:20px; line-height: 1.2;"></div>
+            <div id="articleContent"></div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
     <script>
+        // 1. Theme Handling
         const savedTheme = localStorage.getItem('wsl_theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
-        const firebaseConfig = { apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", authDomain: "waktusolatlite.firebaseapp.com", databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "waktusolatlite", storageBucket: "waktusolatlite.firebasestorage.app", messagingSenderId: "86910439082", appId: "1:86910439082:web:e482d01e1451e58179cad3" };
+        // 2. Firebase Config
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", 
+            authDomain: "waktusolatlite.firebaseapp.com", 
+            databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", 
+            projectId: "waktusolatlite", 
+            storageBucket: "waktusolatlite.firebasestorage.app", 
+            messagingSenderId: "86910439082", 
+            appId: "1:86910439082:web:e482d01e1451e58179cad3" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let DUA_DATA = [];
 
-        // Load Duas
+        // 3. Fetch Data Real-time (Targeting 'duas_content' node)
         db.ref('duas_content').on('value', snap => {
-            DUA_DATA = [];
-            document.getElementById('loading').style.display='none';
-            document.getElementById('menuView').style.display='block';
+            DUA_DATA = []; // Clear array
+            const loader = document.getElementById('loading');
+            const menu = document.getElementById('menuView');
+            const grid = document.getElementById('gridContainer');
+
             if(snap.exists()){
-                snap.forEach(c => DUA_DATA.push(c.val()));
+                // Convert object to array
+                snap.forEach(c => {
+                    let item = c.val();
+                    item.key = c.key; 
+                    DUA_DATA.push(item);
+                });
                 renderGrid();
+                loader.style.display = 'none';
+                menu.style.display = 'block';
             } else {
-                document.getElementById('gridContainer').innerHTML = '<div style="grid-column:span 2; text-align:center; color:gray">Tiada doa dijumpai.</div>';
+                loader.style.display = 'none';
+                menu.style.display = 'block';
+                grid.innerHTML = '<div style="grid-column:span 2; text-align:center; color:gray; padding-top:20px;">Tiada doa dijumpai.</div>';
             }
         });
 
+        // 4. Render Grid Logic
         function renderGrid() {
             const gridEl = document.getElementById('gridContainer');
             gridEl.innerHTML = DUA_DATA.map((item, index) => {
-                let iconHtml = item.icon || '🤲';
-                if(item.icon && item.icon.startsWith('http')) {
-                    iconHtml = `<img src="${item.icon}">`;
+                // Determine Icon (Emoji vs Image URL)
+                let iconDisplay = item.icon || '🤲';
+                if(item.icon && (item.icon.startsWith('http') || item.icon.startsWith('data:image'))) {
+                    iconDisplay = `<img src="${item.icon}" alt="icon">`;
                 }
+
                 return `
                 <div class="tool-btn" onclick="openArticle(${index})">
-                    <div>${iconHtml}</div>
+                    <div class="icon-box">${iconDisplay}</div>
                     <span>${item.title}</span>
                 </div>`;
             }).join('');
         }
 
+        // 5. Handle Click & Formats
         function openArticle(index) {
             const data = DUA_DATA[index];
             if(!data) return;
 
-            // 1. External Link Redirect
+            // TYPE 1: URL (Redirect)
             if(data.format === 'url') {
-                window.open(data.content, '_blank');
+                window.location.href = data.content;
                 return;
             }
 
-            // Setup Title
+            // Prepare Content View
             document.getElementById('articleTitle').textContent = data.title;
             const contentEl = document.getElementById('articleContent');
+            contentEl.innerHTML = ''; // Clear previous
 
-            // 2. Image Display
+            // TYPE 2: Image (Cloudinary)
             if(data.format === 'image') {
-                contentEl.innerHTML = `<img src="${data.content}" style="width:100%; height:auto; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); display:block;">`;
+                contentEl.innerHTML = `
+                    <img src="${data.content}" alt="${data.title}">
+                    <div style="text-align:center; font-size:12px; color:grey; margin-top:10px;">
+                        <a href="${data.content}" target="_blank" style="color:var(--primary)">Lihat Saiz Penuh</a>
+                    </div>
+                `;
             } 
-            // 3. HTML/Text Display
+            // TYPE 3: HTML / Text
             else {
-                contentEl.innerHTML = data.content;
+                // Replace newlines with <br> if it's plain text, otherwise trust HTML
+                let safeContent = data.content;
+                if(!safeContent.includes('<') && safeContent.includes('\n')) {
+                   safeContent = safeContent.replace(/\n/g, '<br>');
+                }
+                contentEl.innerHTML = safeContent;
             }
 
+            // Switch Views
             document.getElementById('menuView').style.display = 'none';
             document.getElementById('articleView').style.display = 'block';
             window.scrollTo(0,0);
