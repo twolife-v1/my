@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pustaka Panduan</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -29,9 +30,11 @@
 </head>
 <body>
     <div id="loading" style="text-align:center; padding:50px; color:gray;">Loading guides...</div>
+    
     <div id="menuView" style="display:none">
         <div class="guide-grid" id="gridContainer"></div>
     </div>
+
     <div id="articleView">
         <div class="back-btn" onclick="showMenu()"><i class="fas fa-arrow-left"></i> Kembali</div>
         <div id="articleTitle" style="font-size:20px; font-weight:800; margin-bottom:5px;"></div>
@@ -82,20 +85,22 @@
             const data = PANDUAN_DATA[index];
             if(!data) return;
 
-            // Handle URL redirect
+            // 1. External Link Redirect
             if(data.format === 'url') {
                 window.open(data.content, '_blank');
                 return;
             }
 
+            // Setup Title
             document.getElementById('articleTitle').textContent = data.title;
             const contentEl = document.getElementById('articleContent');
 
-            // Handle Image Format
+            // 2. Image Display
             if(data.format === 'image') {
-                contentEl.innerHTML = `<img src="${data.content}" style="width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">`;
-            } else {
-                // Default HTML
+                contentEl.innerHTML = `<img src="${data.content}" style="width:100%; height:auto; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); display:block;">`;
+            } 
+            // 3. HTML/Text Display
+            else {
                 contentEl.innerHTML = data.content;
             }
 
@@ -111,5 +116,3 @@
     </script>
 </body>
 </html>
-
-
