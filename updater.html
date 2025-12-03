@@ -12,86 +12,51 @@
         .sidebar { background: white; min-height: 100vh; border-right: 1px solid #dee2e6; }
         .nav-link { color: #666; font-weight: 600; padding: 15px 20px; }
         .nav-link.active { background: #fff8ee; color: var(--primary); border-right: 3px solid var(--primary); }
-        .nav-link:hover { color: var(--primary); }
         .card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 20px; }
         .btn-primary { background: var(--primary); border: none; }
-        .btn-primary:hover { background: #8c632a; }
         .item-row { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
-        .handle { cursor: grab; color: #ccc; margin-right: 10px; }
-        .preview-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 50%; color: var(--primary); margin-right: 15px; }
+        .preview-icon svg { width: 24px; height: 24px; color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="d-flex">
     <div class="sidebar d-flex flex-column flex-shrink-0 p-3" style="width: 250px;">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
-            <span class="fs-4 fw-bold" style="color:var(--primary)">WSL Admin</span>
-        </a>
-        <hr>
+        <span class="fs-4 fw-bold mb-4 ps-3" style="color:var(--primary)">WSL Admin</span>
         <ul class="nav nav-pills flex-column mb-auto" id="pills-tab" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-menu"><i class="fas fa-bars me-2"></i> Side Menu</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-announce"><i class="fas fa-bullhorn me-2"></i> Announcement</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-hadith"><i class="fas fa-quote-right me-2"></i> Hadiths</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-duas"><i class="fas fa-hands-praying me-2"></i> Duas</button>
-            </li>
+            <li class="nav-item"><button class="nav-link active w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-menu">Side Menu</button></li>
+            <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-announce">Announcement</button></li>
+            <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-hadith">Hadiths</button></li>
+            <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-duas">Duas</button></li>
         </ul>
     </div>
 
     <div class="flex-grow-1 p-4">
-        <div class="tab-content" id="pills-tabContent">
+        <div class="tab-content">
             
             <div class="tab-pane fade show active" id="tab-menu">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3>Side Panel Menu</h3>
-                    <button class="btn btn-primary" onclick="addSection()"><i class="fas fa-plus"></i> Add New Section</button>
+                    <div>
+                        <button class="btn btn-warning text-white me-2" onclick="restoreDefaults()"><i class="fas fa-history"></i> Restore Original Menu</button>
+                        <button class="btn btn-primary" onclick="addSection()"><i class="fas fa-plus"></i> New Section</button>
+                    </div>
                 </div>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Use this to manage buttons in the side panel (e.g., "Hadith Collections", "External Links").
-                </div>
-                <div id="menuContainer">
-                    <div class="text-center p-5 text-muted">Loading menu data...</div>
-                </div>
+                <div id="menuContainer">Loading...</div>
             </div>
 
             <div class="tab-pane fade" id="tab-announce">
-                <h3>Announcement Banner</h3>
-                <div class="card p-4 mt-3">
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="announceActive">
-                        <label class="form-check-label" for="announceActive">Show Banner on Home Screen</label>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Announcement Text</label>
-                        <textarea class="form-control" id="announceText" rows="3"></textarea>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveAnnouncement()">Update Banner</button>
-                </div>
+                <h3>Announcement</h3>
+                <div class="card p-4"><textarea class="form-control mb-3" id="announceText" rows="3"></textarea><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="announceActive"><label class="form-check-label">Show Banner</label></div><button class="btn btn-primary" onclick="saveAnnouncement()">Update</button></div>
             </div>
-
             <div class="tab-pane fade" id="tab-hadith">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3>Daily Hadith Database</h3>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#hadithModal"><i class="fas fa-plus"></i> Add Hadith</button>
-                </div>
-                <div id="hadithList">Loading...</div>
+                <h3>Hadiths</h3><button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#hadithModal">Add Hadith</button>
+                <div id="hadithList"></div>
             </div>
-
             <div class="tab-pane fade" id="tab-duas">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3>Himpunan Doa</h3>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#duaModal"><i class="fas fa-plus"></i> Add Dua</button>
-                </div>
-                <div id="duaList">Loading...</div>
+                <h3>Duas</h3><button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#duaModal">Add Dua</button>
+                <div id="duaList"></div>
             </div>
-
         </div>
     </div>
 </div>
@@ -99,291 +64,138 @@
 <div class="modal fade" id="itemModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Menu Button</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            <div class="modal-header"><h5 class="modal-title">Edit Button</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <input type="hidden" id="editSectionIndex">
-                <input type="hidden" id="editItemIndex">
-                <div class="mb-3">
-                    <label class="form-label">Button Label</label>
-                    <input type="text" class="form-control" id="itemLabel" placeholder="e.g. Sahih Bukhari">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Icon (SVG Code or FontAwesome Class)</label>
-                    <textarea class="form-control" id="itemIcon" rows="2" placeholder='<svg...> or fas fa-book'></textarea>
-                    <small class="text-muted">Paste full SVG code for best results.</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Action Type</label>
-                    <select class="form-select" id="itemType" onchange="toggleActionFields()">
-                        <option value="function">Run App Function</option>
-                        <option value="link">Open External Link</option>
-                    </select>
-                </div>
-                <div class="mb-3" id="fieldFunction">
-                    <label class="form-label">Function Name</label>
-                    <input type="text" class="form-control" id="itemFunction" placeholder="openHadithCollection('bukhari')">
-                </div>
-                <div class="mb-3 d-none" id="fieldLink">
-                    <label class="form-label">URL</label>
-                    <input type="text" class="form-control" id="itemUrl" placeholder="https://...">
-                </div>
+                <input type="hidden" id="editSectionIndex"><input type="hidden" id="editItemIndex">
+                <div class="mb-2"><label>Label</label><input type="text" class="form-control" id="itemLabel"></div>
+                <div class="mb-2"><label>Icon (SVG)</label><textarea class="form-control" id="itemIcon" rows="2"></textarea></div>
+                <div class="mb-2"><label>Action</label><select class="form-select" id="itemType" onchange="toggleAction()"><option value="function">Function</option><option value="link">Link</option></select></div>
+                <div class="mb-2" id="fieldFunc"><label>Function Name</label><input type="text" class="form-control" id="itemFunction"></div>
+                <div class="mb-2 d-none" id="fieldLink"><label>URL</label><input type="text" class="form-control" id="itemUrl"></div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="saveItemChange()">Save Button</button>
-            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="saveItemChange()">Save</button></div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="hadithModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">New Hadith</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <textarea id="newHadithText" class="form-control mb-2" placeholder="Hadith Text" rows="3"></textarea>
-                <input id="newHadithSource" class="form-control" placeholder="Source (e.g. Bukhari)">
-            </div>
-            <div class="modal-footer"><button class="btn btn-primary" onclick="saveNewHadith()">Add</button></div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="duaModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">New Dua</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <input id="newDuaTitle" class="form-control mb-2" placeholder="Title (e.g. Doa Masuk Rumah)">
-                <textarea id="newDuaArabic" class="form-control mb-2" placeholder="Arabic Text" style="font-family:serif; direction:rtl;"></textarea>
-                <textarea id="newDuaMeaning" class="form-control" placeholder="Translation/Meaning"></textarea>
-            </div>
-            <div class="modal-footer"><button class="btn btn-primary" onclick="saveNewDua()">Add</button></div>
-        </div>
-    </div>
-</div>
+<div class="modal fade" id="hadithModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><textarea id="newHText" class="form-control mb-2" placeholder="Text"></textarea><input id="newHSource" class="form-control" placeholder="Source"></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewHadith()">Add</button></div></div></div></div>
+<div class="modal fade" id="duaModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><input id="newDTitle" class="form-control mb-2" placeholder="Title"><textarea id="newDArab" class="form-control mb-2" placeholder="Arabic"></textarea><textarea id="newDMean" class="form-control" placeholder="Meaning"></textarea></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewDua()">Add</button></div></div></div></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-    // 1. FIREBASE CONFIG (Matching your index.html)
     const firebaseConfig = { apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", authDomain: "waktusolatlite.firebaseapp.com", databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "waktusolatlite", storageBucket: "waktusolatlite.firebasestorage.app", messagingSenderId: "86910439082", appId: "1:86910439082:web:e482d01e1451e58179cad3" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Global State
-    let menuData = [];
-    let hadithData = [];
-    let duaData = [];
-    let activeModal = null;
+    // --- THE ORIGINAL DATA "BACKUP" ---
+    // Inilah data asal yang awak minta dipindahkan siap-siap
+    const defaultMenu = [
+        {
+            title: "Hadith Collections",
+            items: [
+                { label: "Sahih Bukhari", type: "function", action: "openHadithCollection('bukhari')", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' },
+                { label: "Sahih Muslim", type: "function", action: "openHadithCollection('muslim')", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' },
+                { label: "40 Hadith", type: "function", action: "openHadithCollection('nawawi')", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>' },
+                { label: "Asbabun Nuzul", type: "function", action: "openHadithCollection('asbabun')", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>' }
+            ]
+        },
+        {
+            title: "Panduan² (Guides)",
+            items: [
+                { label: "Buka Pustaka Panduan", type: "function", action: "openExternalPanduan()", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' }
+            ]
+        },
+        {
+            title: "Daily Duas",
+            items: [
+                { label: "Open Himpunan Doa", type: "function", action: "openDuas()", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"></path><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>' }
+            ]
+        }
+    ];
 
-    // --- INITIALIZATION ---
-    window.onload = function() {
-        loadMenu();
-        loadAnnouncement();
-        loadHadiths();
-        loadDuas();
+    // --- MAIN LOGIC ---
+    let menuData = [];
+
+    window.onload = function() { loadMenu(); loadHadiths(); loadDuas(); loadAnnouncement(); }
+
+    function restoreDefaults() {
+        if(confirm("Ini akan memadamkan menu sedia ada dan menggantikannya dengan menu asal (Bukhari, Muslim, Panduan, dll). Teruskan?")) {
+            db.ref('dynamicMenu').set(defaultMenu).then(() => alert("Menu asal berjaya dikembalikan!"));
+        }
     }
 
-    // --- MENU LOGIC ---
     function loadMenu() {
-        db.ref('dynamicMenu').once('value', (snap) => {
+        db.ref('dynamicMenu').on('value', (snap) => {
             menuData = snap.val() || [];
             renderMenu();
         });
     }
 
     function renderMenu() {
-        const container = document.getElementById('menuContainer');
-        container.innerHTML = '';
-        
-        if(menuData.length === 0) {
-            container.innerHTML = `<div class="text-center p-4">No menu sections found. Click "Add New Section".</div>`;
-            return;
-        }
-
-        menuData.forEach((section, sIdx) => {
-            let itemsHtml = '';
-            if(section.items) {
-                section.items.forEach((item, iIdx) => {
-                    itemsHtml += `
-                        <div class="item-row">
-                            <div class="d-flex align-items-center">
-                                <div class="preview-icon">${item.icon.includes('<') ? item.icon : '<i class="'+item.icon+'"></i>'}</div>
-                                <div><strong>${item.label}</strong><br><small class="text-muted">${item.type === 'link' ? 'Link' : 'Function'}</small></div>
-                            </div>
-                            <div>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="openEditItem(${sIdx}, ${iIdx})"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${sIdx}, ${iIdx})"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            const html = `
-                <div class="card p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <input type="text" class="form-control fw-bold" style="max-width:300px;" value="${section.title}" onchange="updateSectionTitle(${sIdx}, this.value)">
-                        <div>
-                            <button class="btn btn-sm btn-outline-primary" onclick="openAddItem(${sIdx})"><i class="fas fa-plus"></i> Add Button</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSection(${sIdx})">Remove Section</button>
-                        </div>
-                    </div>
-                    <div class="ps-2 border-start border-3">
-                        ${itemsHtml}
-                    </div>
-                </div>
-            `;
-            container.innerHTML += html;
+        const c = document.getElementById('menuContainer'); c.innerHTML = '';
+        if(menuData.length === 0) { c.innerHTML = '<div class="alert alert-warning">Tiada menu. Sila klik "Restore Original Menu".</div>'; return; }
+        menuData.forEach((sec, sIdx) => {
+            let items = '';
+            (sec.items || []).forEach((it, iIdx) => {
+                items += `<div class="item-row"><div class="d-flex align-items-center"><div class="preview-icon me-3">${it.icon}</div><div><strong>${it.label}</strong><br><small class="text-muted">${it.action}</small></div></div><div><button class="btn btn-sm btn-light border" onclick="editItem(${sIdx},${iIdx})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger ms-1" onclick="delItem(${sIdx},${iIdx})"><i class="fas fa-trash"></i></button></div></div>`;
+            });
+            c.innerHTML += `<div class="card p-3"><div class="d-flex justify-content-between mb-3"><input class="form-control fw-bold w-50" value="${sec.title}" onchange="updTitle(${sIdx},this.value)"><div><button class="btn btn-sm btn-outline-primary" onclick="addItem(${sIdx})">Add Btn</button><button class="btn btn-sm btn-outline-danger" onclick="delSec(${sIdx})">Del Sec</button></div></div><div class="ps-2">${items}</div></div>`;
         });
     }
 
-    // Menu Actions
-    window.addSection = () => { menuData.push({title: "New Section", items: []}); saveMenu(); };
-    window.deleteSection = (idx) => { if(confirm('Delete entire section?')) { menuData.splice(idx, 1); saveMenu(); } };
-    window.updateSectionTitle = (idx, val) => { menuData[idx].title = val; saveMenu(); };
-    
-    // Item Actions
-    window.openAddItem = (sIdx) => {
-        document.getElementById('editSectionIndex').value = sIdx;
-        document.getElementById('editItemIndex').value = 'new';
-        document.getElementById('itemLabel').value = '';
-        document.getElementById('itemIcon').value = '';
-        document.getElementById('itemFunction').value = '';
-        document.getElementById('itemUrl').value = '';
-        new bootstrap.Modal(document.getElementById('itemModal')).show();
-    };
+    // CRUD Operations
+    window.addSection = () => db.ref('dynamicMenu').set([...menuData, {title:"New Section", items:[]}]);
+    window.delSec = (i) => { if(confirm("Delete section?")) { menuData.splice(i,1); db.ref('dynamicMenu').set(menuData); }};
+    window.updTitle = (i,v) => { menuData[i].title=v; db.ref('dynamicMenu').set(menuData); };
+    window.delItem = (s,i) => { if(confirm("Delete item?")) { menuData[s].items.splice(i,1); db.ref('dynamicMenu').set(menuData); }};
 
-    window.openEditItem = (sIdx, iIdx) => {
-        const item = menuData[sIdx].items[iIdx];
-        document.getElementById('editSectionIndex').value = sIdx;
-        document.getElementById('editItemIndex').value = iIdx;
+    window.addItem = (s) => { setupModal(s, 'new'); };
+    window.editItem = (s,i) => { setupModal(s, i); };
+
+    function setupModal(s, i) {
+        document.getElementById('editSectionIndex').value = s;
+        document.getElementById('editItemIndex').value = i;
+        const isNew = (i === 'new');
+        const item = isNew ? {label:'', icon:'', type:'function', action:''} : menuData[s].items[i];
         document.getElementById('itemLabel').value = item.label;
         document.getElementById('itemIcon').value = item.icon;
-        document.getElementById('itemType').value = item.type || 'function';
-        toggleActionFields();
+        document.getElementById('itemType').value = item.type;
+        toggleAction();
         if(item.type === 'link') document.getElementById('itemUrl').value = item.action;
         else document.getElementById('itemFunction').value = item.action;
         new bootstrap.Modal(document.getElementById('itemModal')).show();
-    };
+    }
 
-    window.toggleActionFields = () => {
-        const type = document.getElementById('itemType').value;
-        if(type === 'link') {
-            document.getElementById('fieldLink').classList.remove('d-none');
-            document.getElementById('fieldFunction').classList.add('d-none');
-        } else {
-            document.getElementById('fieldLink').classList.add('d-none');
-            document.getElementById('fieldFunction').classList.remove('d-none');
-        }
-    };
+    window.toggleAction = () => {
+        const t = document.getElementById('itemType').value;
+        document.getElementById('fieldLink').classList.toggle('d-none', t !== 'link');
+        document.getElementById('fieldFunc').classList.toggle('d-none', t !== 'function');
+    }
 
     window.saveItemChange = () => {
-        const sIdx = parseInt(document.getElementById('editSectionIndex').value);
-        const iIdxVal = document.getElementById('editItemIndex').value;
-        const type = document.getElementById('itemType').value;
-        const action = type === 'link' ? document.getElementById('itemUrl').value : document.getElementById('itemFunction').value;
+        const s = document.getElementById('editSectionIndex').value;
+        const i = document.getElementById('editItemIndex').value;
+        const t = document.getElementById('itemType').value;
+        const act = t==='link' ? document.getElementById('itemUrl').value : document.getElementById('itemFunction').value;
+        const obj = { label: document.getElementById('itemLabel').value, icon: document.getElementById('itemIcon').value, type: t, action: act };
         
-        const newItem = {
-            label: document.getElementById('itemLabel').value,
-            icon: document.getElementById('itemIcon').value || '<i class="fas fa-circle"></i>',
-            type: type,
-            action: action
-        };
-
-        if(iIdxVal === 'new') {
-            if(!menuData[sIdx].items) menuData[sIdx].items = [];
-            menuData[sIdx].items.push(newItem);
-        } else {
-            menuData[sIdx].items[parseInt(iIdxVal)] = newItem;
-        }
-        
-        saveMenu();
+        if(!menuData[s].items) menuData[s].items = [];
+        if(i === 'new') menuData[s].items.push(obj); else menuData[s].items[i] = obj;
+        db.ref('dynamicMenu').set(menuData);
         bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
-    };
-
-    window.deleteItem = (sIdx, iIdx) => {
-        if(confirm('Remove this button?')) {
-            menuData[sIdx].items.splice(iIdx, 1);
-            saveMenu();
-        }
-    };
-
-    function saveMenu() {
-        db.ref('dynamicMenu').set(menuData)
-            .then(() => renderMenu())
-            .catch(e => alert("Error: " + e.message));
     }
 
+    // Announcement, Hadith, Dua
+    function loadAnnouncement() { db.ref('announcement').on('value', s => { const v=s.val()||{}; document.getElementById('announceText').value=v.text||''; document.getElementById('announceActive').checked=v.show; }); }
+    window.saveAnnouncement = () => db.ref('announcement').set({text:document.getElementById('announceText').value, show:document.getElementById('announceActive').checked});
+    
+    function loadHadiths() { db.ref('hadiths').on('value', s => { const d=document.getElementById('hadithList'); d.innerHTML=''; s.forEach(x => { d.innerHTML+=`<div class="item-row"><span>${x.val().text.substr(0,30)}...</span><button class="btn btn-sm btn-danger" onclick="db.ref('hadiths/${x.key}').remove()">X</button></div>`; }); }); }
+    window.saveNewHadith = () => { db.ref('hadiths').push({text:document.getElementById('newHText').value, source:document.getElementById('newHSource').value}); bootstrap.Modal.getInstance(document.getElementById('hadithModal')).hide(); }
 
-    // --- ANNOUNCEMENT LOGIC ---
-    function loadAnnouncement() {
-        db.ref('announcement').once('value', s => {
-            const d = s.val() || {};
-            document.getElementById('announceActive').checked = d.show || false;
-            document.getElementById('announceText').value = d.text || '';
-        });
-    }
-
-    window.saveAnnouncement = () => {
-        db.ref('announcement').set({
-            show: document.getElementById('announceActive').checked,
-            text: document.getElementById('announceText').value
-        }).then(() => alert('Banner updated!'));
-    };
-
-    // --- HADITH & DUA LOGIC (Simplified) ---
-    function loadHadiths() {
-        db.ref('hadiths').on('value', s => {
-            const list = document.getElementById('hadithList');
-            list.innerHTML = '';
-            let idx = 0;
-            s.forEach(c => {
-                const h = c.val();
-                list.innerHTML += `<div class="item-row"><div>"${h.text.substring(0,50)}..." - <b>${h.source}</b></div><button class="btn btn-sm btn-danger" onclick="removeRef('hadiths/${c.key}')">X</button></div>`;
-            });
-        });
-    }
-
-    function loadDuas() {
-        db.ref('duas').on('value', s => {
-            const list = document.getElementById('duaList');
-            list.innerHTML = '';
-            s.forEach(c => {
-                const d = c.val();
-                list.innerHTML += `<div class="item-row"><div><b>${d.t}</b></div><button class="btn btn-sm btn-danger" onclick="removeRef('duas/${c.key}')">X</button></div>`;
-            });
-        });
-    }
-
-    window.saveNewHadith = () => {
-        const t = document.getElementById('newHadithText').value;
-        const s = document.getElementById('newHadithSource').value;
-        if(t && s) {
-            db.ref('hadiths').push({text:t, source:s});
-            bootstrap.Modal.getInstance(document.getElementById('hadithModal')).hide();
-        }
-    };
-
-    window.saveNewDua = () => {
-        const t = document.getElementById('newDuaTitle').value;
-        const a = document.getElementById('newDuaArabic').value;
-        const m = document.getElementById('newDuaMeaning').value;
-        if(t) {
-            db.ref('duas').push({t, a, m});
-            bootstrap.Modal.getInstance(document.getElementById('duaModal')).hide();
-        }
-    };
-
-    window.removeRef = (path) => {
-        if(confirm('Delete this item?')) db.ref(path).remove();
-    };
+    function loadDuas() { db.ref('duas').on('value', s => { const d=document.getElementById('duaList'); d.innerHTML=''; s.forEach(x => { d.innerHTML+=`<div class="item-row"><span>${x.val().t}</span><button class="btn btn-sm btn-danger" onclick="db.ref('duas/${x.key}').remove()">X</button></div>`; }); }); }
+    window.saveNewDua = () => { db.ref('duas').push({t:document.getElementById('newDTitle').value, a:document.getElementById('newDArab').value, m:document.getElementById('newDMean').value}); bootstrap.Modal.getInstance(document.getElementById('duaModal')).hide(); }
 
 </script>
 </body>
