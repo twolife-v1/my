@@ -14,189 +14,331 @@
         .nav-link.active { background: #fff8ee; color: var(--primary); border-right: 3px solid var(--primary); }
         .card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 20px; }
         .btn-primary { background: var(--primary); border: none; }
+        .btn-primary:hover { background: #8e652b; }
         .item-row { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
-        .preview-icon svg { width: 24px; height: 24px; color: var(--primary); }
+        
+        /* LOCK SCREEN OVERLAY */
+        #authOverlay { position: fixed; inset: 0; background: #212529; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        #authOverlay.unlocked { transform: translateY(-100%); pointer-events: none; }
+        .pin-display { font-size: 32px; letter-spacing: 15px; margin-bottom: 30px; min-height: 40px; font-weight: bold; color: var(--primary); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 320px; }
+        .num-btn { width: 70px; height: 70px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 24px; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; justify-content:center; }
+        .num-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
+        .num-btn.submit { background: var(--primary); border-color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div class="d-flex">
-    <div class="sidebar d-flex flex-column flex-shrink-0 p-3" style="width: 250px;">
-        <span class="fs-4 fw-bold mb-4 ps-3" style="color:var(--primary)">WSL Admin</span>
-        <ul class="nav nav-pills flex-column mb-auto" id="pills-tab" role="tablist">
-            <li class="nav-item"><button class="nav-link active w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-menu">Side Menu</button></li>
-            <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-announce">Announcement</button></li>
-            <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-hadith">Hadiths</button></li>
-            <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-duas">Duas</button></li>
-        </ul>
+    <div id="authOverlay">
+        <div class="mb-3"><i class="fas fa-user-shield fa-4x text-muted"></i></div>
+        <h3 class="mb-1">Admin Access</h3>
+        <p class="text-white-50 mb-4">Sila masukkan PIN keselamatan</p>
+        <div class="pin-display" id="pinDisplay"></div>
+        <div class="numpad">
+            <button class="num-btn" onclick="pressPin('1')">1</button>
+            <button class="num-btn" onclick="pressPin('2')">2</button>
+            <button class="num-btn" onclick="pressPin('3')">3</button>
+            <button class="num-btn" onclick="pressPin('4')">4</button>
+            <button class="num-btn" onclick="pressPin('5')">5</button>
+            <button class="num-btn" onclick="pressPin('6')">6</button>
+            <button class="num-btn" onclick="pressPin('7')">7</button>
+            <button class="num-btn" onclick="pressPin('8')">8</button>
+            <button class="num-btn" onclick="pressPin('9')">9</button>
+            <button class="num-btn" onclick="clearPin()" style="font-size:16px; color:#ff6b6b">CLR</button>
+            <button class="num-btn" onclick="pressPin('0')">0</button>
+            <button class="num-btn submit" onclick="submitPin()"><i class="fas fa-arrow-right"></i></button>
+        </div>
+        <div class="mt-4 text-white-50 small">Default PIN: 1234</div>
     </div>
 
-    <div class="flex-grow-1 p-4">
-        <div class="tab-content">
-            
-            <div class="tab-pane fade show active" id="tab-menu">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3>Side Panel Menu</h3>
-                    <div>
-                        <button class="btn btn-warning text-white me-2" onclick="restoreDefaults()"><i class="fas fa-history"></i> Restore Original Menu</button>
-                        <button class="btn btn-primary" onclick="addSection()"><i class="fas fa-plus"></i> New Section</button>
+    <div class="d-flex">
+        <div class="sidebar d-flex flex-column flex-shrink-0 p-3" style="width: 260px;">
+            <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+                <span class="fs-4 fw-bold ps-2" style="color:var(--primary)">WSL Admin</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto" id="pills-tab" role="tablist">
+                <li class="nav-item"><button class="nav-link active w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-menu"><i class="fas fa-bars me-3"></i>Menu Panel</button></li>
+                <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-guides"><i class="fas fa-book-open me-3"></i>Pustaka Panduan</button></li>
+                <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-duas"><i class="fas fa-hands-praying me-3"></i>Himpunan Doa</button></li>
+                <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-hadith"><i class="fas fa-quote-right me-3"></i>Hadith Pool</button></li>
+                <li class="nav-item"><button class="nav-link w-100 text-start" data-bs-toggle="pill" data-bs-target="#tab-announce"><i class="fas fa-bullhorn me-3"></i>Announcement</button></li>
+            </ul>
+        </div>
+
+        <div class="flex-grow-1 p-4">
+            <div class="tab-content">
+                
+                <div class="tab-pane fade show active" id="tab-menu">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>Side Panel Menu</h3>
+                        <div>
+                            <button class="btn btn-warning text-white me-2" onclick="restoreDefaults()"><i class="fas fa-sync-alt me-1"></i> Restore Original Menu & Guides</button>
+                            <button class="btn btn-primary" onclick="addSection()"><i class="fas fa-plus me-1"></i> New Section</button>
+                        </div>
+                    </div>
+                    <div class="alert alert-light border shadow-sm mb-4">
+                        <i class="fas fa-info-circle text-primary me-2"></i> Butang kuning di atas akan <b>memulihkan menu asal</b> dan <b>memasukkan data panduan standard</b> (Jenazah, Hajat, dll) ke dalam database secara automatik.
+                    </div>
+                    <div id="menuContainer">Loading...</div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-guides">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>Pustaka Panduan (Guide Manager)</h3>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#guideModal" onclick="resetGuideModal()"><i class="fas fa-plus me-1"></i> Add Guide</button>
+                    </div>
+                    <div id="guideList" class="row g-3">Loading...</div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-duas">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>Himpunan Doa Manager</h3>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#duaModal"><i class="fas fa-plus me-1"></i> Add Dua</button>
+                    </div>
+                    <div id="duaList">Loading...</div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-hadith">
+                    <h3>Daily Hadith Pool</h3>
+                    <p class="text-muted">A random hadith from this list will be shown daily.</p>
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#hadithModal"><i class="fas fa-plus"></i> Add Hadith</button>
+                    <div id="hadithList"></div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-announce">
+                    <h3>Home Screen Banner</h3>
+                    <div class="card p-4 shadow-sm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Announcement Text</label>
+                            <textarea class="form-control" id="announceText" rows="3" placeholder="Contoh: Selamat Hari Raya Aidilfitri..."></textarea>
+                        </div>
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" id="announceActive">
+                            <label class="form-check-label" for="announceActive">Show Banner on Home Screen</label>
+                        </div>
+                        <div><button class="btn btn-primary" onclick="saveAnnouncement()">Save Changes</button></div>
                     </div>
                 </div>
-                <div id="menuContainer">Loading...</div>
-            </div>
 
-            <div class="tab-pane fade" id="tab-announce">
-                <h3>Announcement</h3>
-                <div class="card p-4"><textarea class="form-control mb-3" id="announceText" rows="3"></textarea><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="announceActive"><label class="form-check-label">Show Banner</label></div><button class="btn btn-primary" onclick="saveAnnouncement()">Update</button></div>
-            </div>
-            <div class="tab-pane fade" id="tab-hadith">
-                <h3>Hadiths</h3><button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#hadithModal">Add Hadith</button>
-                <div id="hadithList"></div>
-            </div>
-            <div class="tab-pane fade" id="tab-duas">
-                <h3>Duas</h3><button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#duaModal">Add Dua</button>
-                <div id="duaList"></div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="itemModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">Edit Button</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <input type="hidden" id="editSectionIndex"><input type="hidden" id="editItemIndex">
-                <div class="mb-2"><label>Label</label><input type="text" class="form-control" id="itemLabel"></div>
-                <div class="mb-2"><label>Icon (SVG)</label><textarea class="form-control" id="itemIcon" rows="2"></textarea></div>
-                <div class="mb-2"><label>Action</label><select class="form-select" id="itemType" onchange="toggleAction()"><option value="function">Function</option><option value="link">Link</option></select></div>
-                <div class="mb-2" id="fieldFunc"><label>Function Name</label><input type="text" class="form-control" id="itemFunction"></div>
-                <div class="mb-2 d-none" id="fieldLink"><label>URL</label><input type="text" class="form-control" id="itemUrl"></div>
+    <div class="modal fade" id="itemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Edit Button</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="editSectionIndex"><input type="hidden" id="editItemIndex">
+                    <div class="mb-2"><label>Label</label><input type="text" class="form-control" id="itemLabel" placeholder="Button Name"></div>
+                    <div class="mb-2"><label>Icon (FontAwesome Class or SVG)</label><textarea class="form-control" id="itemIcon" rows="2" placeholder="fas fa-book"></textarea></div>
+                    <div class="mb-2"><label>Type</label><select class="form-select" id="itemType" onchange="toggleAction()"><option value="function">Internal Function</option><option value="link">External Link (URL)</option></select></div>
+                    <div class="mb-2" id="fieldFunc"><label>Function Name</label><input type="text" class="form-control" id="itemFunction" placeholder="openGuidesList()"></div>
+                    <div class="mb-2 d-none" id="fieldLink"><label>URL</label><input type="text" class="form-control" id="itemUrl" placeholder="https://..."></div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-primary" onclick="saveItemChange()">Save Changes</button></div>
             </div>
-            <div class="modal-footer"><button class="btn btn-primary" onclick="saveItemChange()">Save</button></div>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="hadithModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><textarea id="newHText" class="form-control mb-2" placeholder="Text"></textarea><input id="newHSource" class="form-control" placeholder="Source"></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewHadith()">Add</button></div></div></div></div>
-<div class="modal fade" id="duaModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><input id="newDTitle" class="form-control mb-2" placeholder="Title"><textarea id="newDArab" class="form-control mb-2" placeholder="Arabic"></textarea><textarea id="newDMean" class="form-control" placeholder="Meaning"></textarea></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewDua()">Add</button></div></div></div></div>
+    <div class="modal fade" id="guideModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Guide Editor</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="guideId">
+                    <div class="mb-3"><label class="fw-bold">Title</label><input id="guideTitle" class="form-control" placeholder="e.g. Panduan Solat Jenazah"></div>
+                    <div class="mb-3">
+                        <label class="fw-bold">Content (HTML Supported)</label>
+                        <textarea id="guideContent" class="form-control" rows="12" placeholder="Type here... Use <b>bold</b> or <br> for new lines."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-primary" onclick="saveGuide()">Save Guide</button></div>
+            </div>
+        </div>
+    </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", authDomain: "waktusolatlite.firebaseapp.com", databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "waktusolatlite", storageBucket: "waktusolatlite.firebasestorage.app", messagingSenderId: "86910439082", appId: "1:86910439082:web:e482d01e1451e58179cad3" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // --- THE ORIGINAL DATA "BACKUP" ---
-    // Inilah data asal yang awak minta dipindahkan siap-siap
-    const defaultMenu = [
-        {
-            title: "Hadith Collections",
-            items: [
-                { label: "Sahih Bukhari", type: "function", action: "openHadithCollection('bukhari')", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' },
-                { label: "Sahih Muslim", type: "function", action: "openHadithCollection('muslim')", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' },
-                { label: "40 Hadith", type: "function", action: "openHadithCollection('nawawi')", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>' },
-                { label: "Asbabun Nuzul", type: "function", action: "openHadithCollection('asbabun')", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>' }
-            ]
-        },
-        {
-            title: "Panduan² (Guides)",
-            items: [
-                { label: "Buka Pustaka Panduan", type: "function", action: "openExternalPanduan()", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' }
-            ]
-        },
-        {
-            title: "Daily Duas",
-            items: [
-                { label: "Open Himpunan Doa", type: "function", action: "openDuas()", icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"></path><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>' }
-            ]
-        }
-    ];
-
-    // --- MAIN LOGIC ---
-    let menuData = [];
-
-    window.onload = function() { loadMenu(); loadHadiths(); loadDuas(); loadAnnouncement(); }
-
-    function restoreDefaults() {
-        if(confirm("Ini akan memadamkan menu sedia ada dan menggantikannya dengan menu asal (Bukhari, Muslim, Panduan, dll). Teruskan?")) {
-            db.ref('dynamicMenu').set(defaultMenu).then(() => alert("Menu asal berjaya dikembalikan!"));
-        }
-    }
-
-    function loadMenu() {
-        db.ref('dynamicMenu').on('value', (snap) => {
-            menuData = snap.val() || [];
-            renderMenu();
-        });
-    }
-
-    function renderMenu() {
-        const c = document.getElementById('menuContainer'); c.innerHTML = '';
-        if(menuData.length === 0) { c.innerHTML = '<div class="alert alert-warning">Tiada menu. Sila klik "Restore Original Menu".</div>'; return; }
-        menuData.forEach((sec, sIdx) => {
-            let items = '';
-            (sec.items || []).forEach((it, iIdx) => {
-                items += `<div class="item-row"><div class="d-flex align-items-center"><div class="preview-icon me-3">${it.icon}</div><div><strong>${it.label}</strong><br><small class="text-muted">${it.action}</small></div></div><div><button class="btn btn-sm btn-light border" onclick="editItem(${sIdx},${iIdx})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger ms-1" onclick="delItem(${sIdx},${iIdx})"><i class="fas fa-trash"></i></button></div></div>`;
-            });
-            c.innerHTML += `<div class="card p-3"><div class="d-flex justify-content-between mb-3"><input class="form-control fw-bold w-50" value="${sec.title}" onchange="updTitle(${sIdx},this.value)"><div><button class="btn btn-sm btn-outline-primary" onclick="addItem(${sIdx})">Add Btn</button><button class="btn btn-sm btn-outline-danger" onclick="delSec(${sIdx})">Del Sec</button></div></div><div class="ps-2">${items}</div></div>`;
-        });
-    }
-
-    // CRUD Operations
-    window.addSection = () => db.ref('dynamicMenu').set([...menuData, {title:"New Section", items:[]}]);
-    window.delSec = (i) => { if(confirm("Delete section?")) { menuData.splice(i,1); db.ref('dynamicMenu').set(menuData); }};
-    window.updTitle = (i,v) => { menuData[i].title=v; db.ref('dynamicMenu').set(menuData); };
-    window.delItem = (s,i) => { if(confirm("Delete item?")) { menuData[s].items.splice(i,1); db.ref('dynamicMenu').set(menuData); }};
-
-    window.addItem = (s) => { setupModal(s, 'new'); };
-    window.editItem = (s,i) => { setupModal(s, i); };
-
-    function setupModal(s, i) {
-        document.getElementById('editSectionIndex').value = s;
-        document.getElementById('editItemIndex').value = i;
-        const isNew = (i === 'new');
-        const item = isNew ? {label:'', icon:'', type:'function', action:''} : menuData[s].items[i];
-        document.getElementById('itemLabel').value = item.label;
-        document.getElementById('itemIcon').value = item.icon;
-        document.getElementById('itemType').value = item.type;
-        toggleAction();
-        if(item.type === 'link') document.getElementById('itemUrl').value = item.action;
-        else document.getElementById('itemFunction').value = item.action;
-        new bootstrap.Modal(document.getElementById('itemModal')).show();
-    }
-
-    window.toggleAction = () => {
-        const t = document.getElementById('itemType').value;
-        document.getElementById('fieldLink').classList.toggle('d-none', t !== 'link');
-        document.getElementById('fieldFunc').classList.toggle('d-none', t !== 'function');
-    }
-
-    window.saveItemChange = () => {
-        const s = document.getElementById('editSectionIndex').value;
-        const i = document.getElementById('editItemIndex').value;
-        const t = document.getElementById('itemType').value;
-        const act = t==='link' ? document.getElementById('itemUrl').value : document.getElementById('itemFunction').value;
-        const obj = { label: document.getElementById('itemLabel').value, icon: document.getElementById('itemIcon').value, type: t, action: act };
-        
-        if(!menuData[s].items) menuData[s].items = [];
-        if(i === 'new') menuData[s].items.push(obj); else menuData[s].items[i] = obj;
-        db.ref('dynamicMenu').set(menuData);
-        bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
-    }
-
-    // Announcement, Hadith, Dua
-    function loadAnnouncement() { db.ref('announcement').on('value', s => { const v=s.val()||{}; document.getElementById('announceText').value=v.text||''; document.getElementById('announceActive').checked=v.show; }); }
-    window.saveAnnouncement = () => db.ref('announcement').set({text:document.getElementById('announceText').value, show:document.getElementById('announceActive').checked});
+    <div class="modal fade" id="duaModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><input id="newDTitle" class="form-control mb-2" placeholder="Title"><textarea id="newDArab" class="form-control mb-2" placeholder="Arabic" style="direction:rtl; font-family:serif"></textarea><textarea id="newDMean" class="form-control" placeholder="Meaning"></textarea></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewDua()">Add</button></div></div></div></div>
     
-    function loadHadiths() { db.ref('hadiths').on('value', s => { const d=document.getElementById('hadithList'); d.innerHTML=''; s.forEach(x => { d.innerHTML+=`<div class="item-row"><span>${x.val().text.substr(0,30)}...</span><button class="btn btn-sm btn-danger" onclick="db.ref('hadiths/${x.key}').remove()">X</button></div>`; }); }); }
-    window.saveNewHadith = () => { db.ref('hadiths').push({text:document.getElementById('newHText').value, source:document.getElementById('newHSource').value}); bootstrap.Modal.getInstance(document.getElementById('hadithModal')).hide(); }
+    <div class="modal fade" id="hadithModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><textarea id="newHText" class="form-control mb-2" placeholder="Hadith Text"></textarea><input id="newHSource" class="form-control" placeholder="Source (e.g. Bukhari)"></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveNewHadith()">Add</button></div></div></div></div>
 
-    function loadDuas() { db.ref('duas').on('value', s => { const d=document.getElementById('duaList'); d.innerHTML=''; s.forEach(x => { d.innerHTML+=`<div class="item-row"><span>${x.val().t}</span><button class="btn btn-sm btn-danger" onclick="db.ref('duas/${x.key}').remove()">X</button></div>`; }); }); }
-    window.saveNewDua = () => { db.ref('duas').push({t:document.getElementById('newDTitle').value, a:document.getElementById('newDArab').value, m:document.getElementById('newDMean').value}); bootstrap.Modal.getInstance(document.getElementById('duaModal')).hide(); }
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-</script>
+    <script>
+        // --- 1. PIN LOCK LOGIC ---
+        let currentPin = "";
+        const CORRECT_PIN = "1234"; // CHANGE PIN HERE
+
+        function pressPin(num) {
+            if(currentPin.length < 4) {
+                currentPin += num;
+                document.getElementById('pinDisplay').innerHTML = '*'.repeat(currentPin.length);
+            }
+        }
+        function clearPin() { currentPin = ""; document.getElementById('pinDisplay').innerHTML = ""; }
+        function submitPin() {
+            if(currentPin === CORRECT_PIN) {
+                document.getElementById('authOverlay').classList.add('unlocked');
+            } else {
+                alert("Incorrect PIN! Access Denied.");
+                clearPin();
+            }
+        }
+        // --- FIREBASE SETUP ---
+        const firebaseConfig = { apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", authDomain: "waktusolatlite.firebaseapp.com", databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "waktusolatlite", storageBucket: "waktusolatlite.firebasestorage.app", messagingSenderId: "86910439082", appId: "1:86910439082:web:e482d01e1451e58179cad3" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- DATA STANDARD (JENAZAH, HAJAT, DLL) ---
+        // Ini adalah kandungan yang akan dimasukkan bila tekan butang Restore
+        const defaultGuidesData = {
+            "guide_jenazah": {
+                title: "Panduan Solat Jenazah",
+                content: "<h4>Niat (Lelaki)</h4><p>Sahaja aku solat ke atas mayat lelaki ini empat takbir fardu kifayah mengikut imam kerana Allah Taala.</p><h4>Niat (Perempuan)</h4><p>Sahaja aku solat ke atas mayat perempuan ini empat takbir fardu kifayah mengikut imam kerana Allah Taala.</p><hr><b>Cara Ringkas:</b><br>1. Takbir Pertama: Baca Al-Fatihah.<br>2. Takbir Kedua: Selawat ke atas Nabi.<br>3. Takbir Ketiga: Doa untuk mayat.<br>4. Takbir Keempat: Doa & Salam."
+            },
+            "guide_hajat": {
+                title: "Panduan Solat Hajat",
+                content: "Dilakukan apabila mempunyai hajat tertentu kepada Allah SWT.<br><br><b>Rakaat Pertama:</b><br>Baca Al-Fatihah & Ayat Al-Kursi (sekali atau 11 kali).<br><br><b>Rakaat Kedua:</b><br>Baca Al-Fatihah & Surah Al-Ikhlas (sekali atau 11 kali).<br><br><b>Sujud Terakhir:</b><br>Bacalah doa hajat anda dalam hati semasa sujud terakhir."
+            },
+            "guide_dhuha": {
+                title: "Panduan Solat Dhuha",
+                content: "Solat sunat yang dilakukan pada waktu pagi (selepas matahari naik segalah sehingga sebelum Zohor).<br><br><b>Bilangan Rakaat:</b><br>Minimum 2 rakaat, maksimum 12 rakaat.<br><br><b>Kelebihan:</b><br>Membuka pintu rezeki dan dipermudahkan urusan seharian."
+            },
+            "guide_taubat": {
+                title: "Panduan Solat Taubat",
+                content: "Dilakukan selepas seseorang melakukan dosa atau kesilapan.<br><br><b>Waktu:</b><br>Bila-bila masa (kecuali waktu haram), sebaiknya pada 2/3 malam.<br><br><b>Niat:</b><br>Sahaja aku solat sunat Taubat dua rakaat kerana Allah Taala.<br><br>Perbanyakkan istighfar selepas salam."
+            }
+        };
+
+        const defaultMenu = [
+            {
+                title: "Hadith Collections",
+                items: [
+                    { label: "Sahih Bukhari", type: "function", action: "openHadithCollection('bukhari')", icon: "fas fa-book" },
+                    { label: "Sahih Muslim", type: "function", action: "openHadithCollection('muslim')", icon: "fas fa-book-open" },
+                    { label: "40 Hadith", type: "function", action: "openHadithCollection('nawawi')", icon: "fas fa-scroll" },
+                    { label: "Asbabun Nuzul", type: "function", action: "openHadithCollection('asbabun')", icon: "fas fa-lightbulb" }
+                ]
+            },
+            {
+                title: "Panduan & Rujukan",
+                items: [
+                    // Link ini kini menunjuk ke fungsi pembaca dinamik (bukan iframe HTML lama)
+                    { label: "Pustaka Panduan", type: "function", action: "openGuidesList()", icon: "fas fa-mosque" }
+                ]
+            },
+            {
+                title: "Amalan Harian",
+                items: [
+                    { label: "Himpunan Doa", type: "function", action: "openDuas()", icon: "fas fa-hands-praying" }
+                ]
+            }
+        ];
+
+        let menuData = [];
+
+        window.onload = function() { loadMenu(); loadGuides(); loadDuas(); loadHadiths(); loadAnnouncement(); }
+
+        // --- FUNGSI RESTORE DI-UPDATE ---
+        function restoreDefaults() {
+            if(confirm("AWAS: Ini akan memadam menu & panduan sedia ada, dan menggantikannya dengan set standard (Jenazah, Hajat, Dhuha, dll). Teruskan?")) {
+                // Hantar kedua-dua set data serentak
+                Promise.all([
+                    db.ref('dynamicMenu').set(defaultMenu),
+                    db.ref('guides').set(defaultGuidesData)
+                ])
+                .then(() => alert("Berjaya! Menu dan Panduan Standard telah dimasukkan."))
+                .catch(e => alert("Gagal: " + e.message));
+            }
+        }
+
+        // --- MENU LOGIC ---
+        function loadMenu() { db.ref('dynamicMenu').on('value', snap => { menuData = snap.val() || []; renderMenu(); }); }
+        function renderMenu() {
+            const c = document.getElementById('menuContainer'); c.innerHTML = '';
+            if(menuData.length === 0) return;
+            menuData.forEach((sec, sIdx) => {
+                let items = '';
+                (sec.items || []).forEach((it, iIdx) => {
+                    const icn = it.icon.includes('<') ? 'SVG' : `<i class="${it.icon}"></i>`;
+                    items += `<div class="item-row"><div><span class="me-2 text-primary">${icn}</span> <strong>${it.label}</strong></div><div><button class="btn btn-sm btn-light border" onclick="editItem(${sIdx},${iIdx})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger ms-1" onclick="delItem(${sIdx},${iIdx})"><i class="fas fa-trash"></i></button></div></div>`;
+                });
+                c.innerHTML += `<div class="card p-3"><div class="d-flex justify-content-between mb-3"><input class="form-control fw-bold w-50" value="${sec.title}" onchange="updTitle(${sIdx},this.value)"><div><button class="btn btn-sm btn-outline-primary" onclick="addItem(${sIdx})">Add Btn</button><button class="btn btn-sm btn-outline-danger" onclick="delSec(${sIdx})">Del Sec</button></div></div><div class="ps-2">${items}</div></div>`;
+            });
+        }
+        window.addSection = () => db.ref('dynamicMenu').set([...menuData, {title:"New Section", items:[]}]);
+        window.delSec = (i) => { if(confirm("Delete?")) { menuData.splice(i,1); db.ref('dynamicMenu').set(menuData); }};
+        window.updTitle = (i,v) => { menuData[i].title=v; db.ref('dynamicMenu').set(menuData); };
+        window.delItem = (s,i) => { if(confirm("Delete item?")) { menuData[s].items.splice(i,1); db.ref('dynamicMenu').set(menuData); }};
+        window.addItem = (s) => setupModal(s, 'new');
+        window.editItem = (s,i) => setupModal(s, i);
+        function setupModal(s, i) {
+            document.getElementById('editSectionIndex').value = s; document.getElementById('editItemIndex').value = i;
+            const item = (i === 'new') ? {label:'', icon:'', type:'function', action:''} : menuData[s].items[i];
+            document.getElementById('itemLabel').value = item.label; document.getElementById('itemIcon').value = item.icon; document.getElementById('itemType').value = item.type;
+            toggleAction();
+            if(item.type === 'link') document.getElementById('itemUrl').value = item.action; else document.getElementById('itemFunction').value = item.action;
+            new bootstrap.Modal(document.getElementById('itemModal')).show();
+        }
+        window.toggleAction = () => { const t = document.getElementById('itemType').value; document.getElementById('fieldLink').classList.toggle('d-none', t !== 'link'); document.getElementById('fieldFunc').classList.toggle('d-none', t !== 'function'); }
+        window.saveItemChange = () => {
+            const s = document.getElementById('editSectionIndex').value, i = document.getElementById('editItemIndex').value, t = document.getElementById('itemType').value;
+            const act = t==='link' ? document.getElementById('itemUrl').value : document.getElementById('itemFunction').value;
+            const obj = { label: document.getElementById('itemLabel').value, icon: document.getElementById('itemIcon').value, type: t, action: act };
+            if(!menuData[s].items) menuData[s].items = []; if(i === 'new') menuData[s].items.push(obj); else menuData[s].items[i] = obj;
+            db.ref('dynamicMenu').set(menuData); bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
+        }
+
+        // --- GUIDES LOGIC (PANDUAN) ---
+        function loadGuides() {
+            db.ref('guides').on('value', snap => {
+                const list = document.getElementById('guideList'); list.innerHTML = '';
+                if(!snap.exists()) { list.innerHTML = '<div class="col-12 text-center text-muted">Tiada panduan. Sila tekan Restore atau Tambah Manual.</div>'; return; }
+                snap.forEach(child => {
+                    const g = child.val();
+                    list.innerHTML += `
+                        <div class="col-md-6">
+                            <div class="card p-3 h-100">
+                                <h5 class="fw-bold text-truncate">${g.title}</h5>
+                                <div class="text-muted small mb-3 text-truncate">${g.content.replace(/<[^>]*>?/gm, '')}</div>
+                                <div class="mt-auto">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="editGuide('${child.key}')"><i class="fas fa-edit"></i> Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteGuide('${child.key}')"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+        window.resetGuideModal = () => { document.getElementById('guideId').value = ''; document.getElementById('guideTitle').value = ''; document.getElementById('guideContent').value = ''; }
+        window.editGuide = (key) => {
+            db.ref('guides/'+key).once('value').then(s => {
+                document.getElementById('guideId').value = key;
+                document.getElementById('guideTitle').value = s.val().title;
+                document.getElementById('guideContent').value = s.val().content;
+                new bootstrap.Modal(document.getElementById('guideModal')).show();
+            });
+        }
+        window.saveGuide = () => {
+            const id = document.getElementById('guideId').value;
+            const data = { title: document.getElementById('guideTitle').value, content: document.getElementById('guideContent').value };
+            if(id) db.ref('guides/'+id).update(data); else db.ref('guides').push(data);
+            bootstrap.Modal.getInstance(document.getElementById('guideModal')).hide();
+        }
+        window.deleteGuide = (key) => { if(confirm("Padam panduan ini?")) db.ref('guides/'+key).remove(); }
+
+        // --- DUA & OTHERS ---
+        function loadDuas() { db.ref('duas').on('value', s => { const d=document.getElementById('duaList'); d.innerHTML=''; s.forEach(x => { d.innerHTML+=`<div class="item-row"><span>${x.val().t}</span><button class="btn btn-sm btn-danger" onclick="db.ref('duas/${x.key}').remove()">X</button></div>`; }); }); }
+        window.saveNewDua = () => { db.ref('duas').push({t:document.getElementById('newDTitle').value, a:document.getElementById('newDArab').value, m:document.getElementById('newDMean').value}); bootstrap.Modal.getInstance(document.getElementById('duaModal')).hide(); }
+        
+        function loadHadiths() { db.ref('hadiths').on('value', s => { const d=document.getElementById('hadithList'); d.innerHTML=''; s.forEach(x => { d.innerHTML+=`<div class="item-row"><span>${x.val().text.substr(0,30)}...</span><button class="btn btn-sm btn-danger" onclick="db.ref('hadiths/${x.key}').remove()">X</button></div>`; }); }); }
+        window.saveNewHadith = () => { db.ref('hadiths').push({text:document.getElementById('newHText').value, source:document.getElementById('newHSource').value}); bootstrap.Modal.getInstance(document.getElementById('hadithModal')).hide(); }
+
+        function loadAnnouncement() { db.ref('announcement').on('value', s => { const v=s.val()||{}; document.getElementById('announceText').value=v.text||''; document.getElementById('announceActive').checked=v.show; }); }
+        window.saveAnnouncement = () => db.ref('announcement').set({text:document.getElementById('announceText').value, show:document.getElementById('announceActive').checked});
+    </script>
 </body>
 </html>
