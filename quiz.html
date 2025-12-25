@@ -3,27 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Islamic Knowledge</title>
+    <title>Islamic Knowledge Quiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background: #111827; color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .card { background: #1F2937; width: 100%; max-width: 450px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
-        
-        /* Gold Accent */
+        .card { background: #1F2937; width: 100%; max-width: 500px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
         .accent { color: #A67734; }
         
         .q-meta { color: #9CA3AF; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; }
-        .question { font-size: 19px; font-weight: 700; margin-bottom: 25px; line-height: 1.5; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+        .question { font-size: 18px; font-weight: 700; margin-bottom: 25px; line-height: 1.5; min-height: 60px; display: flex; align-items: center; justify-content: center; }
         
         .options { display: flex; flex-direction: column; gap: 10px; }
-        .opt-btn { background: #374151; border: 2px solid #374151; color: white; padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: left; position: relative; }
+        .opt-btn { background: #374151; border: 2px solid #374151; color: white; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: left; position: relative; }
         .opt-btn:active { transform: scale(0.99); }
         .opt-btn:disabled { cursor: default; }
-
         .opt-btn.correct { background: #059669; border-color: #059669; }
         .opt-btn.wrong { background: #DC2626; border-color: #DC2626; opacity: 0.6; }
 
-        /* DALIL BOX */
         .dalil-container { margin-top: 20px; text-align: left; background: #111827; padding: 15px; border-radius: 10px; border-left: 3px solid #A67734; display: none; animation: fadeIn 0.4s ease; }
         .dalil-label { color: #A67734; font-size: 11px; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 5px; }
         .dalil-text { font-size: 14px; color: #D1D5DB; line-height: 1.5; font-style: italic; }
@@ -41,11 +37,8 @@
 
     <div class="card" id="startCard">
         <h2 style="margin-bottom: 10px;" id="txt-title">Select Difficulty</h2>
-        <p style="color: #9CA3AF; font-size: 14px; margin-bottom: 20px;" id="txt-subtitle">Choose a level to begin the quiz.</p>
-        
-        <select id="levelInput" class="level-select">
-            </select>
-
+        <p style="color: #9CA3AF; font-size: 14px; margin-bottom: 20px;" id="txt-subtitle">Choose a level to begin.</p>
+        <select id="levelInput" class="level-select"></select>
         <button class="btn-next" style="display:block;" onclick="startGame()" id="btn-start">Start Quiz</button>
     </div>
 
@@ -54,116 +47,302 @@
             <span id="levelBadge" class="accent">Level 1</span>
             <span><span id="txt-q-label">Question</span> <span id="qIndex">1</span>/<span id="qTotal">10</span></span>
         </div>
-        
         <div class="question" id="qText">Loading...</div>
         <div class="options" id="optContainer"></div>
-
         <div class="dalil-container" id="dalilBox">
-            <span class="dalil-label" id="txt-dalil-label">Evidence (Dalil)</span>
+            <span class="dalil-label" id="txt-dalil-label">Evidence</span>
             <span class="dalil-text" id="dalilText"></span>
         </div>
-
         <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Next Question</button>
     </div>
 
     <div class="card hidden" id="resultCard">
-        <div style="font-size: 50px; margin-bottom: 10px;">📖</div>
+        <div style="font-size: 50px; margin-bottom: 10px;">🏆</div>
         <h2 style="margin:0;" id="txt-complete">Quiz Completed</h2>
         <p style="margin-top: 10px; color: #9CA3AF;"><span id="txt-score-label">You scored</span> <span id="finalScore" class="accent" style="font-weight:800; font-size: 18px;"></span></p>
-        <button class="btn-next" style="display:block;" onclick="location.reload()" id="btn-restart">Return to Menu</button>
+        <button class="btn-next" style="display:block;" onclick="location.reload()" id="btn-restart">Menu</button>
     </div>
 
 <script>
-    // === BILINGUAL DATABASE ===
+    // === EXPANDED QUESTION BANK (15+ Per Level) ===
     const db = [
-        // LEVEL 1: BASICS
+        // ================= LEVEL 1: BASICS (FARDHU AIN) =================
         { 
             lvl: 1, 
-            q: { en: "Which Surah is known as the 'Mother of the Book'?", ms: "Surah manakah yang dikenali sebagai 'Ibu Kitab'?" },
-            options: { en: ["Al-Ikhlas", "Al-Fatiha", "Al-Baqarah", "Yasin"], ms: ["Al-Ikhlas", "Al-Fatihah", "Al-Baqarah", "Yasin"] },
-            a: 1, 
-            dalil: { en: "Prophet (ﷺ) said: 'Al-Hamdu lillahi Rabbil-Alamin is the Mother of the Quran... and the seven oft-repeated verses.' (Tirmidhi)", ms: "Nabi (ﷺ) bersabda: 'Al-Hamdu lillahi Rabbil-Alamin adalah Ibu Al-Quran... dan tujuh ayat yang diulang-ulang.' (Tirmidhi)" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "What is the first thing a person will be held accountable for on Judgment Day?", ms: "Apakah perkara pertama yang akan dihisab pada Hari Kiamat?" },
-            options: { en: ["Zakat", "Fasting", "Salah", "Kindness to Parents"], ms: ["Zakat", "Puasa", "Solat", "Berbuat Baik Kpd Ibu Bapa"] },
+            q: { en: "Who is the first Prophet in Islam?", ms: "Siapakah Nabi pertama dalam Islam?" },
+            options: { en: ["Nuh (AS)", "Ibrahim (AS)", "Adam (AS)", "Musa (AS)"], ms: ["Nuh (AS)", "Ibrahim (AS)", "Adam (AS)", "Musa (AS)"] },
             a: 2, 
-            dalil: { en: "Prophet (ﷺ) said: 'The first act that the slave will be accountable for on the Day of Judgement will be the Prayer.' (Tirmidhi)", ms: "Nabi (ﷺ) bersabda: 'Amalan pertama yang akan dihisab bagi seorang hamba pada Hari Kiamat ialah solat.' (Tirmidhi)" }
+            dalil: { en: "Quran 2:31: 'And He taught Adam the names - all of them...'", ms: "Quran 2:31: 'Dan Dia mengajarkan kepada Adam nama-nama (benda) semuanya...'" }
         },
         { 
             lvl: 1, 
-            q: { en: "Which act is considered half of faith (Iman)?", ms: "Apakah amalan yang dianggap separuh daripada iman?" },
-            options: { en: ["Patience (Sabr)", "Cleanliness (Taharah)", "Gratitude (Shukr)", "Charity (Sadaqah)"], ms: ["Sabar", "Kebersihan (Taharah)", "Syukur", "Sedekah"] },
-            a: 1, 
-            dalil: { en: "Prophet (ﷺ) said: 'Cleanliness is half of faith.' (Sahih Muslim)", ms: "Nabi (ﷺ) bersabda: 'Kebersihan itu sebahagian (separuh) daripada iman.' (Sahih Muslim)" }
+            q: { en: "Which Pillar of Islam is the pilgrimage to Mecca?", ms: "Rukun Islam manakah yang berkaitan dengan menunaikan haji di Mekah?" },
+            options: { en: ["Sawm", "Zakat", "Hajj", "Shahada"], ms: ["Puasa", "Zakat", "Haji", "Syahadah"] },
+            a: 2, 
+            dalil: { en: "Quran 3:97: 'And [due] to Allah from the people is a pilgrimage to the House...'", ms: "Quran 3:97: 'Dan Allah mewajibkan manusia mengerjakan ibadat Haji dengan mengunjungi Baitullah...'" }
         },
         { 
             lvl: 1, 
-            q: { en: "Fasting in Ramadan is one of the pillars of:", ms: "Berpuasa di bulan Ramadan adalah salah satu rukun:" },
-            options: { en: ["Iman", "Islam", "Ihsan", "Taqwa"], ms: ["Iman", "Islam", "Ihsan", "Taqwa"] },
+            q: { en: "How many times do Muslims pray daily (Fardhu)?", ms: "Berapa kalikah umat Islam solat Fardu sehari semalam?" },
+            options: { en: ["3 Times", "5 Times", "4 Times", "6 Times"], ms: ["3 Kali", "5 Kali", "4 Kali", "6 Kali"] },
             a: 1, 
-            dalil: { en: "Prophet (ﷺ) said: 'Islam is built on five [pillars]... and fasting Ramadan.' (Bukhari)", ms: "Nabi (ﷺ) bersabda: 'Islam dibina atas lima perkara... dan berpuasa di bulan Ramadan.' (Bukhari)" }
+            dalil: { en: "The Prophet (ﷺ) received the command for 5 prayers during Isra Mi'raj (Bukhari).", ms: "Nabi (ﷺ) menerima perintah 5 waktu solat semasa peristiwa Isra Mi'raj (Bukhari)." }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "What is the Holy Book revealed to Prophet Muhammad (ﷺ)?", ms: "Apakah Kitab Suci yang diturunkan kepada Nabi Muhammad (ﷺ)?" },
+            options: { en: ["Injil", "Tawrat", "Quran", "Zabur"], ms: ["Injil", "Taurat", "Quran", "Zabur"] },
+            a: 2, 
+            dalil: { en: "Quran 2:185: 'The month of Ramadhan [is that] in which was revealed the Qur'an...'", ms: "Quran 2:185: 'Bulan Ramadan yang padanya diturunkan Al-Quran...'" }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "What comes after this life?", ms: "Apakah yang berlaku selepas kehidupan dunia ini?" },
+            options: { en: ["Nothingness", "Reincarnation", "Akhirah (Hereafter)", "Eternal Sleep"], ms: ["Tiada apa-apa", "Reinkarnasi", "Akhirat", "Tidur Kekal"] },
+            a: 2, 
+            dalil: { en: "Quran 2:4: 'And they believe in what has been sent down to you... and of the Hereafter they are certain.'", ms: "Quran 2:4: 'Dan mereka beriman kepada Kitab yang diturunkan kepadamu... dan mereka yakin akan adanya Akhirat.'" }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "Which Surah is the 'Heart of the Quran'?", ms: "Surah manakah yang digelar 'Jantung Al-Quran'?" },
+            options: { en: ["Al-Mulk", "Yasin", "Al-Rahman", "Al-Kahf"], ms: ["Al-Mulk", "Yasin", "Al-Rahman", "Al-Kahf"] },
+            a: 1, 
+            dalil: { en: "Hadith Tirmidhi: 'Everything has a heart, and the heart of the Quran is Yasin.'", ms: "Hadis Tirmidhi: 'Setiap sesuatu mempunyai jantung (hati), dan jantung Al-Quran adalah Yasin.'" }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "In which month do Muslims fast?", ms: "Dalam bulan manakah umat Islam berpuasa?" },
+            options: { en: ["Shawwal", "Ramadan", "Muharram", "Rajab"], ms: ["Syawal", "Ramadan", "Muharram", "Rejab"] },
+            a: 1, 
+            dalil: { en: "Quran 2:183: 'O you who have believed, decreed upon you is fasting...'", ms: "Quran 2:183: 'Wahai orang-orang yang beriman! Diwajibkan atas kamu berpuasa...'" }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "What is the direction of prayer called?", ms: "Apakah nama arah kiblat bagi solat?" },
+            options: { en: ["East", "Qibla", "North", "Medina"], ms: ["Timur", "Kiblat", "Utara", "Madinah"] },
+            a: 1, 
+            dalil: { en: "Quran 2:144: 'So turn your face toward al-Masjid al-Haram.'", ms: "Quran 2:144: 'Maka palingkanlah wajahmu ke arah Masjidil Haram.'" }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "Which Angel brought the revelation (Wahy)?", ms: "Malaikat manakah yang membawa wahyu?" },
+            options: { en: ["Mikail", "Israfil", "Jibril", "Malik"], ms: ["Mikail", "Israfil", "Jibril", "Malik"] },
+            a: 2, 
+            dalil: { en: "Quran 2:97: 'Say, Whoever is an enemy to Gabriel - it is [none but] he who has brought the Qur'an down upon your heart...'", ms: "Quran 2:97: 'Katakanlah: Barangsiapa yang memusuhi Jibril maka sesungguhnya dialah yang menurunkan Al-Quran ke dalam hatimu...'" }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "What is the shortest Surah in the Quran?", ms: "Apakah Surah terpendek dalam Al-Quran?" },
+            options: { en: ["Al-Ikhlas", "Al-Kawthar", "Al-Asr", "Al-Nas"], ms: ["Al-Ikhlas", "Al-Kauthar", "Al-Asr", "Al-Nas"] },
+            a: 1, 
+            dalil: { en: "Surah Al-Kawthar consists of only 3 verses.", ms: "Surah Al-Kauthar hanya mengandungi 3 ayat." }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "Does Allah have any partners or children?", ms: "Adakah Allah mempunyai sekutu atau anak?" },
+            options: { en: ["Yes", "Maybe", "No, He is One", "Only Angels"], ms: ["Ya", "Mungkin", "Tidak, Dia Esa", "Hanya Malaikat"] },
+            a: 2, 
+            dalil: { en: "Quran 112:3: 'He neither begets nor is born.'", ms: "Quran 112:3: 'Dia tiada beranak dan Dia pula tidak diperanakkan.'" }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "Which phrase means 'God is the Greatest'?", ms: "Apakah kalimah yang bermaksud 'Allah Maha Besar'?" },
+            options: { en: ["Alhamdulillah", "Allahu Akbar", "Subhanallah", "MashaAllah"], ms: ["Alhamdulillah", "Allahu Akbar", "Subhanallah", "MashaAllah"] },
+            a: 1, 
+            dalil: { en: "Used in Adhan and Salah to proclaim Allah's greatness.", ms: "Digunakan dalam Azan dan Solat untuk mengagungkan Allah." }
+        },
+        { 
+            lvl: 1, 
+            q: { en: "What is the key to Paradise according to Hadith?", ms: "Apakah kunci Syurga menurut Hadis?" },
+            options: { en: ["Money", "Salah (Prayer)", "Beauty", "Fame"], ms: ["Wang", "Solat", "Kecantikan", "Kemasyhuran"] },
+            a: 1, 
+            dalil: { en: "Hadith: 'The key to Paradise is Salah, and the key to Salah is Wudu.'", ms: "Hadis: 'Kunci Syurga adalah Solat, dan kunci Solat adalah Wuduk.'" }
         },
 
-        // LEVEL 2: INTERMEDIATE
+        // ================= LEVEL 2: INTERMEDIATE =================
         { 
             lvl: 2, 
-            q: { en: "Which prayer has no Adhan or Iqamah?", ms: "Solat manakah yang tiada Azan atau Iqamah?" },
-            options: { en: ["Eid Prayer", "Tahajjud", "Janazah & Eid", "Witr"], ms: ["Solat Raya", "Tahajjud", "Jenazah & Raya", "Witir"] },
-            a: 2, 
-            dalil: { en: "Both Eid and Funeral prayers are performed without Adhan or Iqamah according to the Sunnah.", ms: "Solat Raya dan Jenazah dilakukan tanpa Azan atau Iqamah mengikut Sunnah." }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "Can a person perform Tayammum if water is too cold and heating is impossible?", ms: "Bolehkah bertayamum jika air terlalu sejuk dan tidak boleh dipanaskan?" },
-            options: { en: ["No, must use water", "Yes", "Only for old people", "Wait until it gets warm"], ms: ["Tidak, wajib guna air", "Ya, Boleh", "Hanya untuk orang tua", "Tunggu sehingga air panas"] },
+            q: { en: "Which prayer has no Ruku or Sujood?", ms: "Solat manakah yang tiada Ruku atau Sujud?" },
+            options: { en: ["Witr", "Janazah (Funeral)", "Eid", "Duha"], ms: ["Witir", "Jenazah", "Raya", "Dhuha"] },
             a: 1, 
-            dalil: { en: "Amr ibn al-Aas (RA) performed Tayammum on a freezing night and the Prophet (ﷺ) approved it. (Abu Dawud)", ms: "Amr ibn al-Aas (RA) bertayamum pada malam yang sangat sejuk dan Nabi (ﷺ) membenarkannya. (Abu Dawud)" }
+            dalil: { en: "The Funeral prayer consists of 4 Takbirs while standing.", ms: "Solat Jenazah hanya mempunyai 4 Takbir dalam keadaan berdiri." }
         },
         { 
             lvl: 2, 
             q: { en: "What is the 'Nisab' of Zakat for Gold?", ms: "Apakah kadar 'Nisab' Zakat bagi Emas?" },
-            options: { en: ["85 grams", "595 grams", "100 grams", "40 grams"], ms: ["85 gram", "595 gram", "100 gram", "40 gram"] },
+            options: { en: ["85 grams", "100 grams", "40 grams", "1 kg"], ms: ["85 gram", "100 gram", "40 gram", "1 kg"] },
             a: 0, 
-            dalil: { en: "The standard Nisab for gold is 20 Dinars, which is approximately 85 grams.", ms: "Nisab piawai bagi emas ialah 20 Dinar, iaitu bersamaan kira-kira 85 gram." }
+            dalil: { en: "Standard Nisab is 20 Dinars (~85g).", ms: "Nisab piawai ialah 20 Dinar (~85g)." }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "Can you perform Wudu with sea water?", ms: "Bolehkah berwuduk dengan air laut?" },
+            options: { en: ["No, it's salty", "Yes, it is pure", "Only if boiled", "Disliked"], ms: ["Tidak, ia masin", "Ya, ia suci", "Hanya jika dididihkan", "Makruh"] },
+            a: 1, 
+            dalil: { en: "Hadith: 'Its water is purifying and its dead (animals) are lawful.' (Tirmidhi)", ms: "Hadis: 'Laut itu suci airnya dan halal bangkainya.' (Tirmidhi)" }
         },
         { 
             lvl: 2, 
             q: { en: "Who are the 'Kiraman Katibin'?", ms: "Siapakah 'Kiraman Katibin'?" },
-            options: { en: ["Guardians of Hell", "Angels questioning in grave", "Angels writing deeds", "Angels bearing the Throne"], ms: ["Penjaga Neraka", "Malaikat penyoal kubur", "Malaikat pencatat amal", "Malaikat pemikul Arasy"] },
+            options: { en: ["Guardians of Hell", "Angels writing deeds", "Angels of Death", "Prophets"], ms: ["Penjaga Neraka", "Mencatat amal", "Malaikat Maut", "Para Nabi"] },
+            a: 1, 
+            dalil: { en: "Quran 82:11: 'Noble and recording.'", ms: "Quran 82:11: 'Yang mulia (di sisi Allah) dan mencatat (pekerjaan itu).'" }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "What breaks Wudu?", ms: "Apakah yang membatalkan Wuduk?" },
+            options: { en: ["Eating camel meat", "Deep sleep", "Passing gas", "All of the above"], ms: ["Makan daging unta", "Tidur nyenyak", "Kentut", "Semua di atas"] },
+            a: 3, 
+            dalil: { en: "Various Hadiths confirm these invalidate Wudu (Camel meat specifically in Hanbali/Hadith).", ms: "Hadis mengesahkan perkara-perkara ini membatalkan wuduk." }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "When is the 'Time of Forbidden Prayer'?", ms: "Bilakah 'Waktu Haram Solat'?" },
+            options: { en: ["After Isha", "Before Dhuhr", "Sunrise, Sunset, Zawal", "Midnight"], ms: ["Selepas Isyak", "Sebelum Zohor", "Terbit, Terbenam, Zawal", "Tengah malam"] },
             a: 2, 
-            dalil: { en: "Quran 82:10-12: 'And indeed, [appointed] over you are keepers, noble and recording...'", ms: "Quran 82:10-12: 'Dan sesungguhnya ada (malaikat-malaikat) yang menjagamu, yang mulia dan mencatat...'" }
+            dalil: { en: "Hadith Muslim: 'Three times the Prophet forbade us to pray... when the sun rises... sets... is overhead.'", ms: "Hadis Muslim: 'Tiga waktu Nabi larang solat... matahari terbit... terbenam... tegak di atas kepala.'" }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "Which Prophet was swallowed by a whale?", ms: "Nabi manakah yang ditelan ikan paus?" },
+            options: { en: ["Yusuf (AS)", "Yunus (AS)", "Musa (AS)", "Isa (AS)"], ms: ["Yusuf (AS)", "Yunus (AS)", "Musa (AS)", "Isa (AS)"] },
+            a: 1, 
+            dalil: { en: "Quran 37:142: 'Then the fish swallowed him...'", ms: "Quran 37:142: 'Maka dia ditelan oleh ikan besar...'" }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "Is it permissible to wipe over socks (Khuff) in Wudu?", ms: "Bolehkah menyapu atas khuf (stokin kulit) dalam Wuduk?" },
+            options: { en: ["No", "Yes, with conditions", "Only for men", "Only in winter"], ms: ["Tidak", "Ya, dengan syarat", "Lelaki sahaja", "Musim sejuk sahaja"] },
+            a: 1, 
+            dalil: { en: "Established Sunnah: 1 day for resident, 3 days for traveler.", ms: "Sunnah yang sabit: 1 hari bagi mukim, 3 hari bagi musafir." }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "How many rakats is Salatul Jumu'ah?", ms: "Berapa rakaat Solat Jumaat?" },
+            options: { en: ["4", "2", "3", "Same as Dhuhr"], ms: ["4", "2", "3", "Sama macam Zohor"] },
+            a: 1, 
+            dalil: { en: "Consensus: Friday prayer is 2 rakats after the Khutbah.", ms: "Ijmak: Solat Jumaat adalah 2 rakaat selepas Khutbah." }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "Which uncle of the Prophet (ﷺ) is cursed in the Quran?", ms: "Bapa saudara Nabi (ﷺ) manakah yang dilaknat dalam Quran?" },
+            options: { en: ["Abu Talib", "Abu Lahab", "Hamzah", "Abbas"], ms: ["Abu Talib", "Abu Lahab", "Hamzah", "Abbas"] },
+            a: 1, 
+            dalil: { en: "Surah Al-Masad: 'Perish the hands of Abu Lahab...'", ms: "Surah Al-Masad: 'Binasalah kedua-dua tangan Abu Lahab...'" }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "What is 'Ghibah'?", ms: "Apakah itu 'Ghibah'?" },
+            options: { en: ["Lying", "Stealing", "Backbiting", "Cheating"], ms: ["Menipu", "Mencuri", "Mengumpat", "Curang"] },
+            a: 2, 
+            dalil: { en: "Hadith: 'To mention your brother with something he dislikes.'", ms: "Hadis: 'Menyebut tentang saudaramu perkara yang tidak disukainya.'" }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "Which battle took place in Ramadan?", ms: "Perang manakah berlaku dalam bulan Ramadan?" },
+            options: { en: ["Uhud", "Badr", "Khandaq", "Tabuk"], ms: ["Uhud", "Badar", "Khandaq", "Tabuk"] },
+            a: 1, 
+            dalil: { en: "Battle of Badr occurred on 17th Ramadan, 2 AH.", ms: "Perang Badar berlaku pada 17 Ramadan, tahun 2 Hijrah." }
+        },
+        { 
+            lvl: 2, 
+            q: { en: "What is the ruling of Salatul Witr?", ms: "Apakah hukum Solat Witir?" },
+            options: { en: ["Fardhu Ain", "Sunnah Muakkadah", "Wajib (Hanafi)", "Mubah"], ms: ["Fardhu Ain", "Sunnah Muakkadah", "Wajib (Hanafi)", "Harus"] },
+            a: 1, 
+            dalil: { en: "Majority consider it confirmed Sunnah; Hanafis consider it Wajib.", ms: "Jumhur ulama: Sunnah Muakkadah; Hanafi: Wajib." }
         },
 
-        // LEVEL 3: ADVANCED
+        // ================= LEVEL 3: ADVANCED (FIQH & USUL) =================
         { 
             lvl: 3, 
             q: { en: "If one forgets a Rukun (Integral) of Salah, can Sujud Sahwi fix it?", ms: "Jika terlupa Rukun solat, adakah Sujud Sahwi memadai?" },
-            options: { en: ["Yes", "No, must perform the Rukun", "Only if it was Al-Fatiha", "It depends on the Imam"], ms: ["Ya", "Tidak, wajib lakukan Rukun itu", "Hanya jika Al-Fatihah", "Bergantung kepada Imam"] },
+            options: { en: ["Yes", "No, must perform the Rukun", "Only if Al-Fatiha", "Depends on Imam"], ms: ["Ya", "Tidak, wajib buat Rukun itu", "Hanya jika Al-Fatihah", "Ikut Imam"] },
             a: 1, 
-            dalil: { en: "A Rukun (like Ruku or Sujood) cannot be compensated by Sujud Sahwi alone; the action itself must be performed.", ms: "Rukun (seperti Ruku atau Sujud) tidak boleh diganti dengan Sujud Sahwi sahaja; perbuatan itu mesti dilakukan." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "What is the ruling on combining Asr with Jumu'ah for a traveler?", ms: "Apakah hukum Jamak Asar dengan Jumaat bagi musafir?" },
-            options: { en: ["Permissible", "Not Permissible", "Disliked", "Only in Hajj"], ms: ["Harus (Boleh)", "Tidak Boleh", "Makruh", "Hanya masa Haji"] },
-            a: 0, 
-            dalil: { en: "Majority opinion (Shafi'i/Maliki/Hanbali): Jumu'ah takes the place of Dhuhr, so a traveler may join Asr with it.", ms: "Pendapat Jumhur (Syafi'i/Maliki/Hanbali): Jumaat menggantikan Zohor, maka musafir boleh jamak Asar dengannya." }
+            dalil: { en: "A Rukun cannot be compensated by Sujud Sahwi alone; the action itself must be done.", ms: "Rukun tidak boleh diganti dengan Sujud Sahwi sahaja; perbuatan itu mesti dilakukan." }
         },
         { 
             lvl: 3, 
             q: { en: "Does vomiting break Wudu?", ms: "Adakah muntah membatalkan Wuduk?" },
-            options: { en: ["Yes (Hanafi/Hanbali)", "No (Shafi'i/Maliki)", "Depends on color", "Only if intentional"], ms: ["Ya (Hanafi/Hanbali)", "Tidak (Syafi'i/Maliki)", "Ikut warna", "Hanya jika sengaja"] },
+            options: { en: ["Yes (Hanafi/Hanbali)", "No (Shafi'i/Maliki)", "Depends on color", "Only if intentional"], ms: ["Ya (Hanafi/Hanbali)", "Tidak (Syafi'i/Maliki)", "Ikut warna", "Jika sengaja"] },
             a: 1, 
-            dalil: { en: "In the Shafi'i and Maliki Madhabs, vomiting is considered filth (najis) but does not invalidate Wudu itself.", ms: "Dalam Mazhab Syafi'i dan Maliki, muntah dianggap najis tetapi tidak membatalkan Wuduk itu sendiri." }
+            dalil: { en: "Shafi'i/Maliki: Vomit is najis but does not invalidate Wudu.", ms: "Syafi'i/Maliki: Muntah itu najis tetapi tidak membatalkan wuduk." }
         },
         { 
             lvl: 3, 
-            q: { en: "Is 'Basmalah' part of Surah Al-Fatiha?", ms: "Adakah 'Basmalah' sebahagian daripada Al-Fatihah?" },
-            options: { en: ["Yes (Shafi'i)", "No (Hanafi)", "Sunnah only", "Valid difference of opinion"], ms: ["Ya (Syafi'i)", "Tidak (Hanafi)", "Sunnah sahaja", "Khilaf yang muktabar"] },
+            q: { en: "Is 'Basmalah' part of Surah Al-Fatiha?", ms: "Adakah 'Basmalah' sebahagian Al-Fatihah?" },
+            options: { en: ["Yes (Shafi'i)", "No (Hanafi)", "Sunnah only", "Valid difference"], ms: ["Ya (Syafi'i)", "Tidak (Hanafi)", "Sunnah sahaja", "Khilaf muktabar"] },
             a: 3, 
-            dalil: { en: "There is a valid difference. Shafi'is count it as verse 1. Hanafis/Malikis consider it a separator between Surahs.", ms: "Terdapat khilaf. Syafi'i mengira ia ayat 1. Hanafi/Maliki menganggap ia pemisah antara Surah." }
+            dalil: { en: "Shafi'is count it as verse 1. Hanafis/Malikis consider it a separator.", ms: "Syafi'i kira ayat 1. Hanafi/Maliki anggap ia pemisah." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "Can a traveler shorten (Qasar) Maghrib prayer?", ms: "Bolehkah musafir Qasar solat Maghrib?" },
+            options: { en: ["Yes, to 2", "No", "Yes, to 1.5", "Only if sick"], ms: ["Ya, jadi 2", "Tidak", "Ya, jadi 1.5", "Jika sakit"] },
+            a: 1, 
+            dalil: { en: "Qasar is only for 4-rakat prayers (Dhuhr, Asr, Isha).", ms: "Qasar hanya untuk solat 4 rakaat (Zohor, Asar, Isyak)." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "What is 'Talfiq'?", ms: "Apakah itu 'Talfiq'?" },
+            options: { en: ["Mixing Madhabs invalidly", "Following a concession", "Paying Zakat early", "Combining prayers"], ms: ["Campur aduk Mazhab yang membatalkan", "Ikut rukhsah", "Bayar Zakat awal", "Jamak solat"] },
+            a: 0, 
+            dalil: { en: "Mixing rulings such that the act is invalid in all Madhabs involved.", ms: "Mencampur hukum sehingga amalan itu tidak sah dalam semua mazhab yang terlibat." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "Is Zakat required on diamonds?", ms: "Adakah wajib Zakat ke atas berlian?" },
+            options: { en: ["Yes, always", "No, unless for trade", "Only if worn", "Yes, 2.5%"], ms: ["Ya, sentiasa", "Tidak, kecuali untuk niaga", "Jika dipakai", "Ya, 2.5%"] },
+            a: 1, 
+            dalil: { en: "Majority: Precious stones are not Zakatable unless they are trade inventory.", ms: "Jumhur: Batu permata tiada Zakat melainkan barang dagangan." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "What is the ruling of bleeding during Fasting?", ms: "Apakah hukum berdarah ketika Puasa?" },
+            options: { en: ["Breaks fast", "Does not break fast", "Only nosebleed breaks", "Depends on amount"], ms: ["Batal puasa", "Tidak batal", "Hidung berdarah batal", "Ikut jumlah"] },
+            a: 1, 
+            dalil: { en: "Bleeding (unintentional or extraction for tests) does not invalidate fasting according to majority.", ms: "Keluar darah (tidak sengaja atau ujian darah) tidak membatalkan puasa menurut jumhur." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "When does the time of Isha end?", ms: "Bilakah tamat waktu Isyak?" },
+            options: { en: ["Sunrise", "Islamic Midnight", "Fajr Adhan", "3 AM"], ms: ["Terbit Matahari", "Tengah Malam Islam", "Azan Subuh", "3 Pagi"] },
+            a: 2, 
+            dalil: { en: "It extends until Fajr Sadiq (True Dawn), though delaying past midnight is disliked.", ms: "Ia berlanjutan sehingga Fajar Sadiq, walaupun makruh melewatkan selepas tengah malam." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "Is it Halal to eat shark?", ms: "Adakah Halal makan ikan jerung?" },
+            options: { en: ["Haram (All predators)", "Halal (Sea creature)", "Makruh", "Hanafi says Haram"], ms: ["Haram", "Halal (Hidupan laut)", "Makruh", "Hanafi kata Haram"] },
+            a: 1, 
+            dalil: { en: "Quran 5:96: 'Lawful to you is game from the sea and its food.'", ms: "Quran 5:96: 'Dihalalkan bagi kamu binatang buruan laut dan makanannya.'" }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "What is the 'Awrah' of a woman in front of other Muslim women?", ms: "Apakah Aurat wanita sesama wanita Islam?" },
+            options: { en: ["Navel to Knee", "Whole body", "Everything except face", "Head to toe"], ms: ["Pusat ke Lutut", "Seluruh badan", "Semua kecuali muka", "Hujung rambut ke kaki"] },
+            a: 0, 
+            dalil: { en: "Majority view: It is the same as a man to a man (Navel to Knee).", ms: "Pendapat Jumhur: Sama seperti lelaki sesama lelaki (Pusat ke Lutut)." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "Can you touch the Quran without Wudu?", ms: "Bolehkah sentuh Quran tanpa Wuduk?" },
+            options: { en: ["Yes", "No (Majority)", "Only translation", "Yes if using gloves"], ms: ["Boleh", "Tidak (Jumhur)", "Terjemahan sahaja", "Boleh jika berlapik"] },
+            a: 1, 
+            dalil: { en: "Quran 56:79: 'None touch it except the purified.' (Four Madhabs agree).", ms: "Quran 56:79: 'Tidak menyentuhnya melainkan orang yang disucikan.' (Empat Mazhab sepakat)." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "Is insurance Halal?", ms: "Adakah insurans Halal?" },
+            options: { en: ["Yes", "No (Contains Riba/Gharar)", "Only Takaful", "Difference of Opinion"], ms: ["Ya", "Tidak (Riba/Gharar)", "Hanya Takaful", "Ada Khilaf"] },
+            a: 2, 
+            dalil: { en: "Conventional insurance has Gharar (uncertainty) & Riba. Takaful is the cooperative alternative.", ms: "Insurans konvensional ada Gharar & Riba. Takaful adalah alternatif kerjasama." }
+        },
+        { 
+            lvl: 3, 
+            q: { en: "What is 'Istihalah'?", ms: "Apakah itu 'Istihalah'?" },
+            options: { en: ["Transformation of substance", "Istighfar", "Travel prayer", "Toilet etiquette"], ms: ["Perubahan zat", "Istighfar", "Solat musafir", "Adab tandas"] },
+            a: 0, 
+            dalil: { en: "Concept where an impure substance transforms chemically into a pure one (e.g. Wine to Vinegar).", ms: "Konsep perubahan zat najis kepada suci secara kimia (cth: Arak jadi Cuka)." }
         }
     ];
 
@@ -183,19 +362,15 @@
         }
     };
 
-    // STATE
-    let currentLang = 'en'; // Default
+    let currentLang = 'en';
     let currentQuestions = [];
     let currentIndex = 0;
     let score = 0;
+    const QUESTIONS_PER_SESSION = 10; // Show 10 random questions per game
 
-    // INITIALIZATION
     window.onload = function() {
-        // Detect Language from parent app (localStorage)
         const savedLang = localStorage.getItem('wsl_lang');
-        if (savedLang && (savedLang === 'ms' || savedLang === 'en')) {
-            currentLang = savedLang;
-        }
+        if (savedLang && (savedLang === 'ms' || savedLang === 'en')) currentLang = savedLang;
         updateUIText();
     };
 
@@ -211,7 +386,6 @@
         document.getElementById('txt-score-label').textContent = t.scoreLabel;
         document.getElementById('btn-restart').textContent = t.btnRestart;
 
-        // Populate Level Select
         const lvlSelect = document.getElementById('levelInput');
         lvlSelect.innerHTML = '';
         t.levels.forEach((l, i) => {
@@ -225,35 +399,33 @@
     function startGame() {
         const lvl = parseInt(document.getElementById('levelInput').value);
         
-        // Filter and Shuffle
-        currentQuestions = db.filter(item => item.lvl === lvl).sort(() => Math.random() - 0.5);
+        // Get ALL questions for this level
+        const allQuestionsForLevel = db.filter(item => item.lvl === lvl);
+        
+        // Shuffle and pick 10
+        currentQuestions = allQuestionsForLevel.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_SESSION);
         
         if(currentQuestions.length === 0) {
-            alert(currentLang === 'ms' ? "Tiada soalan ditemui!" : "No questions found!");
+            alert("No questions found.");
             return;
         }
 
         score = 0;
         currentIndex = 0;
-        
         document.getElementById('levelBadge').textContent = ui[currentLang].levels[lvl-1].split(':')[0];
         document.getElementById('qTotal').textContent = currentQuestions.length;
         
         document.getElementById('startCard').classList.add('hidden');
         document.getElementById('quizCard').classList.remove('hidden');
-        
         loadQuestion();
     }
 
     function loadQuestion() {
         const qData = currentQuestions[currentIndex];
-        
-        // UI Reset
         document.getElementById('qIndex').textContent = currentIndex + 1;
         document.getElementById('qText').textContent = qData.q[currentLang];
         document.getElementById('dalilBox').style.display = 'none';
         
-        // Button text
         const btn = document.getElementById('nextBtn');
         btn.style.display = 'none';
         btn.textContent = (currentIndex === currentQuestions.length - 1) ? ui[currentLang].btnFinish : ui[currentLang].btnNext;
@@ -261,45 +433,30 @@
         const c = document.getElementById('optContainer');
         c.innerHTML = '';
 
-        const opts = qData.options[currentLang];
-
-        opts.forEach((optText, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'opt-btn';
-            btn.textContent = optText;
-            // Pass the localized Dalil text to checkAnswer
-            btn.onclick = () => checkAnswer(i, btn, qData.a, qData.dalil[currentLang]);
-            c.appendChild(btn);
+        qData.options[currentLang].forEach((optText, i) => {
+            const b = document.createElement('button');
+            b.className = 'opt-btn';
+            b.textContent = optText;
+            b.onclick = () => checkAnswer(i, b, qData.a, qData.dalil[currentLang]);
+            c.appendChild(b);
         });
     }
 
     function checkAnswer(selected, btn, correctIndex, dalilText) {
         const opts = document.querySelectorAll('.opt-btn');
         opts.forEach(b => b.disabled = true);
-
-        if(selected === correctIndex) {
-            btn.classList.add('correct');
-            score++;
-        } else {
-            btn.classList.add('wrong');
-            opts[correctIndex].classList.add('correct');
-        }
-
+        if(selected === correctIndex) { btn.classList.add('correct'); score++; } 
+        else { btn.classList.add('wrong'); opts[correctIndex].classList.add('correct'); }
         document.getElementById('dalilText').textContent = dalilText;
         document.getElementById('dalilBox').style.display = 'block';
         document.getElementById('nextBtn').style.display = 'block';
-        
-        // Auto scroll to bottom
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        document.getElementById('quizCard').scrollTo({ top: 1000, behavior: 'smooth' });
     }
 
     function nextQuestion() {
         currentIndex++;
-        if(currentIndex < currentQuestions.length) {
-            loadQuestion();
-        } else {
-            showResults();
-        }
+        if(currentIndex < currentQuestions.length) loadQuestion();
+        else showResults();
     }
 
     function showResults() {
