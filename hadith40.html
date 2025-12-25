@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>40 Hadith Imam Nawawi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Shared Variables from Main App */
+        :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --input-bg:#F3F4F6; }
+        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --input-bg:#2A2A2A; }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        
+        /* Header */
+        .header { margin-bottom: 25px; text-align: center; }
+        h1 { font-size: 24px; font-weight: 800; margin: 0 0 5px 0; color: var(--primary); }
+        .subtitle { font-size: 13px; color: var(--text-muted); }
+
+        /* Search Bar */
+        .search-box { position: relative; margin-bottom: 25px; }
+        .search-input { width: 100%; padding: 14px 20px; padding-left: 45px; border-radius: 16px; border: none; background: var(--input-bg); color: var(--text); font-family: inherit; font-size: 14px; font-weight: 600; outline: none; transition: 0.2s; }
+        .search-input:focus { ring: 2px solid var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px; }
+
+        /* List Styling */
+        .hadith-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+        
+        .hadith-card { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); transition: all 0.2s ease; }
+        .hadith-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+        .hadith-header:active { background: var(--input-bg); }
+        
+        .h-number { width: 32px; height: 32px; background: var(--input-bg); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; margin-right: 15px; flex-shrink: 0; }
+        .h-title { font-size: 14px; font-weight: 700; flex: 1; }
+        .h-arrow { color: var(--text-muted); transition: transform 0.3s ease; }
+        
+        /* Expanded Content */
+        .hadith-content { max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: var(--input-bg); }
+        .hadith-inner { padding: 25px 20px; border-top: 1px solid var(--border); }
+        
+        .arabic-text { font-family: 'Amiri', serif; font-size: 24px; line-height: 2.4; text-align: right; margin-bottom: 20px; color: var(--text); }
+        .trans-text { font-size: 14px; line-height: 1.7; color: var(--text-muted); margin-bottom: 15px; text-align: justify; }
+        .ref-text { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 15px; }
+
+        /* Toggles */
+        .hadith-card.open .hadith-content { max-height: 2000px; /* arbitrary large height */ }
+        .hadith-card.open .h-arrow { transform: rotate(180deg); color: var(--primary); }
+        
+        /* Toggle Language Button */
+        .fab { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); cursor: pointer; border: none; font-weight: 700; font-size: 12px; z-index: 100; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Imam Nawawi's 40</h1>
+        <div class="subtitle" id="subtitle">Koleksi Hadis Lengkap</div>
+    </div>
+
+    <div class="search-box">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search / Cari..." onkeyup="filterList()">
+    </div>
+
+    <div class="hadith-list" id="listContainer">
+        </div>
+
+    <button class="fab" onclick="toggleLang()" id="langBtn">EN</button>
+
+<script>
+    // --- DATABASE: 40 HADITH (COMPLETE 1-42) ---
+    const HADITH_40 = [
+        { id:1, title_en:"Actions are by Intentions", title_ms:"Amalan Bergantung Niat", 
+          ar:"إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى", 
+          en:"Actions are judged by intentions. Everyone will be rewarded according to what he intended.", 
+          ms:"Sesungguhnya setiap amalan itu bergantung kepada niat, dan sesungguhnya bagi setiap orang apa yang dia niatkan.",
+          ref:"Bukhari & Muslim" },
+          
+        { id:2, title_en:"Jibril & The Definition of Islam", title_ms:"Jibril & Definisi Islam", 
+          ar:"الإِسْلَامُ أَنْ تَشْهَدَ أَنْ لَا إِلَهَ إِلَّا اللهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللهِ", 
+          en:"Islam is to testify there is no God but Allah and Muhammad is the Messenger of Allah, to establish prayer, to pay zakat, to fast Ramadan, and to perform Hajj.", 
+          ms:"Islam adalah engkau bersaksi tidak ada Tuhan selain Allah dan Muhammad utusan Allah, mendirikan solat, menunaikan zakat, berpuasa Ramadan, dan menunaikan haji.",
+          ref:"Muslim" },
+
+        { id:3, title_en:"Pillars of Islam", title_ms:"Rukun Islam", 
+          ar:"بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ", 
+          en:"Islam is built upon five: Testifying there is no deity but Allah and Muhammad is His Messenger, establishing Prayer, giving Zakah, Hajj to the House, and fasting Ramadan.", 
+          ms:"Islam dibina atas lima perkara: Bersaksi tiada Tuhan selain Allah dan Muhammad utusan Allah, mendirikan solat, mengeluarkan zakat, mengerjakan haji, dan berpuasa Ramadan.",
+          ref:"Bukhari & Muslim" },
+
+        { id:4, title_en:"Creation of Human Being", title_ms:"Penciptaan Manusia", 
+          ar:"إِنَّ أَحَدَكُمْ يُجْمَعُ خَلْقُهُ فِي بَطْنِ أُمِّهِ أَرْبَعِينَ يَوْمًا", 
+          en:"Verily the creation of each one of you is brought together in his mother's belly for forty days in the form of a seed...", 
+          ms:"Sesungguhnya kejadian seseorang kamu dikumpulkan dalam perut ibunya selama 40 hari sebagai setitis air mani...",
+          ref:"Bukhari & Muslim" },
+
+        { id:5, title_en:"Innovation (Bid'ah)", title_ms:"Perkara Baharu (Bid'ah)", 
+          ar:"مَنْ أَحْدَثَ فِي أَمْرِنَا هَذَا مَا لَيْسَ مِنْهُ فَهُوَ رَدٌّ", 
+          en:"Whoever introduces anything into this matter of ours (Islam) that is not part of it, it will be rejected.", 
+          ms:"Sesiapa yang mengada-adakan dalam urusan (agama) kami ini sesuatu yang bukan daripadanya, maka ia tertolak.",
+          ref:"Bukhari & Muslim" },
+
+        { id:6, title_en:"Halal & Haram are Clear", title_ms:"Halal & Haram itu Jelas", 
+          ar:"إِنَّ الْحَلَالَ بَيِّنٌ، وَإِنَّ الْحَرَامَ بَيِّنٌ", 
+          en:"Verily, the lawful is clear and the unlawful is clear, and between the two of them are doubtful matters...", 
+          ms:"Sesungguhnya yang halal itu jelas dan yang haram itu jelas, dan di antara keduanya terdapat perkara-perkara syubhat...",
+          ref:"Bukhari & Muslim" },
+
+        { id:7, title_en:"Religion is Sincerity", title_ms:"Agama itu Nasihat", 
+          ar:"الدِّينُ النَّصِيحَةُ", 
+          en:"The Religion is sincerity (Nasihat). We said: 'To whom?' He said: 'To Allah, His Book, His Messenger, and to the leaders of the Muslims and their common folk.'", 
+          ms:"Agama itu adalah nasihat. Kami bertanya: 'Bagi siapa?' Baginda bersabda: 'Bagi Allah, Kitab-Nya, Rasul-Nya, para pemimpin kaum Muslimin dan orang awam mereka.'",
+          ref:"Muslim" },
+
+        { id:8, title_en:"Sanctity of a Muslim", title_ms:"Kehormatan Seorang Muslim", 
+          ar:"أُمِرْتُ أَنْ أُقَاتِلَ النَّاسَ حَتَّى يَشْهَدُوا أَنْ لَا إِلَهَ إِلَّا اللهُ", 
+          en:"I have been ordered to fight against the people until they testify that there is no god but Allah...", 
+          ms:"Aku diperintahkan untuk memerangi manusia sehingga mereka bersaksi bahawa tiada Tuhan selain Allah...",
+          ref:"Bukhari & Muslim" },
+
+        { id:9, title_en:"Obligations are According to Ability", title_ms:"Tanggungjawab Mengikut Kemampuan", 
+          ar:"مَا نَهَيْتُكُمْ عَنْهُ فَاجْتَنِبُوهُ، وَمَا أَمَرْتُكُمْ بِهِ فَأْتُوا مِنْهُ مَا اسْتَطَعْتُمْ", 
+          en:"What I have forbidden for you, avoid. What I have ordered you to do, do as much of it as you can.", 
+          ms:"Apa yang aku larang kamu melakukannya, hendaklah kamu jauhi. Apa yang aku perintahkan, lakukanlah semampu kamu.",
+          ref:"Bukhari & Muslim" },
+
+        { id:10, title_en:"Pure Acceptance", title_ms:"Hanya Menerima yang Baik", 
+          ar:"إِنَّ اللهَ طَيِّبٌ لَا يَقْبَلُ إِلَّا طَيِّبًا", 
+          en:"Verily Allah is Good and accepts only that which is good.", 
+          ms:"Sesungguhnya Allah itu Baik dan tidak menerima melainkan yang baik sahaja.",
+          ref:"Muslim" },
+
+        { id:11, title_en:"Leave Doubt", title_ms:"Tinggalkan Keraguan", 
+          ar:"دَعْ مَا يَرِيبُكَ إِلَى مَا لَا يَرِيبُكَ", 
+          en:"Leave that which makes you doubt for that which does not make you doubt.", 
+          ms:"Tinggalkanlah apa yang meragukan kamu kepada apa yang tidak meragukan kamu.",
+          ref:"Tirmidhi" },
+
+        { id:12, title_en:"Leaving Meaningless Things", title_ms:"Meninggalkan Perkara Sia-sia", 
+          ar:"مِنْ حُسْنِ إِسْلَامِ الْمَرْءِ تَرْكُهُ مَا لَا يَعْنِيهِ", 
+          en:"Part of the perfection of one’s Islam is his leaving that which does not concern him.", 
+          ms:"Di antara keelokan Islam seseorang ialah dia meninggalkan apa yang tidak berfaedah baginya.",
+          ref:"Tirmidhi" },
+
+        { id:13, title_en:"Love for Your Brother", title_ms:"Kasih Kepada Saudara", 
+          ar:"لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ", 
+          en:"None of you truly believes until he loves for his brother what he loves for himself.", 
+          ms:"Tidak sempurna iman seseorang kamu sehingga dia mengasihi saudaranya sepertimana dia mengasihi dirinya sendiri.",
+          ref:"Bukhari & Muslim" },
+
+        { id:14, title_en:"Prohibition of Blood", title_ms:"Haram Menumpahkan Darah", 
+          ar:"لَا يَحِلُّ دَمُ امْرِئٍ مُسْلِمٍ", 
+          en:"The blood of a Muslim may not be legally spilt other than in three instances: The married person who commits adultery, a life for a life, and one who forsakes his religion.", 
+          ms:"Tidak halal darah seorang Muslim kecuali kerana salah satu daripada tiga perkara: Orang berkahwin yang berzina, nyawa dibalas nyawa, dan orang yang meninggalkan agamanya.",
+          ref:"Bukhari & Muslim" },
+
+        { id:15, title_en:"Good Speech & Neighbors", title_ms:"Kata Baik & Jiran", 
+          ar:"مَنْ كَانَ يُؤْمِنُ بِاللهِ وَالْيَوْمِ الْآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ", 
+          en:"Whoever believes in Allah and the Last Day should speak good or remain silent.", 
+          ms:"Sesiapa yang beriman kepada Allah dan Hari Akhirat, hendaklah dia berkata yang baik atau diam.",
+          ref:"Bukhari & Muslim" },
+        
+        { id:16, title_en:"Control Anger", title_ms:"Jangan Marah", 
+          ar:"لَا تَغْضَبْ", 
+          en:"A man said to the Prophet, 'Advise me!' The Prophet said, 'Do not become angry.' The man repeated his request several times, and each time the Prophet said, 'Do not become angry.'", 
+          ms:"Seorang lelaki berkata: 'Berilah wasiat kepadaku.' Baginda bersabda: 'Jangan marah.' Lelaki itu mengulanginya beberapa kali, Baginda tetap bersabda: 'Jangan marah.'",
+          ref:"Bukhari" },
+
+        { id:17, title_en:"Excellence (Ihsan) in Killing", title_ms:"Ihsan dalam Sembelihan", 
+          ar:"إِنَّ اللهَ كَتَبَ الْإِحْسَانَ عَلَى كُلِّ شَيْءٍ", 
+          en:"Verily Allah has prescribed proficiency in all things. So if you kill, kill well; and if you slaughter, slaughter well.", 
+          ms:"Sesungguhnya Allah telah mewajibkan ihsan ke atas setiap sesuatu. Jika kamu membunuh, bunuhlah dengan baik; jika kamu menyembelih, sembelihlah dengan baik.",
+          ref:"Muslim" },
+
+        { id:18, title_en:"Fear Allah (Taqwa)", title_ms:"Taqwa & Akhlak", 
+          ar:"اتَّقِ اللهَ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا", 
+          en:"Fear Allah wherever you are. Follow up a bad deed with a good deed which will wipe it out, and behave well towards the people.", 
+          ms:"Bertaqwalah kepada Allah di mana sahaja kamu berada. Iringilah kejahatan dengan kebaikan nescaya ia akan menghapuskannya, dan berakhlaklah dengan manusia dengan akhlak yang baik.",
+          ref:"Tirmidhi" },
+
+        { id:19, title_en:"Preserve Allah", title_ms:"Jagalah Allah", 
+          ar:"احْفَظِ اللهَ يَحْفَظْكَ", 
+          en:"Be mindful of Allah and He will protect you. Be mindful of Allah and you will find Him before you.", 
+          ms:"Jagalah Allah, nescaya Dia akan menjagamu. Jagalah Allah, nescaya engkau akan mendapati-Nya di hadapanmu.",
+          ref:"Tirmidhi" },
+
+        { id:20, title_en:"Modesty (Haya')", title_ms:"Sifat Malu", 
+          ar:"إِنَّ مِمَّا أَدْرَكَ النَّاسُ مِنْ كَلَامِ النُّبُوَّةِ: إِذَا لَمْ تَسْتَحِ فَاصْنَعْ مَا شِئْتَ", 
+          en:"Among the words of previous prophethoods people have obtained is: 'If you feel no shame, then do as you wish.'", 
+          ms:"Sesungguhnya antara kata-kata kenabian terdahulu yang diketahui manusia ialah: 'Jika kamu tidak malu, buatlah apa yang kamu suka.'",
+          ref:"Bukhari" },
+
+        { id:21, title_en:"Say 'I Believe' & Be Steadfast", title_ms:"Istiqamah", 
+          ar:"قُلْ: آمَنْتُ بِاللهِ ثُمَّ اسْتَقِمْ", 
+          en:"Say: 'I believe in Allah' and then be steadfast.", 
+          ms:"Katakanlah: 'Aku beriman kepada Allah', kemudian beristiqamahlah (teguh pendirian).",
+          ref:"Muslim" },
+
+        { id:22, title_en:"Entering Paradise", title_ms:"Jalan ke Syurga", 
+          ar:"أَرَأَيْتَ إِذَا صَلَّيْتُ الْمَكْتُوبَاتِ، وَصُمْتُ رَمَضَانَ، وَأَحْلَلْتُ الْحَلَالَ، وَحَرَّمْتُ الْحَرَامَ، وَلَمْ أَزِدْ عَلَى ذَلِكَ شَيْئًا، أَأَدْخُلُ الْجَنَّةَ؟ قَالَ: نَعَمْ", 
+          en:"A man asked: 'If I perform the obligatory prayers, fast Ramadan, treat the lawful as lawful and the forbidden as forbidden, and do nothing further, shall I enter Paradise?' He said: 'Yes.'", 
+          ms:"Seorang lelaki bertanya: 'Jika aku solat fardu, puasa Ramadan, menghalalkan yang halal dan mengharamkan yang haram, dan aku tidak menambah apa-apa lagi, adakah aku masuk Syurga?' Baginda menjawab: 'Ya.'",
+          ref:"Muslim" },
+
+        { id:23, title_en:"Purification & Patience", title_ms:"Kesucian & Kesabaran", 
+          ar:"الطُّهُورُ شَطْرُ الْإِيمَانِ", 
+          en:"Purification is half of faith. Al-hamdu lillah fills the scales. Prayer is a light, charity is a proof, patience is illumination, and the Quran is an argument for or against you.", 
+          ms:"Kebersihan itu sebahagian daripada iman. Alhamdulillah memenuhi timbangan. Solat itu cahaya, sedekah itu bukti, sabar itu sinaran, dan Al-Quran itu hujah bagimu atau ke atasmu.",
+          ref:"Muslim" },
+
+        { id:24, title_en:"Prohibition of Oppression", title_ms:"Haramnya Kezaliman", 
+          ar:"يَا عِبَادِي إِنِّي حَرَّمْتُ الظُّلْمَ عَلَى نَفْسِي وَجَعَلْتُهُ بَيْنَكُمْ مُحَرَّمًا", 
+          en:"O My servants, I have forbidden oppression for Myself and have made it forbidden amongst you, so do not oppress one another.", 
+          ms:"Wahai hamba-Ku, sesungguhnya Aku mengharamkan kezaliman ke atas diri-Ku dan Aku menjadikannya haram di antara kamu, maka janganlah kamu saling menzalimi.",
+          ref:"Muslim" },
+
+        { id:25, title_en:"Affluence of the Heart", title_ms:"Banyak Cara Bersedekah", 
+          ar:"ذَهَبَ أَهْلُ الدُّثُورِ بِالْأُجُورِ", 
+          en:"The wealthy have gone with the rewards... (But) in every Tasbih is a charity, every Takbir is a charity, every Tahmid is a charity...", 
+          ms:"Orang kaya telah membolot pahala... (Namun) setiap tasbih adalah sedekah, setiap takbir sedekah, setiap tahmid sedekah...",
+          ref:"Muslim" },
+
+        { id:26, title_en:"Charity on Every Joint", title_ms:"Sedekah Setiap Sendi", 
+          ar:"كُلُّ سُلَامَى مِنَ النَّاسِ عَلَيْهِ صَدَقَةٌ", 
+          en:"Every joint of a person must perform a charity each day the sun rises: adjusting between two people is a charity, helping a man with his mount is a charity...", 
+          ms:"Setiap sendi manusia wajib bersedekah setiap hari matahari terbit: mendamaikan dua orang adalah sedekah, menolong orang menaiki kenderaan adalah sedekah...",
+          ref:"Bukhari & Muslim" },
+
+        { id:27, title_en:"Righteousness is Good Character", title_ms:"Kebajikan itu Akhlak Mulia", 
+          ar:"الْبِرُّ حُسْنُ الْخُلُقِ، وَالْإِثْمُ مَا حَاكَ فِي صَدْرِكَ", 
+          en:"Righteousness is good character. And sin is that which wavers in your soul and which you dislike the people finding out about.", 
+          ms:"Kebajikan adalah akhlak yang mulia. Dosa adalah apa yang meresahkan jiwamu dan engkau tidak suka manusia mengetahuinya.",
+          ref:"Muslim" },
+
+        { id:28, title_en:"Hearing and Obeying", title_ms:"Dengar & Taat", 
+          ar:"عَلَيْكُمْ بِسُنَّتِي وَسُنَّةِ الْخُلَفَاءِ الرَّاشِدِينَ الْمَهْدِيِّينَ", 
+          en:"I advise you to fear Allah, and to hear and obey... Stick to my Sunnah and the Sunnah of the Rightly Guided Caliphs.", 
+          ms:"Aku wasiatkan kamu agar bertaqwa kepada Allah, mendengar dan taat... Berpeganglah dengan sunnahku dan sunnah Khulafa ar-Rasyidin.",
+          ref:"Tirmidhi" },
+
+        { id:29, title_en:"The Gates of Goodness", title_ms:"Pintu-pintu Kebaikan", 
+          ar:"أَلَا أَدُلُّكَ عَلَى أَبْوَابِ الْخَيْرِ؟ الصَّوْمُ جُنَّةٌ...", 
+          en:"Shall I not guide you to the gates of goodness? Fasting is a shield, charity extinguishes sin... and the prayer of a man in the middle of the night.", 
+          ms:"Mahukah aku tunjukkan pintu-pintu kebaikan? Puasa itu perisai, sedekah memadamkan dosa... dan solat seorang lelaki di tengah malam.",
+          ref:"Tirmidhi" },
+
+        { id:30, title_en:"Limits of Allah", title_ms:"Batasan Allah", 
+          ar:"إِنَّ اللهَ تَعَالَى فَرَضَ فَرَائِضَ فَلَا تُضَيِّعُوهَا", 
+          en:"Allah has laid down obligations, do not neglect them. He has set limits, do not overstep them. He has forbidden things, do not violate them.", 
+          ms:"Allah telah memfardukan beberapa kewajipan, jangan kamu abaikannya. Dia menetapkan batasan, jangan kamu melampauinya. Dia mengharamkan sesuatu, jangan kamu melanggarnya.",
+          ref:"Daraqutni" },
+
+        { id:31, title_en:"Asceticism (Zuhud)", title_ms:"Zuhud", 
+          ar:"ازْهَدْ فِي الدُّنْيَا يُحِبَّكَ اللهُ", 
+          en:"Renounce the world and Allah will love you. Renounce what people possess and people will love you.", 
+          ms:"Zuhudlah pada dunia nescaya Allah mengasihimu. Zuhudlah pada apa yang ada di tangan manusia nescaya manusia mengasihimu.",
+          ref:"Ibn Majah" },
+
+        { id:32, title_en:"No Harm", title_ms:"Tidak Boleh Memudaratkan", 
+          ar:"لَا ضَرَرَ وَلَا ضِرَارَ", 
+          en:"There should be neither harming (of oneself or others) nor reciprocating harm.", 
+          ms:"Tidak boleh melakukan kemudaratan dan tidak boleh membalas kemudaratan.",
+          ref:"Ibn Majah" },
+
+        { id:33, title_en:"Burden of Proof", title_ms:"Bukti & Sumpah", 
+          ar:"الْبَيِّنَةُ عَلَى الْمُدَّعِي وَالْيَمِينُ عَلَى مَنْ أَنْكَرَ", 
+          en:"The burden of proof is on the claimant, and the oath is incumbent upon the one who denies.", 
+          ms:"Bukti wajib bagi yang mendakwa, dan sumpah wajib bagi yang mengingkari.",
+          ref:"Baihaqi" },
+
+        { id:34, title_en:"Changing Evil", title_ms:"Mencegah Kemungkaran", 
+          ar:"مَنْ رَأَى مِنْكُمْ مُنْكَرًا فَلْيُغَيِّرْهُ بِيَدِهِ", 
+          en:"Whoever of you sees an evil, let him change it with his hand; if he cannot, then with his tongue; if he cannot, then with his heart, and that is the weakest of faith.", 
+          ms:"Sesiapa yang melihat kemungkaran, ubahlah dengan tangannya; jika tidak mampu, dengan lidahnya; jika tidak mampu, dengan hatinya, dan itu adalah selemah-lemah iman.",
+          ref:"Muslim" },
+
+        { id:35, title_en:"Muslim Brotherhood", title_ms:"Persaudaraan Islam", 
+          ar:"لَا تَحَاسَدُوا، وَلَا تَنَاجَشُوا، وَلَا تَبَاغَضُوا", 
+          en:"Do not envy one another, do not inflate prices for one another, do not hate one another... Be servants of Allah as brothers.", 
+          ms:"Janganlah kamu saling mendengki, jangan menipu dalam jual beli, jangan saling membenci... Jadilah hamba-hamba Allah yang bersaudara.",
+          ref:"Muslim" },
+
+        { id:36, title_en:"Helping Others", title_ms:"Membantu Orang Lain", 
+          ar:"مَنْ نَفَّسَ عَنْ مُؤْمِنٍ كُرْبَةً مِنْ كُرَبِ الدُّنْيَا نَفَّسَ اللهُ عَنْهُ كُرْبَةً مِنْ كُرَبِ يَوْمِ الْقِيَامَةِ", 
+          en:"Whoever relieves a believer of a distress of this world, Allah will relieve him of a distress of the Day of Resurrection.", 
+          ms:"Sesiapa yang melepaskan seorang mukmin daripada kesusahan dunia, Allah akan melepaskannya daripada kesusahan Hari Kiamat.",
+          ref:"Muslim" },
+
+        { id:37, title_en:"Allah's Grace", title_ms:"Rahmat Allah", 
+          ar:"إِنَّ اللهَ كَتَبَ الْحَسَنَاتِ وَالسَّيِّئَاتِ ثُمَّ بَيَّنَ ذَلِكَ", 
+          en:"Allah recorded the good deeds and the bad deeds. Whoever intends a good deed and does not do it, Allah writes it as a full good deed...", 
+          ms:"Allah menulis kebaikan dan kejahatan. Sesiapa berniat melakukan kebaikan tetapi tidak melakukannya, Allah menulis baginya satu kebaikan penuh...",
+          ref:"Bukhari & Muslim" },
+
+        { id:38, title_en:"Wali of Allah", title_ms:"Wali Allah", 
+          ar:"مَنْ عَادَى لِي وَلِيًّا فَقَدْ آذَنْتُهُ بِالْحَرْبِ", 
+          en:"Allah Almighty said: Whoever shows enmity to a friend (Wali) of Mine, I have declared war upon him.", 
+          ms:"Allah Taala berfirman: Sesiapa yang memusuhi wali-Ku, maka Aku isytiharkan perang terhadapnya.",
+          ref:"Bukhari" },
+
+        { id:39, title_en:"Forgiveness for Mistakes", title_ms:"Kemaafan atas Kesilapan", 
+          ar:"إِنَّ اللهَ تَجَاوَزَ لِي عَنْ أُمَّتِي الْخَطَأَ وَالنِّسْيَانَ وَمَا اسْتُكْرِهُوا عَلَيْهِ", 
+          en:"Allah has pardoned for me my people for their mistakes, their forgetfulness, and what they are coerced into doing.", 
+          ms:"Sesungguhnya Allah telah memaafkan umatku atas kesilapan, kelupaan dan apa yang dipaksa ke atas mereka.",
+          ref:"Ibn Majah" },
+
+        { id:40, title_en:"Stranger in this World", title_ms:"Seperti Orang Asing", 
+          ar:"كُنْ فِي الدُّنْيَا كَأَنَّكَ غَرِيبٌ أَوْ عَابِرُ سَبِيلٍ", 
+          en:"Be in this world as though you were a stranger or a wayfarer.", 
+          ms:"Jadilah engkau di dunia ini seakan-akan orang asing atau perantau yang lalu di jalan.",
+          ref:"Bukhari" },
+
+        { id:41, title_en:"Submitting Desires", title_ms:"Menundukkan Hawa Nafsu", 
+          ar:"لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يَكُونَ هَوَاهُ تَبَعًا لِمَا جِئْتُ بِهِ", 
+          en:"None of you truly believes until his desire is in accordance with what I have brought.", 
+          ms:"Tidak sempurna iman seseorang kamu sehingga hawa nafsunya mengikut apa yang aku bawa.",
+          ref:"Al-Hakim" },
+
+        { id:42, title_en:"Hope in Allah", title_ms:"Harapan kepada Allah", 
+          ar:"يَا ابْنَ آدَمَ إِنَّكَ مَا دَعَوْتَنِي وَرَجَوْتَنِي غَفَرْتُ لَكَ عَلَى مَا كَانَ فِيكَ وَلَا أُبَالِي", 
+          en:"O son of Adam, so long as you call upon Me and ask of Me, I shall forgive you for what you have done, and I shall not mind.", 
+          ms:"Wahai anak Adam, selagi engkau berdoa dan berharap kepada-Ku, Aku ampunkan engkau atas apa yang ada padamu dan Aku tidak peduli.",
+          ref:"Tirmidhi" }
+    ];
+
+    // --- LOGIC ---
+    let currentLang = 'ms'; // Default language
+
+    function init() {
+        renderList();
+        updateThemeColors();
+    }
+
+    function renderList() {
+        const container = document.getElementById('listContainer');
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        
+        container.innerHTML = '';
+        
+        HADITH_40.forEach(item => {
+            const title = currentLang === 'ms' ? item.title_ms : item.title_en;
+            const text = currentLang === 'ms' ? item.ms : item.en;
+            
+            // Filter logic
+            if(title.toLowerCase().includes(search) || text.toLowerCase().includes(search) || item.id.toString().includes(search)) {
+                
+                const card = document.createElement('div');
+                card.className = 'hadith-card';
+                card.innerHTML = `
+                    <div class="hadith-header" onclick="toggleCard(this)">
+                        <div style="display:flex; align-items:center; flex:1;">
+                            <div class="h-number">${item.id}</div>
+                            <div class="h-title">${title}</div>
+                        </div>
+                        <svg class="h-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                    <div class="hadith-content">
+                        <div class="hadith-inner">
+                            <div class="arabic-text">${item.ar}</div>
+                            <div class="trans-text">${text}</div>
+                            <div class="ref-text">Rawi: ${item.ref}</div>
+                            <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+                                <button onclick="copyText('${item.ar} \\n\\n${text}')" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; cursor:pointer;">COPY</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        });
+    }
+
+    function toggleCard(header) {
+        const card = header.parentElement;
+        const isOpen = card.classList.contains('open');
+        
+        // Optional: Close others
+        // document.querySelectorAll('.hadith-card').forEach(c => c.classList.remove('open'));
+
+        if(!isOpen) card.classList.add('open');
+        else card.classList.remove('open');
+    }
+
+    function toggleLang() {
+        currentLang = currentLang === 'ms' ? 'en' : 'ms';
+        document.getElementById('langBtn').textContent = currentLang === 'ms' ? 'EN' : 'BM';
+        document.getElementById('subtitle').textContent = currentLang === 'ms' ? 'Koleksi Hadis Lengkap' : 'Complete Hadith Collection';
+        document.getElementById('searchInput').placeholder = currentLang === 'ms' ? 'Cari...' : 'Search...';
+        renderList();
+    }
+
+    function copyText(txt) {
+        navigator.clipboard.writeText(txt).then(() => alert('Copied!'));
+    }
+
+    function filterList() {
+        renderList();
+    }
+    
+    // Check parent theme if inside iframe
+    function updateThemeColors() {
+        try {
+            if(window.parent && window.parent.STATE) {
+                document.documentElement.setAttribute('data-theme', window.parent.STATE.theme);
+            }
+        } catch(e) {}
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Positive Vibes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #A67734; --bg: #F8F9FA; --surface: #FFFFFF; --text: #1F2937; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; text-align: center; }
+        
+        /* TABS */
+        .tabs { display: flex; background: #E5E7EB; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 10px; border-radius: 8px; border: none; background: none; font-weight: 600; font-size: 13px; color: #6B7280; cursor: pointer; transition: 0.2s; }
+        .tab.active { background: white; color: var(--primary); shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* SECTIONS */
+        .section { display: none; animation: fadeIn 0.3s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+
+        /* MOOD GRID */
+        .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .mood-btn { background: white; border: 1px solid #E5E7EB; border-radius: 16px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.1s; }
+        .mood-btn:active { transform: scale(0.95); background: #FEF3C7; }
+        .mood-emoji { font-size: 32px; }
+        .mood-label { font-size: 13px; font-weight: 600; }
+
+        /* TASBIH */
+        .tasbih-circle { width: 220px; height: 220px; background: var(--primary); color: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px auto; box-shadow: 0 10px 30px rgba(166, 119, 52, 0.4); cursor: pointer; user-select: none; transition: transform 0.05s; }
+        .tasbih-circle:active { transform: scale(0.95); }
+        .count { font-size: 60px; font-weight: 800; line-height: 1; }
+        .label { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+        .reset-btn { background: none; border: 1px solid #E5E7EB; padding: 8px 16px; border-radius: 20px; color: #6B7280; font-size: 12px; }
+
+        /* RESULT CARD */
+        #moodResult { display: none; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin-top: 20px; border-left: 5px solid var(--primary); text-align: left; }
+        .ayah-ar { font-family: 'Amiri', serif; font-size: 22px; color: var(--primary); margin-bottom: 10px; line-height: 1.8; text-align: right; }
+        .ayah-en { font-size: 14px; color: #4B5563; line-height: 1.5; }
+        .close-res { background: #F3F4F6; width: 100%; border: none; padding: 10px; border-radius: 10px; margin-top: 15px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('moods')">Soul Doctor</button>
+        <button class="tab" onclick="switchTab('tasbih')">Smart Tasbih</button>
+    </div>
+
+    <div id="moods" class="section active">
+        <h2 style="font-size:18px; margin-bottom:15px;">How are you feeling?</h2>
+        <div class="mood-grid">
+            <button class="mood-btn" onclick="showPrescription('sad')"><span class="mood-emoji">😢</span><span class="mood-label">Sad</span></button>
+            <button class="mood-btn" onclick="showPrescription('anxious')"><span class="mood-emoji">😰</span><span class="mood-label">Anxious</span></button>
+            <button class="mood-btn" onclick="showPrescription('lonely')"><span class="mood-emoji">🥀</span><span class="mood-label">Lonely</span></button>
+            <button class="mood-btn" onclick="showPrescription('sinful')"><span class="mood-emoji">💔</span><span class="mood-label">Regretful</span></button>
+            <button class="mood-btn" onclick="showPrescription('grateful')"><span class="mood-emoji">✨</span><span class="mood-label">Grateful</span></button>
+            <button class="mood-btn" onclick="showPrescription('angry')"><span class="mood-emoji">😡</span><span class="mood-label">Angry</span></button>
+        </div>
+
+        <div id="moodResult">
+            <div id="resTitle" style="font-size:12px; font-weight:700; text-transform:uppercase; color:#9CA3AF; margin-bottom:10px;">For your heart</div>
+            <div id="resAr" class="ayah-ar"></div>
+            <div id="resEn" class="ayah-en"></div>
+            <button class="close-res" onclick="document.getElementById('moodResult').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <div id="tasbih" class="section">
+        <div style="font-size:14px; color:#6B7280; margin-bottom:10px;">Tap circle to count</div>
+        <div class="tasbih-circle" onclick="countTasbih()">
+            <div class="count" id="countDisplay">0</div>
+            <div class="label">Subhanallah</div>
+        </div>
+        <button class="reset-btn" onclick="resetTasbih()">Reset Counter</button>
+    </div>
+
+<script>
+    /* MOOD DATA */
+    const prescriptions = {
+        sad: { ar: "لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا", en: "Allah does not burden a soul beyond that it can bear. (Quran 2:286) - Trust that this pain has a purpose and an end." },
+        anxious: { ar: "أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ", en: "Unquestionably, by the remembrance of Allah do hearts find rest. (Quran 13:28) - Breathe and remember Him." },
+        lonely: { ar: "وَنَحْنُ أَقْرَبُ إِلَيْهِ مِنْ حَبْلِ ٱلْوَرِيدِ", en: "And We are closer to him than [his] jugular vein. (Quran 50:16) - You are never truly alone." },
+        sinful: { ar: "إِنَّ ٱللَّهَ يَغْفِرُ ٱلذُّنُوبَ جَمِيعًا", en: "Indeed, Allah forgives all sins. Indeed, it is He who is the Forgiving, the Merciful. (Quran 39:53) - Don't despair." },
+        grateful: { ar: "لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ", en: "If you are grateful, I will surely increase you [in favor]. (Quran 14:7)" },
+        angry: { ar: "وَٱلْكَاظِمِينَ ٱلْغَيْظَ وَٱلْعَافِينَ عَنِ ٱلنَّاسِ", en: "[Those] who restrain anger and pardon the people. And Allah loves the doers of good. (Quran 3:134)" }
+    };
+
+    function switchTab(id) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function showPrescription(mood) {
+        const p = prescriptions[mood];
+        document.getElementById('resAr').textContent = p.ar;
+        document.getElementById('resEn').textContent = p.en;
+        document.getElementById('moodResult').style.display = 'block';
+    }
+
+    /* TASBIH LOGIC */
+    let count = parseInt(localStorage.getItem('wsl_tasbih') || '0');
+    const display = document.getElementById('countDisplay');
+    display.textContent = count;
+
+    function countTasbih() {
+        count++;
+        display.textContent = count;
+        localStorage.setItem('wsl_tasbih', count);
+        if(navigator.vibrate) navigator.vibrate(5); // Haptic feedback
+        
+        // Cycle phrases every 33
+        const label = document.querySelector('.label');
+        if(count % 99 === 0) { label.textContent = "Allahu Akbar"; navigator.vibrate([50,50,50]); }
+        else if(count % 66 === 0) label.textContent = "Alhamdulillah";
+        else if(count % 33 === 0) label.textContent = "Subhanallah";
+    }
+
+    function resetTasbih() {
+        if(confirm("Reset counter?")) {
+            count = 0;
+            display.textContent = 0;
+            localStorage.setItem('wsl_tasbih', 0);
+            document.querySelector('.label').textContent = "Subhanallah";
+        }
+    }
+</script>
+</body>
+</html>
