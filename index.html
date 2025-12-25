@@ -304,16 +304,40 @@
     </nav>
 
 <script>
-    /* OFFLINE HADITH DATABASE (REPLACES FIREBASE) */
+    /* OFFLINE HADITH DATABASE (GENERAL + AKHIR ZAMAN) */
     const HADITH_DB = [
+        // --- GENERAL & AKHLAK ---
         { en: "The best among you is the one who learns the Quran and teaches it.", ms: "Sebaik-baik kamu adalah orang yang belajar Al-Quran dan mengajarkannya.", src: "Bukhari" },
         { en: "Actions are judged by intentions.", ms: "Sesungguhnya setiap amalan itu bergantung kepada niat.", src: "Bukhari & Muslim" },
         { en: "None of you truly believes until he loves for his brother what he loves for himself.", ms: "Tidak sempurna iman seseorang kamu sehingga dia mengasihi saudaranya sepertimana dia mengasihi dirinya sendiri.", src: "Bukhari & Muslim" },
-        { en: "He who is not merciful to others, will not be treated mercifully.", ms: "Sesiapa yang tidak menyayangi, dia tidak akan disayangi.", src: "Muslim" },
-        { en: "A good word is a charity.", ms: "Perkataan yang baik adalah sedekah.", src: "Bukhari & Muslim" },
-        { en: "The strong man is not the good wrestler; the strong man is the only one who controls himself when he is angry.", ms: "Orang yang kuat bukanlah yang pandai bergusti, tetapi orang yang kuat adalah yang mampu menahan dirinya ketika marah.", src: "Bukhari" },
         { en: "Cleanliness is half of faith.", ms: "Kebersihan itu sebahagian daripada iman.", src: "Muslim" },
-        { en: "Make things easy and do not make them difficult, cheer the people up by conveying glad tidings to them and do not repulse (them).", ms: "Permudahkanlah dan jangan menyukarkan, berilah khabar gembira dan jangan membuat orang lari.", src: "Bukhari" }
+        { en: "The strong man is not the good wrestler; the strong man is the only one who controls himself when he is angry.", ms: "Orang yang kuat bukanlah yang pandai bergusti, tetapi orang yang kuat adalah yang mampu menahan dirinya ketika marah.", src: "Bukhari" },
+        { en: "Make things easy and do not make them difficult.", ms: "Permudahkanlah dan jangan menyukarkan.", src: "Bukhari" },
+        { en: "Smiling in the face of your brother is charity.", ms: "Senyummu di hadapan saudaramu adalah sedekah.", src: "Tirmidhi" },
+        { en: "Be in this world as if you were a stranger or a traveler.", ms: "Jadilah kamu di dunia ini seakan-akan orang asing atau pengembara.", src: "Bukhari" },
+        { en: "Richness is not having many belongings, but richness is contentment of the soul.", ms: "Kekayaan itu bukanlah banyaknya harta benda, tetapi kekayaan itu adalah kaya hati (cukup apa yang ada).", src: "Bukhari" },
+        { en: "Do not get angry, and Paradise is yours.", ms: "Janganlah kamu marah, maka bagimu Syurga.", src: "Tabrani" },
+        { en: "There is no disease that Allah has created, except that He also has created its treatment.", ms: "Tidaklah Allah menurunkan penyakit kecuali Dia juga menurunkan penawarnya.", src: "Bukhari" },
+        { en: "The Dua (supplication) is the essence of worship.", ms: "Doa itu adalah otak (inti) ibadah.", src: "Tirmidhi" },
+        { en: "Fear Allah wherever you are.", ms: "Bertakwalah kepada Allah di mana sahaja kamu berada.", src: "Tirmidhi" },
+        { en: "Give the worker his wages before his sweat dries.", ms: "Berikanlah upah kepada pekerja sebelum kering peluhnya.", src: "Ibn Majah" },
+
+        // --- AKHIR ZAMAN (END TIMES) ---
+        { en: "A time will come upon the people when holding onto their religion will be like holding onto hot coal.", ms: "Akan datang satu zaman kepada manusia di mana orang yang berpegang teguh pada agamanya seperti menggenggam bara api.", src: "Tirmidhi" },
+        { en: "When honesty is lost, then wait for the Hour.", ms: "Apabila amanah itu telah hilang, maka tunggulah kedatangan Kiamat.", src: "Bukhari" },
+        { en: "The Hour will not be established until time passes quickly.", ms: "Tidak akan berlaku Kiamat sehinggalah masa menjadi singkat (terasa cepat berlalu).", src: "Bukhari" },
+        { en: "You will see the barefoot, naked, destitute shepherds competing in constructing tall buildings.", ms: "Kamu akan melihat orang yang berkaki ayam, bertelanjang dan miskin, berlumba-lumba meninggikan bangunan.", src: "Muslim" },
+        { en: "There will come years of treachery, when the liar will be believed, and the honest man will be belied.", ms: "Akan datang tahun-tahun penuh tipu daya, pendusta dipercayai dan orang jujur didustakan.", src: "Ibn Majah" },
+        { en: "The Hour will not be established until religious knowledge is taken away and earthquakes become frequent.", ms: "Kiamat tidak akan berlaku sehingga ilmu agama dicabut dan gempa bumi sering berlaku.", src: "Bukhari" },
+        { en: "The Hour will not be established until there is much Al-Harj (killing).", ms: "Kiamat tidak akan berlaku sehingga banyak berlaku Al-Harj (pembunuhan).", src: "Muslim" },
+        { en: "A man will wake up a believer and go to sleep a disbeliever, selling his religion for a worldly gain.", ms: "Seseorang bangun pagi beriman dan petangnya kafir, dia menjual agamanya dengan sedikit harta dunia.", src: "Muslim" },
+        { en: "The Hour will not be established until people boast about the mosques (decorating them without attending).", ms: "Kiamat tidak akan berlaku sehingga manusia bermegah-megah dengan masjid (hiasan tanpa pengisian).", src: "Abu Dawud" },
+        { en: "Among the signs of the Hour is that greetings (Salam) will be limited to those known only.", ms: "Antara tanda Kiamat ialah ucapan Salam hanya diberi kepada orang yang dikenali sahaja.", src: "Ahmad" },
+        { en: "Adultery and the drinking of intoxicants will become openly prevalent.", ms: "Zina dan meminum arak akan menjadi kebiasaan yang terang-terangan.", src: "Bukhari & Muslim" },
+        { en: "The Ruwaibidah will speak: The foolish man speaking on public affairs.", ms: "Akan bercakap golongan Ruwaibidah: Iaitu orang bodoh yang bercakap tentang urusan orang ramai.", src: "Ibn Majah" },
+        { en: "The Euphrates will uncover a mountain of gold, and people will fight over it.", ms: "Sungai Furat akan menyingkap gunung emas, dan manusia akan berperang merebutkannya.", src: "Muslim" },
+        { en: "The Hour will not be established until the sun rises from the West.", ms: "Kiamat tidak akan berlaku sehingga matahari terbit dari sebelah Barat.", src: "Bukhari" },
+        { en: "There will be people from my Ummah who will seek to make illegal sexual intercourse, silk, wine, and musical instruments lawful.", ms: "Akan ada kalangan umatku yang menghalalkan zina, sutera (bagi lelaki), arak, dan alat muzik.", src: "Bukhari" }
     ];
 
     /* PRAYER CALCULATION ENGINE */
