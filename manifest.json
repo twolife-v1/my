@@ -1,21 +1,24 @@
 {
-  "name": "WaktuSolat Lite",
-  "short_name": "WaktuSolat",
+  "name": "Mukmin.com",
+  "short_name": "Mukmin.com",
+  "description": "Aplikasi lengkap waktu solat, azan, dan ibadah harian.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F8F9FA",
-  "theme_color": "#A67734",
-  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#2e7d32",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "images/icon-192.png",
+      "src": "./images/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "sizes": "192x192"
+      "purpose": "any maskable"
     },
     {
-      "src": "images/icon-512.png",
+      "src": "./images/icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "any maskable"
     }
   ]
 }
