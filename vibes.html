@@ -3,128 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Positive Vibes</title>
+    <title>Soul Doctor & Tasbih</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
+        /* --- MUKMIN THEME --- */
         :root { --primary: #A67734; --bg: #F8F9FA; --surface: #FFFFFF; --text: #1F2937; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; text-align: center; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; text-align: center; max-width: 500px; margin: 0 auto; }
         
         /* TABS */
         .tabs { display: flex; background: #E5E7EB; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
         .tab { flex: 1; padding: 10px; border-radius: 8px; border: none; background: none; font-weight: 600; font-size: 13px; color: #6B7280; cursor: pointer; transition: 0.2s; }
-        .tab.active { background: white; color: var(--primary); shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .tab.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
         /* SECTIONS */
         .section { display: none; animation: fadeIn 0.3s; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
+        /* SEARCH & FILTER */
+        .search-box { width: 100%; padding: 12px; border: 1px solid #E5E7EB; border-radius: 12px; font-family: 'Inter', sans-serif; margin-bottom: 12px; outline: none; transition: 0.2s; }
+        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(166, 119, 52, 0.1); }
+        
+        .filter-scroller { overflow-x: auto; white-space: nowrap; padding-bottom: 10px; margin-bottom: 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .filter-scroller::-webkit-scrollbar { display: none; }
+        .filter-tags { display: inline-flex; gap: 8px; padding: 0 5px; }
+        
+        .tag { font-size: 12px; padding: 6px 14px; background: white; border: 1px solid #E5E7EB; border-radius: 20px; cursor: pointer; color: #6B7280; font-weight: 600; transition: 0.2s; }
+        .tag.active { background: var(--primary); color: white; border-color: var(--primary); }
+
         /* MOOD GRID */
-        .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .mood-btn { background: white; border: 1px solid #E5E7EB; border-radius: 16px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.1s; }
-        .mood-btn:active { transform: scale(0.95); background: #FEF3C7; }
+        .mood-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding-bottom: 80px; }
+        .mood-btn { background: white; border: 1px solid #E5E7EB; border-radius: 16px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.1s; height: 100%; }
+        .mood-btn:active { transform: scale(0.96); background: #FEF3C7; border-color: var(--primary); }
         .mood-emoji { font-size: 32px; }
-        .mood-label { font-size: 13px; font-weight: 600; }
+        .mood-label { font-size: 13px; font-weight: 700; color: #374151; }
+        .mood-cat { font-size: 9px; color: #9CA3AF; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
 
         /* TASBIH */
-        .tasbih-circle { width: 220px; height: 220px; background: var(--primary); color: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px auto; box-shadow: 0 10px 30px rgba(166, 119, 52, 0.4); cursor: pointer; user-select: none; transition: transform 0.05s; }
+        .tasbih-circle { width: 220px; height: 220px; background: var(--primary); color: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 40px auto; box-shadow: 0 15px 40px rgba(166, 119, 52, 0.3); cursor: pointer; user-select: none; transition: transform 0.1s; position: relative; overflow: hidden; }
         .tasbih-circle:active { transform: scale(0.95); }
-        .count { font-size: 60px; font-weight: 800; line-height: 1; }
-        .label { font-size: 14px; opacity: 0.9; margin-top: 5px; }
-        .reset-btn { background: none; border: 1px solid #E5E7EB; padding: 8px 16px; border-radius: 20px; color: #6B7280; font-size: 12px; }
+        .ripple { position: absolute; border-radius: 50%; transform: scale(0); animation: ripple 0.6s linear; background-color: rgba(255, 255, 255, 0.3); }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+        
+        .count { font-size: 70px; font-weight: 800; line-height: 1; }
+        .label { font-size: 14px; opacity: 0.9; margin-top: 5px; font-family: 'Amiri', serif; }
+        .reset-btn { background: none; border: 1px solid #E5E7EB; padding: 10px 20px; border-radius: 20px; color: #6B7280; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px; }
 
-        /* RESULT CARD */
-        #moodResult { display: none; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin-top: 20px; border-left: 5px solid var(--primary); text-align: left; }
-        .ayah-ar { font-family: 'Amiri', serif; font-size: 22px; color: var(--primary); margin-bottom: 10px; line-height: 1.8; text-align: right; }
-        .ayah-en { font-size: 14px; color: #4B5563; line-height: 1.5; }
-        .close-res { background: #F3F4F6; width: 100%; border: none; padding: 10px; border-radius: 10px; margin-top: 15px; font-weight: 600; }
+        /* RESULT POPUP */
+        .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99; backdrop-filter: blur(2px); animation: fadeIn 0.2s; }
+        #moodResult { display: none; background: white; width: 90%; max-width: 400px; border-radius: 24px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center; animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        @keyframes popIn { from { transform: translate(-50%, -40%) scale(0.9); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+        .res-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+        .res-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 15px; }
+        .ayah-ar { font-family: 'Amiri', serif; font-size: 24px; color: var(--primary); margin-bottom: 15px; line-height: 1.6; }
+        .ayah-en { font-size: 14px; color: #4B5563; line-height: 1.6; margin-bottom: 20px; font-style: italic; }
+        .source-badge { display: inline-block; background: #F3F4F6; color: #6B7280; font-size: 10px; padding: 4px 8px; border-radius: 6px; font-weight: 700; margin-bottom: 15px; }
+        
+        .close-res { background: var(--primary); width: 100%; border: none; padding: 14px; border-radius: 14px; font-weight: 700; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(166, 119, 52, 0.3); }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div class="tabs">
-        <button class="tab active" onclick="switchTab('moods')">Soul Doctor</button>
-        <button class="tab" onclick="switchTab('tasbih')">Smart Tasbih</button>
+        <button class="tab active" onclick="switchTab('moods')" id="lbl-tab-soul">Soul Doctor</button>
+        <button class="tab" onclick="switchTab('tasbih')" id="lbl-tab-tasbih">Smart Tasbih</button>
     </div>
 
     <div id="moods" class="section active">
-        <h2 style="font-size:18px; margin-bottom:15px;">How are you feeling?</h2>
-        <div class="mood-grid">
-            <button class="mood-btn" onclick="showPrescription('sad')"><span class="mood-emoji">😢</span><span class="mood-label">Sad</span></button>
-            <button class="mood-btn" onclick="showPrescription('anxious')"><span class="mood-emoji">😰</span><span class="mood-label">Anxious</span></button>
-            <button class="mood-btn" onclick="showPrescription('lonely')"><span class="mood-emoji">🥀</span><span class="mood-label">Lonely</span></button>
-            <button class="mood-btn" onclick="showPrescription('sinful')"><span class="mood-emoji">💔</span><span class="mood-label">Regretful</span></button>
-            <button class="mood-btn" onclick="showPrescription('grateful')"><span class="mood-emoji">✨</span><span class="mood-label">Grateful</span></button>
-            <button class="mood-btn" onclick="showPrescription('angry')"><span class="mood-emoji">😡</span><span class="mood-label">Angry</span></button>
+        
+        <input type="text" id="searchInput" class="search-box" placeholder="Search feeling..." onkeyup="renderButtons()">
+        
+        <div class="filter-scroller">
+            <div class="filter-tags">
+                <div class="tag active" onclick="setFilter('all', this)" id="filter-all">All</div>
+                <div class="tag" onclick="setFilter('emotion', this)" id="filter-emotion">Emotions</div>
+                <div class="tag" onclick="setFilter('life', this)" id="filter-life">Life</div>
+                <div class="tag" onclick="setFilter('faith', this)" id="filter-faith">Faith</div>
+                <div class="tag" onclick="setFilter('people', this)" id="filter-people">People</div>
+            </div>
         </div>
 
-        <div id="moodResult">
-            <div id="resTitle" style="font-size:12px; font-weight:700; text-transform:uppercase; color:#9CA3AF; margin-bottom:10px;">For your heart</div>
-            <div id="resAr" class="ayah-ar"></div>
-            <div id="resEn" class="ayah-en"></div>
-            <button class="close-res" onclick="document.getElementById('moodResult').style.display='none'">Close</button>
-        </div>
+        <div class="mood-grid" id="gridContainer">
+            </div>
     </div>
 
     <div id="tasbih" class="section">
-        <div style="font-size:14px; color:#6B7280; margin-bottom:10px;">Tap circle to count</div>
-        <div class="tasbih-circle" onclick="countTasbih()">
+        <div style="font-size:13px; color:#9CA3AF; margin-top:20px;" id="lbl-tap-hint">Tap circle to count</div>
+        <div class="tasbih-circle" id="tasbihBtn">
             <div class="count" id="countDisplay">0</div>
-            <div class="label">Subhanallah</div>
+            <div class="label" id="tasbihLabel">Subhanallah</div>
         </div>
-        <button class="reset-btn" onclick="resetTasbih()">Reset Counter</button>
+        <button class="reset-btn" onclick="resetTasbih()" id="lbl-reset">Reset Counter</button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closePopup()"></div>
+    <div id="moodResult">
+        <span class="res-icon" id="resIcon">❤️</span>
+        <div class="res-title" id="resLabel">Feeling...</div>
+        <span class="source-badge" id="resSource">Quran 2:286</span>
+        <div id="resAr" class="ayah-ar"></div>
+        <div id="resEn" class="ayah-en"></div>
+        <button class="close-res" onclick="closePopup()">Alhamdulillah</button>
     </div>
 
 <script>
-    /* MOOD DATA */
-    const prescriptions = {
-        sad: { ar: "لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا", en: "Allah does not burden a soul beyond that it can bear. (Quran 2:286) - Trust that this pain has a purpose and an end." },
-        anxious: { ar: "أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ", en: "Unquestionably, by the remembrance of Allah do hearts find rest. (Quran 13:28) - Breathe and remember Him." },
-        lonely: { ar: "وَنَحْنُ أَقْرَبُ إِلَيْهِ مِنْ حَبْلِ ٱلْوَرِيدِ", en: "And We are closer to him than [his] jugular vein. (Quran 50:16) - You are never truly alone." },
-        sinful: { ar: "إِنَّ ٱللَّهَ يَغْفِرُ ٱلذُّنُوبَ جَمِيعًا", en: "Indeed, Allah forgives all sins. Indeed, it is He who is the Forgiving, the Merciful. (Quran 39:53) - Don't despair." },
-        grateful: { ar: "لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ", en: "If you are grateful, I will surely increase you [in favor]. (Quran 14:7)" },
-        angry: { ar: "وَٱلْكَاظِمِينَ ٱلْغَيْظَ وَٱلْعَافِينَ عَنِ ٱلنَّاسِ", en: "[Those] who restrain anger and pardon the people. And Allah loves the doers of good. (Quran 3:134)" }
+    /* 1. TRANSLATIONS & CONFIG */
+    let currentLang = 'en'; // Default
+    
+    const UI_TEXTS = {
+        en: {
+            tabSoul: "Soul Doctor", tabTasbih: "Smart Tasbih",
+            searchPlace: "Search feeling...",
+            all: "All", emotion: "Emotions", life: "Life Issues", faith: "Faith", people: "Relationships",
+            tapHint: "Tap circle to count", reset: "Reset Counter",
+            catEmotion: "Emotion", catLife: "Life", catFaith: "Faith", catPeople: "People"
+        },
+        ms: {
+            tabSoul: "Doktor Jiwa", tabTasbih: "Tasbih Pintar",
+            searchPlace: "Cari perasaan...",
+            all: "Semua", emotion: "Emosi", life: "Kehidupan", faith: "Iman", people: "Hubungan",
+            tapHint: "Ketuk untuk kira", reset: "Reset Semula",
+            catEmotion: "Emosi", catLife: "Hidup", catFaith: "Iman", catPeople: "Orang"
+        }
     };
 
+    /* 2. BILINGUAL DATABASE */
+    const db = [
+        // --- EMOTIONS ---
+        { id: 'sad', cat: 'emotion', emoji: '😢', label: {en:'Sadness', ms:'Kesedihan'}, ar: "لَا تَحْزَنْ إِنَّ ٱللَّهَ مَعَنَا", en: "Do not grieve; indeed Allah is with us.", ms: "Janganlah berdukacita, sesungguhnya Allah bersama kita.", src: "Quran 9:40" },
+        { id: 'anxious', cat: 'emotion', emoji: '😰', label: {en:'Anxiety', ms:'Gelisah'}, ar: "أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ", en: "Unquestionably, by the remembrance of Allah do hearts find rest.", ms: "Ketahuilah dengan mengingati Allah hati akan menjadi tenang.", src: "Quran 13:28" },
+        { id: 'lonely', cat: 'emotion', emoji: '🥀', label: {en:'Lonely', ms:'Kesepian'}, ar: "وَنَحْنُ أَقْرَبُ إِلَيْهِ مِنْ حَبْلِ ٱلْوَرِيدِ", en: "We are closer to him than his jugular vein.", ms: "Dan Kami lebih dekat kepadanya daripada urat lehernya.", src: "Quran 50:16" },
+        { id: 'angry', cat: 'emotion', emoji: '😡', label: {en:'Angry', ms:'Marah'}, ar: "وَٱلْكَاظِمِينَ ٱلْغَيْظَ وَٱلْعَافِينَ عَنِ ٱلنَّاسِ", en: "Those who restrain anger and pardon people.", ms: "Iaitu orang yang menahan kemarahannya dan memaafkan orang lain.", src: "Quran 3:134" },
+        { id: 'fear', cat: 'emotion', emoji: '😨', label: {en:'Fear', ms:'Takut'}, ar: "وَلَا تَخَافِي وَلَا تَحْزَنِي ۖ إِنَّا رَادُّوهُ إِلَيْكِ", en: "Fear not and do not grieve. Indeed, We will return him to you.", ms: "Janganlah takut dan janganlah berdukacita.", src: "Quran 28:7" },
+        { id: 'hopeless', cat: 'emotion', emoji: '🌑', label: {en:'Hopeless', ms:'Putus Asa'}, ar: "لَا تَقْنَطُوا مِن رَّحْمَةِ ٱللَّهِ", en: "Do not despair of the mercy of Allah.", ms: "Janganlah kamu berputus asa dari rahmat Allah.", src: "Quran 39:53" },
+        { id: 'broken', cat: 'emotion', emoji: '💔', label: {en:'Broken Heart', ms:'Patah Hati'}, ar: "أَلَيْسَ ٱللَّهُ بِكَافٍ عَبْدَهُۥ", en: "Is not Allah sufficient for His Servant?", ms: "Bukankah Allah cukup untuk melindungi hamba-Nya?", src: "Quran 39:36" },
+        { id: 'overwhelmed', cat: 'emotion', emoji: '😵', label: {en:'Overwhelmed', ms:'Tertekan'}, ar: "لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا", en: "Allah does not burden a soul beyond that it can bear.", ms: "Allah tidak membebani seseorang melainkan sesuai kesanggupannya.", src: "Quran 2:286" },
+
+        // --- LIFE ISSUES ---
+        { id: 'sick', cat: 'life', emoji: '🤒', label: {en:'Sickness', ms:'Sakit'}, ar: "وَإِذَا مَرِضْتُ فَهُوَ يَشْفِينِ", en: "And when I am ill, it is He who cures me.", ms: "Dan apabila aku sakit, Dialah yang menyembuhkan aku.", src: "Quran 26:80" },
+        { id: 'debt', cat: 'life', emoji: '💸', label: {en:'Debt', ms:'Hutang'}, ar: "اللَّهُمَّ اكْفِنِي بِحَلاَلِكَ عَنْ حَرَامِكَ", en: "O Allah, suffice me with what You have allowed instead of what You have forbidden.", ms: "Ya Allah, cukupkanlah aku dengan rezeki-Mu yang halal.", src: "Hadith Tirmidhi" },
+        { id: 'job', cat: 'life', emoji: '💼', label: {en:'Job Loss', ms:'Hilang Kerja'}, ar: "وَمَن يَتَّقِ ٱللَّهَ يَجْعَل لَّهُۥ مَخْرَجًا", en: "And whoever fears Allah - He will make for him a way out.", ms: "Sesiapa bertakwa kepada Allah, nescaya Dia mengadakan jalan keluar baginya.", src: "Quran 65:2" },
+        { id: 'exam', cat: 'life', emoji: '📝', label: {en:'Exam/Test', ms:'Peperiksaan'}, ar: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي", en: "My Lord, expand for me my breast and ease for me my task.", ms: "Wahai Tuhanku, lapangkanlah dadaku dan mudahkanlah urusanku.", src: "Quran 20:25" },
+        { id: 'tired', cat: 'life', emoji: '😫', label: {en:'Exhausted', ms:'Penat'}, ar: "وَمَا كَانَ رَبُّكَ نَسِيًّا", en: "And never is your Lord forgetful.", ms: "Dan Tuhanmu tidak sekali-kali lupa.", src: "Quran 19:64" },
+        { id: 'poverty', cat: 'life', emoji: '🏚️', label: {en:'Poverty', ms:'Kemiskinan'}, ar: "وَاللَّهُ يَرْزُقُ مَن يَشَاءُ بِغَيْرِ حِسَابٍ", en: "And Allah gives provision to whom He wills without account.", ms: "Allah memberi rezeki kepada sesiapa yang dikehendaki-Nya tanpa hitungan.", src: "Quran 2:212" },
+        { id: 'waiting', cat: 'life', emoji: '⏳', label: {en:'Waiting', ms:'Menunggu'}, ar: "فَاصْبِرْ صَبْرًا جَمِيلًا", en: "So be patient with a beautiful patience.", ms: "Maka bersabarlah dengan kesabaran yang baik.", src: "Quran 70:5" },
+        { id: 'decision', cat: 'life', emoji: '🤔', label: {en:'Decisions', ms:'Keputusan'}, ar: "فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى ٱللَّهِ", en: "And when you have decided, then rely upon Allah.", ms: "Kemudian apabila engkau telah berazam, maka bertawakallah kepada Allah.", src: "Quran 3:159" },
+
+        // --- FAITH ---
+        { id: 'sin', cat: 'faith', emoji: '🤲', label: {en:'Sinned', ms:'Berdosa'}, ar: "إِنَّ ٱللَّهَ يَغْفِرُ ٱلذُّنُوبَ جَمِيعًا", en: "Indeed, Allah forgives all sins.", ms: "Sesungguhnya Allah mengampuni dosa-dosa semuanya.", src: "Quran 39:53" },
+        { id: 'weak_faith', cat: 'faith', emoji: '📉', label: {en:'Weak Faith', ms:'Iman Lemah'}, ar: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ", en: "O Turner of hearts, firm my heart upon Your religion.", ms: "Wahai Tuhan yang membolak-balikkan hati, tetapkanlah hatiku di atas agama-Mu.", src: "Hadith" },
+        { id: 'grateful', cat: 'faith', emoji: '✨', label: {en:'Grateful', ms:'Syukur'}, ar: "لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ", en: "If you are grateful, I will surely increase you.", ms: "Demi sesungguhnya! Jika kamu bersyukur nescaya Aku akan tambah nikmat-Ku.", src: "Quran 14:7" },
+        { id: 'lazy', cat: 'faith', emoji: '🛌', label: {en:'Lazy', ms:'Malas'}, ar: "وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ", en: "Seek help through patience and prayer.", ms: "Dan mintalah pertolongan dengan sabar dan solat.", src: "Quran 2:45" },
+        { id: 'envy_feel', cat: 'faith', emoji: '👁️', label: {en:'Envious', ms:'Hasad'}, ar: "وَلَا تَتَمَنَّوْا مَا فَضَّلَ ٱللَّهُ بِهِۦ", en: "And do not wish for that by which Allah has preferred some of you.", ms: "Janganlah kamu iri hati terhadap apa yang dikurniakan Allah kepada sebahagian kamu.", src: "Quran 4:32" },
+        { id: 'whispers', cat: 'faith', emoji: '🐍', label: {en:'Waswas', ms:'Waswas'}, ar: "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ", en: "Say, 'I seek refuge in the Lord of mankind.'", ms: "Katakanlah: Aku berlindung kepada Tuhan manusia.", src: "Quran 114:1" },
+
+        // --- PEOPLE/RELATIONSHIPS ---
+        { id: 'parents', cat: 'people', emoji: '👴', label: {en:'Parents', ms:'Ibu Bapa'}, ar: "وَبِالْوَالِدَيْنِ إِحْسَانًا", en: "And to parents, good treatment.", ms: "Dan berbuat baiklah kepada kedua ibu bapa.", src: "Quran 17:23" },
+        { id: 'spouse', cat: 'people', emoji: '💍', label: {en:'Spouse', ms:'Pasangan'}, ar: "وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً", en: "And He placed between you affection and mercy.", ms: "Dan dijadikan-Nya di antara kamu rasa kasih dan sayang.", src: "Quran 30:21" },
+        { id: 'oppressed', cat: 'people', emoji: '⛓️', label: {en:'Oppressed', ms:'Dizalimi'}, ar: "حَسْبُنَا ٱللَّهُ وَنِعْمَ ٱلْوَكِيلُ", en: "Sufficient for us is Allah, and [He is] the best Disposer of affairs.", ms: "Cukuplah Allah bagi kami dan Dia sebaik-baik Pelindung.", src: "Quran 3:173" },
+        { id: 'gossip', cat: 'people', emoji: '🗣️', label: {en:'Gossip', ms:'Umpat'}, ar: "وَلَا يَغْتَب بَّعْضُكُم بَعْضًا", en: "And do not backbite one another.", ms: "Dan janganlah setengah kamu mengumpat setengahnya yang lain.", src: "Quran 49:12" },
+        { id: 'betrayed', cat: 'people', emoji: '🗡️', label: {en:'Betrayed', ms:'Dikhianati'}, ar: "وَأُفَوِّضُ أَمْرِي إِلَى ٱللَّهِ", en: "I entrust my affair to Allah.", ms: "Dan aku menyerahkan urusanku kepada Allah.", src: "Quran 40:44" },
+        { id: 'envied', cat: 'people', emoji: '🧿', label: {en:'Evil Eye', ms:'Ain'}, ar: "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ", en: "And from the evil of an envier when he envies.", ms: "Dan dari kejahatan orang yang dengki apabila ia dengki.", src: "Quran 113:5" },
+        { id: 'marriage', cat: 'people', emoji: '❤️', label: {en:'Single', ms:'Jodoh'}, ar: "رَبِّ لَا تَذَرْنِي فَرْدًا وَأَنتَ خَيْرُ ٱلْوَارِثِينَ", en: "My Lord, do not leave me alone, while You are the best of inheritors.", ms: "Wahai Tuhanku, janganlah Engkau biarkan aku seorang diri.", src: "Quran 21:89" }
+    ];
+
+    /* 3. INIT & LANGUAGE LOGIC */
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedLang = localStorage.getItem('wsl_lang');
+        if (savedLang && (savedLang === 'ms' || savedLang === 'en')) {
+            currentLang = savedLang;
+        }
+        updateUIText();
+        renderButtons();
+        updateTasbihUI();
+    });
+
+    function updateUIText() {
+        const t = UI_TEXTS[currentLang];
+        
+        // Tabs & Headers
+        document.getElementById('lbl-tab-soul').innerText = t.tabSoul;
+        document.getElementById('lbl-tab-tasbih').innerText = t.tabTasbih;
+        
+        // Inputs
+        document.getElementById('searchInput').placeholder = t.searchPlace;
+        
+        // Filters
+        document.getElementById('filter-all').innerText = t.all;
+        document.getElementById('filter-emotion').innerText = t.emotion;
+        document.getElementById('filter-life').innerText = t.life;
+        document.getElementById('filter-faith').innerText = t.faith;
+        document.getElementById('filter-people').innerText = t.people;
+        
+        // Tasbih
+        document.getElementById('lbl-tap-hint').innerText = t.tapHint;
+        document.getElementById('lbl-reset').innerText = t.reset;
+    }
+
+    /* 4. RENDER LOGIC */
+    let activeFilter = 'all';
+
+    function renderButtons() {
+        const grid = document.getElementById('gridContainer');
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        grid.innerHTML = '';
+
+        db.forEach(item => {
+            const matchFilter = activeFilter === 'all' || item.cat === activeFilter;
+            // Search checks both En and Ms labels to be safe
+            const itemLabel = item.label[currentLang];
+            const matchSearch = item.label.en.toLowerCase().includes(search) || 
+                              item.label.ms.toLowerCase().includes(search);
+
+            if (matchFilter && matchSearch) {
+                const btn = document.createElement('button');
+                btn.className = 'mood-btn';
+                btn.onclick = () => showPopup(item);
+                btn.style.animation = "fadeIn 0.3s ease forwards";
+
+                // Map category code to display text
+                let catText = "";
+                if(item.cat === 'emotion') catText = UI_TEXTS[currentLang].catEmotion;
+                if(item.cat === 'life') catText = UI_TEXTS[currentLang].catLife;
+                if(item.cat === 'faith') catText = UI_TEXTS[currentLang].catFaith;
+                if(item.cat === 'people') catText = UI_TEXTS[currentLang].catPeople;
+
+                btn.innerHTML = `
+                    <span class="mood-emoji">${item.emoji}</span>
+                    <span class="mood-label">${itemLabel}</span>
+                    <span class="mood-cat">${catText}</span>
+                `;
+                grid.appendChild(btn);
+            }
+        });
+    }
+
+    function setFilter(cat, el) {
+        activeFilter = cat;
+        document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        renderButtons();
+    }
+
+    function showPopup(item) {
+        document.getElementById('resIcon').innerText = item.emoji;
+        document.getElementById('resLabel').innerText = item.label[currentLang];
+        document.getElementById('resSource').innerText = item.src || "Islamic Source";
+        document.getElementById('resAr').innerText = item.ar;
+        
+        // Show the correct translation for the Ayah
+        document.getElementById('resEn').innerText = currentLang === 'ms' ? item.ms : item.en;
+        
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('moodResult').style.display = 'block';
+    }
+
+    function closePopup() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('moodResult').style.display = 'none';
+    }
+
+    /* 5. TASBIH LOGIC */
+    const tasbihBtn = document.getElementById('tasbihBtn');
+    let count = parseInt(localStorage.getItem('wsl_tasbih') || '0');
+    
+    // UI Updates
+    const display = document.getElementById('countDisplay');
+    const label = document.getElementById('tasbihLabel');
+
+    function updateTasbihUI() {
+        display.innerText = count;
+        
+        const cycle = count % 99;
+        if(count === 0) {
+            label.innerText = "Subhanallah";
+        } else if(cycle < 33) {
+            label.innerText = "Subhanallah";
+        } else if(cycle < 66) {
+            label.innerText = "Alhamdulillah";
+        } else {
+            label.innerText = "Allahu Akbar";
+        }
+    }
+
+    tasbihBtn.addEventListener('click', function(e) {
+        count++;
+        localStorage.setItem('wsl_tasbih', count);
+        updateTasbihUI();
+
+        if(navigator.vibrate) {
+            if(count % 33 === 0) navigator.vibrate([50, 50]); 
+            else navigator.vibrate(10); 
+        }
+
+        const circle = this.getBoundingClientRect();
+        const diameter = Math.max(circle.width, circle.height);
+        const radius = diameter / 2;
+        
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        ripple.style.width = ripple.style.height = `${diameter}px`;
+        ripple.style.left = `${e.clientX - circle.left - radius}px`;
+        ripple.style.top = `${e.clientY - circle.top - radius}px`;
+        
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+    });
+
+    function resetTasbih() {
+        if(confirm(currentLang === 'ms' ? "Reset kaunter?" : "Reset counter?")) {
+            count = 0;
+            localStorage.setItem('wsl_tasbih', 0);
+            updateTasbihUI();
+        }
+    }
+
+    /* INIT TABS */
     function switchTab(id) {
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.target.classList.add('active');
-    }
-
-    function showPrescription(mood) {
-        const p = prescriptions[mood];
-        document.getElementById('resAr').textContent = p.ar;
-        document.getElementById('resEn').textContent = p.en;
-        document.getElementById('moodResult').style.display = 'block';
-    }
-
-    /* TASBIH LOGIC */
-    let count = parseInt(localStorage.getItem('wsl_tasbih') || '0');
-    const display = document.getElementById('countDisplay');
-    display.textContent = count;
-
-    function countTasbih() {
-        count++;
-        display.textContent = count;
-        localStorage.setItem('wsl_tasbih', count);
-        if(navigator.vibrate) navigator.vibrate(5); // Haptic feedback
-        
-        // Cycle phrases every 33
-        const label = document.querySelector('.label');
-        if(count % 99 === 0) { label.textContent = "Allahu Akbar"; navigator.vibrate([50,50,50]); }
-        else if(count % 66 === 0) label.textContent = "Alhamdulillah";
-        else if(count % 33 === 0) label.textContent = "Subhanallah";
-    }
-
-    function resetTasbih() {
-        if(confirm("Reset counter?")) {
-            count = 0;
-            display.textContent = 0;
-            localStorage.setItem('wsl_tasbih', 0);
-            document.querySelector('.label').textContent = "Subhanallah";
-        }
     }
 </script>
 </body>
