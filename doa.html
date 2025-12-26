@@ -3,202 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Himpunan Doa</title>
+    <title>Himpunan Doa Harian</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --border:#E5E7EB; }
-        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; }
-        
+        :root {
+            --primary: #A67734;
+            --primary-light: #FDF8F0;
+            --bg: #F8F9FA;
+            --surface: #FFFFFF;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+        }
+
+        /* Dark Mode Support (Matches Parent App) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #D4AF37;
+                --primary-light: #2A2012;
+                --bg: #121212;
+                --surface: #1E1E1E;
+                --text: #F3F4F6;
+                --text-muted: #9CA3AF;
+                --border: #374151;
+            }
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
         
-        /* Loading State */
-        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; color: #999; }
-        .spinner { width: 30px; height: 30px; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 10px; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
 
-        /* Grid Layout */
-        .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        
-        /* Card Button */
-        .tool-btn { 
-            background: var(--surface); 
-            border: 1px solid var(--border); 
-            border-radius: 16px; 
-            padding: 20px; 
-            text-align: center; 
-            cursor: pointer; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 12px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            transition: all 0.2s ease; 
+        /* Search Bar */
+        .search-wrapper {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            padding-bottom: 15px;
+            z-index: 10;
         }
-        .tool-btn:active { transform: scale(0.96); }
-        
-        /* Icons */
-        .icon-box { 
-            width: 50px; height: 50px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 28px; 
-        }
-        .icon-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
-        
-        .tool-btn span { font-size: 14px; font-weight: 700; line-height: 1.3; }
 
-        /* Article View */
-        #articleView { display: none; animation: fadeIn 0.3s; }
-        .back-btn { 
-            display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; 
-            background: var(--surface); border: 1px solid var(--border); 
-            padding: 10px 20px; border-radius: 50px; 
-            cursor: pointer; font-weight: 600; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        /* Doa Card */
+        .doa-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: transform 0.2s;
+        }
+
+        .doa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .doa-title {
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--primary);
+        }
+
+        .btn-copy {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
         }
         
-        /* Content Styling */
-        #articleContent { background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border); min-height: 300px; }
-        #articleContent img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 10px auto; }
-        #articleContent p { line-height: 1.7; margin-bottom: 15px; font-size: 15px; }
-        #articleContent h1, #articleContent h2, #articleContent h3 { color: var(--primary); margin-top: 20px; }
-        
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .btn-copy:active { transform: scale(0.9); }
+
+        .doa-arabic {
+            font-family: 'Amiri', serif;
+            font-size: 24px;
+            text-align: right;
+            line-height: 2.2;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .doa-rumi {
+            font-size: 13px;
+            font-style: italic;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .doa-meaning {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.5;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loading" class="loading-container">
-        <div class="spinner"></div>
-        <div>Memuatkan himpunan doa...</div>
+    <div class="search-wrapper">
+        <input type="text" id="searchInput" placeholder="🔍 Cari doa (contoh: makan, tidur...)" onkeyup="filterDoa()">
     </div>
 
-    <div id="menuView" style="display:none">
-        <h3 style="margin: 0 0 20px 0; font-weight: 800; color: var(--primary);">Himpunan Doa</h3>
-        <div class="guide-grid" id="gridContainer"></div>
-    </div>
+    <div id="doaList"></div>
 
-    <div id="articleView">
-        <div class="back-btn" onclick="showMenu()">
-            <i class="fas fa-arrow-left"></i> Kembali
-        </div>
-        <div style="padding: 0 5px;">
-            <div id="articleSubtitle" style="font-size:12px; opacity:0.7; text-transform:uppercase; letter-spacing:1px; color:var(--primary);">Himpunan Doa</div>
-            <div id="articleTitle" style="font-size:24px; font-weight:800; margin-bottom:20px; line-height: 1.2;"></div>
-            <div id="articleContent"></div>
-        </div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
     <script>
-        // 1. Theme Handling
-        const savedTheme = localStorage.getItem('wsl_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-
-        // 2. Firebase Config
-        const firebaseConfig = { 
-            apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", 
-            authDomain: "waktusolatlite.firebaseapp.com", 
-            databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", 
-            projectId: "waktusolatlite", 
-            storageBucket: "waktusolatlite.firebasestorage.app", 
-            messagingSenderId: "86910439082", 
-            appId: "1:86910439082:web:e482d01e1451e58179cad3" 
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        let DUA_DATA = [];
-
-        // 3. Fetch Data Real-time (Targeting 'duas_content' node)
-        db.ref('duas_content').on('value', snap => {
-            DUA_DATA = []; // Clear array
-            const loader = document.getElementById('loading');
-            const menu = document.getElementById('menuView');
-            const grid = document.getElementById('gridContainer');
-
-            if(snap.exists()){
-                // Convert object to array
-                snap.forEach(c => {
-                    let item = c.val();
-                    item.key = c.key; 
-                    DUA_DATA.push(item);
-                });
-                renderGrid();
-                loader.style.display = 'none';
-                menu.style.display = 'block';
-            } else {
-                loader.style.display = 'none';
-                menu.style.display = 'block';
-                grid.innerHTML = '<div style="grid-column:span 2; text-align:center; color:gray; padding-top:20px;">Tiada doa dijumpai.</div>';
+        const doaData = [
+            {
+                title: "Bangun Tidur",
+                arab: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+                rumi: "Alhamdullillahillazi ahyana ba'da ma amatana wa ilaihin nusyur",
+                mean: "Segala puji bagi Allah yang menghidupkan kami selepas mematikan kami dan kepada-Nya kami akan kembali."
+            },
+            {
+                title: "Sebelum Tidur",
+                arab: "بِسْمِكَ اللّهُمَّ أَحْيَا وَبِسْمِكَ أَمُوتُ",
+                rumi: "Bismika Allahumma ahya wa bismika amut",
+                mean: "Dengan nama-Mu Ya Allah aku hidup dan dengan nama-Mu aku mati."
+            },
+            {
+                title: "Sebelum Makan",
+                arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ",
+                rumi: "Allahumma barik lana fima razaqtana waqina 'azaban-nar",
+                mean: "Ya Allah, berkatilah rezeki yang Engkau berikan kepada kami dan peliharalah kami dari azab api neraka."
+            },
+            {
+                title: "Selepas Makan",
+                arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مِنَ الْمُسْلِمِينَ",
+                rumi: "Alhamdulillahillazi at'amana wa saqana waja'alana minal muslimin",
+                mean: "Segala puji bagi Allah yang telah memberi makan dan minum kepada kami serta menjadikan kami golongan orang Islam."
+            },
+            {
+                title: "Masuk Tandas",
+                arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ",
+                rumi: "Allahumma inni a'uzubika minal khubuthi wal khaba'ith",
+                mean: "Ya Allah, aku berlindung dengan-Mu daripada gangguan syaitan jantan dan syaitan betina."
+            },
+            {
+                title: "Keluar Tandas",
+                arab: "غُفْرَانَكَ الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنِّي الْأَذَى وَعَافَانِي",
+                rumi: "Ghufranaka alhamdulillahillazi azhaba 'annil aza wa 'afani",
+                mean: "Aku memohon keampunan-Mu. Segala puji bagi Allah yang telah menghilangkan penyakit daripadaku dan menyihatkan aku."
+            },
+            {
+                title: "Keluar Rumah",
+                arab: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
+                rumi: "Bismillahi tawakkaltu 'alallah, la haula wala quwwata illa billah",
+                mean: "Dengan nama Allah, aku bertawakkal kepada Allah. Tiada daya dan upaya melainkan dengan izin Allah."
+            },
+            {
+                title: "Masuk Rumah",
+                arab: "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا",
+                rumi: "Bismillahi walajna, wa bismillahi kharajna, wa 'ala rabbina tawakkalna",
+                mean: "Dengan nama Allah kami masuk, dengan nama Allah kami keluar, dan kepada Tuhan kami, kami bertawakkal."
+            },
+            {
+                title: "Naik Kenderaan",
+                arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ",
+                rumi: "Subhanallazi sakh-khara lana haza wa ma kunna lahu muqrinin wa inna ila rabbina lamunqalibun",
+                mean: "Maha Suci Tuhan yang telah memudahkan kenderaan ini untuk kami, sedang kami sebelum ini tidak terdaya menguasainya. Dan sesungguhnya kepada Tuhan kami, kami akan kembali."
+            },
+            {
+                title: "Masuk Masjid",
+                arab: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ",
+                rumi: "Allahummaftah li abwaba rahmatik",
+                mean: "Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu."
+            },
+            {
+                title: "Keluar Masjid",
+                arab: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ",
+                rumi: "Allahumma inni as-aluka min fadlik",
+                mean: "Ya Allah, sesungguhnya aku memohon limpah kurnia-Mu."
+            },
+            {
+                title: "Ketika Bercermin",
+                arab: "اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي",
+                rumi: "Allahumma kama hassanta khalqi fa hassin khuluqi",
+                mean: "Ya Allah, sebagaimana Engkau telah memperelokkan rupa parasku, maka perelokkanlah juga akhlakku."
+            },
+            {
+                title: "Memakai Pakaian",
+                arab: "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ",
+                rumi: "Alhamdulillahillazi kasani haza wa razaqanihi min ghairi haulin minni wala quwwah",
+                mean: "Segala puji bagi Allah yang telah memakaikan pakaian ini kepadaku dan merezekikannya kepadaku tanpa daya dan upaya daripadaku."
+            },
+            {
+                title: "Untuk Ibu Bapa",
+                arab: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
+                rumi: "Rabbighfir li wa liwalidayya warhamhuma kama rabbayani saghira",
+                mean: "Wahai Tuhanku, ampunilah dosaku dan dosa kedua ibu bapaku, dan kasihanilah mereka sebagaimana mereka mengasihaniku sewaktu kecil."
+            },
+            {
+                title: "Penerang Hati (Belajar)",
+                arab: "اللَّهُمَّ افْتَحْ عَلَيْنَا حِكْمَتَكَ وَانْشُرْ عَلَيْنَا مِنْ خَزَائِنِ رَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ",
+                rumi: "Allahummaftah 'alaina hikmataka wansyur 'alaina min khaza-ini rahmatika ya arhamar-rahimin",
+                mean: "Ya Allah, bukakanlah ke atas kami hikmah-Mu dan bentangkanlah ke atas kami dari perbendaharaan rahmat-Mu, wahai Tuhan Yang Maha Pemurah."
+            },
+            {
+                title: "Kebaikan Dunia Akhirat",
+                arab: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+                rumi: "Rabbana atina fiddunya hasanah wa fil akhirati hasanah waqina 'azaban-nar",
+                mean: "Wahai Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami dari azab neraka."
+            },
+            {
+                title: "Ketika Hujan",
+                arab: "اللَّهُمَّ صَيِّبًا نَافِعًا",
+                rumi: "Allahumma sayyiban nafi'a",
+                mean: "Ya Allah, jadikanlah hujan ini hujan yang membawa manfaat."
+            },
+            {
+                title: "Ketika Sakit",
+                arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ أَنْتَ الشَّافِي لَا شِفَاءَ إِلَّا شِفَاؤُكَ شِفَاءً لَا يُغَادِرُ سَقَمًا",
+                rumi: "Allahumma rabban-nas azhibil-ba'sa isyfi antasy-syafi la syifa-a illa syifa-uka syifa-an la yughadiru saqama",
+                mean: "Ya Allah, Tuhan manusia, hilangkanlah penyakit ini, sembuhkanlah, Engkaulah yang Maha Menyembuhkan, tiada kesembuhan melainkan kesembuhan dari-Mu, kesembuhan yang tidak meninggalkan penyakit."
             }
-        });
+        ];
 
-        // 4. Render Grid Logic
-        function renderGrid() {
-            const gridEl = document.getElementById('gridContainer');
-            gridEl.innerHTML = DUA_DATA.map((item, index) => {
-                // Determine Icon (Emoji vs Image URL)
-                let iconDisplay = item.icon || '🤲';
-                if(item.icon && (item.icon.startsWith('http') || item.icon.startsWith('data:image'))) {
-                    iconDisplay = `<img src="${item.icon}" alt="icon">`;
-                }
-
-                return `
-                <div class="tool-btn" onclick="openArticle(${index})">
-                    <div class="icon-box">${iconDisplay}</div>
-                    <span>${item.title}</span>
-                </div>`;
-            }).join('');
-        }
-
-        // 5. Handle Click & Formats
-        function openArticle(index) {
-            const data = DUA_DATA[index];
-            if(!data) return;
-
-            // TYPE 1: URL (Redirect)
-            if(data.format === 'url') {
-                window.location.href = data.content;
-                return;
-            }
-
-            // Prepare Content View
-            document.getElementById('articleTitle').textContent = data.title;
-            const contentEl = document.getElementById('articleContent');
-            contentEl.innerHTML = ''; // Clear previous
-
-            // TYPE 2: Image (Cloudinary)
-            if(data.format === 'image') {
-                contentEl.innerHTML = `
-                    <img src="${data.content}" alt="${data.title}">
-                    <div style="text-align:center; font-size:12px; color:grey; margin-top:10px;">
-                        <a href="${data.content}" target="_blank" style="color:var(--primary)">Lihat Saiz Penuh</a>
+        function renderDoa(data) {
+            const container = document.getElementById('doaList');
+            container.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'doa-card';
+                card.innerHTML = `
+                    <div class="doa-header">
+                        <div class="doa-title">${item.title}</div>
+                        <button class="btn-copy" onclick="copyDoa(${index})">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
                     </div>
+                    <div class="doa-arabic">${item.arab}</div>
+                    <div class="doa-rumi">${item.rumi}</div>
+                    <div class="doa-meaning">${item.mean}</div>
                 `;
-            } 
-            // TYPE 3: HTML / Text
-            else {
-                // Replace newlines with <br> if it's plain text, otherwise trust HTML
-                let safeContent = data.content;
-                if(!safeContent.includes('<') && safeContent.includes('\n')) {
-                   safeContent = safeContent.replace(/\n/g, '<br>');
+                container.appendChild(card);
+            });
+        }
+
+        function filterDoa() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const cards = document.getElementsByClassName('doa-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                const title = cards[i].getElementsByClassName('doa-title')[0];
+                const txtValue = title.textContent || title.innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    cards[i].classList.remove('hidden');
+                } else {
+                    cards[i].classList.add('hidden');
                 }
-                contentEl.innerHTML = safeContent;
             }
-
-            // Switch Views
-            document.getElementById('menuView').style.display = 'none';
-            document.getElementById('articleView').style.display = 'block';
-            window.scrollTo(0,0);
         }
 
-        function showMenu() {
-            document.getElementById('articleView').style.display = 'none';
-            document.getElementById('menuView').style.display = 'block';
+        function copyDoa(index) {
+            const item = doaData[index];
+            const text = `*Doa ${item.title}*\n\n${item.arab}\n\n${item.rumi}\n\n"${item.mean}"\n\n- Mukmin.com`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Doa berjaya disalin!');
+            });
         }
+
+        // Initialize
+        renderDoa(doaData);
     </script>
+
 </body>
 </html>
