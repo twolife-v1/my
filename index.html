@@ -672,30 +672,46 @@
         m.classList.add('open');
         document.getElementById('readerTitle').textContent = name;
         document.getElementById('readerSubtitle').textContent = `Surah ${num}`;
-        c.innerHTML = '<div style="text-align:center; padding:20px;">Loading Ayahs...</div>';
+        c.innerHTML = '<div style="text-align:center; padding:20px;">Loading...</div>';
         
         const lang = document.getElementById('quranLangSelect').value;
         const cacheKey = `${num}_${lang}`;
 
         try {
             let d1, d2;
+            // 1. Check Cache
             if(SURAH_CACHE[cacheKey]) {
                 d1 = SURAH_CACHE[cacheKey].d1;
                 d2 = SURAH_CACHE[cacheKey].d2;
             } else {
+                // 2. Fetch Live Data
                 const [r1, r2] = await Promise.all([
                     fetch(`https://api.alquran.cloud/v1/surah/${num}`),
                     fetch(`https://api.alquran.cloud/v1/surah/${num}/${lang}`)
                 ]);
                 d1 = await r1.json();
                 d2 = await r2.json();
+                
+                // Cache whatever we got
                 SURAH_CACHE[cacheKey] = { d1, d2 };
             }
+
+            // 3. Safety Check: Did Arabic load?
+            if (!d1 || d1.code !== 200 || !d1.data) {
+                throw new Error("Arabic text unavailable");
+            }
+
+            // 4. Safety Check: Did Translation load?
+            const hasTranslation = (d2 && d2.code === 200 && d2.data && d2.data.ayahs);
 
             let html = (num!==1 && num!==9) ? '<div style="text-align:center;font-family:Amiri;font-size:24px;margin-bottom:20px;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '';
             
             d1.data.ayahs.forEach((a, i) => {
-                const trans = d2.data.ayahs[i] ? d2.data.ayahs[i].text : '';
+                // SAFE TRANSLATION LOGIC:
+                // Only try to read d2 if we confirmed it exists.
+                // Also check if the specific verse index [i] exists in the translation array.
+                const trans = (hasTranslation && d2.data.ayahs[i]) ? d2.data.ayahs[i].text : '';
+                
                 const saved = window.STATE.bookmarks.some(b => b.id === `ayah_${num}_${a.numberInSurah}`);
                 const safeAr = encodeURIComponent(a.text);
                 const safeTr = encodeURIComponent(trans);
@@ -715,13 +731,18 @@
                         </button>
                     </div>
                     <div class="ayah-arabic">${a.text}</div>
-                    <div class="ayah-trans">${trans}</div>
+                    <div class="ayah-trans">${trans || '<em style="opacity:0.5; font-size:12px;">(Translation unavailable)</em>'}</div>
                 </div>`;
             });
             c.innerHTML = html;
         } catch(e) { 
             console.error(e);
-            c.innerHTML = "<div style='text-align:center; padding:20px;'>Error loading Surah. Please check internet.</div>"; 
+            c.innerHTML = `<div style='text-align:center; padding:20px; color:red;'>
+                Unable to load Surah.<br>
+                <small>Check your internet or try a different language.</small>
+                <br><br>
+                <button onclick="closeReader()" style="padding:10px 20px; border-radius:10px; border:1px solid #ccc;">Close</button>
+            </div>`; 
         }
     }
 
