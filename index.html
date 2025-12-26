@@ -73,8 +73,8 @@
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        #readerModal, #qiblaModal { position: fixed; inset: 0; background: var(--bg); z-index: 500; display: none; flex-direction: column; padding-top: env(safe-area-inset-top); }
-        #readerModal.open, #qiblaModal.active { display: flex; animation: slideUp 0.3s ease; }
+        #readerModal { position: fixed; inset: 0; background: var(--bg); z-index: 500; display: none; flex-direction: column; padding-top: env(safe-area-inset-top); }
+        #readerModal.open { display: flex; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-header { padding: 15px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         
@@ -92,24 +92,6 @@
         .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--text-muted); transition: 0.2s; }
         .nav-item.active { color: var(--primary); }
         .nav-label { font-size: 10px; font-weight: 700; }
-
-        .compass-ring { 
-            width: 260px; height: 260px; 
-            border-radius: 50%; border: 6px solid var(--border); 
-            position: relative; display: flex; 
-            align-items: center; justify-content: center; 
-            background: var(--surface); margin: 40px auto;
-            transform: none !important; /* Ring stays still */
-        }
-        .compass-arrow { 
-            width: 0; height: 0; 
-            border-left: 15px solid transparent; border-right: 15px solid transparent; 
-            border-bottom: 90px solid var(--primary); 
-            position: absolute; top: 30px; 
-            transform-origin: bottom center; 
-            transition: transform 180ms linear; /* Smooth movement */
-        }
-        .kaaba-icon { position: absolute; top: -45px; font-size: 32px; }
 
         .bookmark-btn { background: none; border: none; color: var(--border); cursor: pointer; padding: 5px; }
         .bookmark-btn.saved { color: var(--primary); }
@@ -175,7 +157,7 @@
 
             <div class="section-header" id="cat-tools">🛠️ Alatan & Ibadah</div>
             <div class="feature-grid">
-                <div class="feature-btn" onclick="toggleQibla(true)">
+                <div class="feature-btn" onclick="openQibla()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
                     <span id="txt-tool-qibla">Qibla Finder</span>
                 </div>
@@ -295,21 +277,6 @@
                 <button class="bookmark-btn" id="hadithBookmark" onclick="toggleHadithBookmark(this)"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>
             </div>
             <button onclick="nextHadith()" style="width:100%; margin-top:20px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; font-weight:600;">Random Hadith</button>
-        </div>
-    </div>
-
-    <div id="qiblaModal">
-        <div class="modal-header">
-            <div style="font-weight:800">Qibla Finder</div>
-            <button onclick="toggleQibla(false)" style="background:none; border:none; font-size:24px;">&times;</button>
-        </div>
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
-            <div class="compass-ring" id="compassRing">
-                <div class="kaaba-icon">🕋</div>
-                <div class="compass-arrow"></div>
-            </div>
-            <div style="font-size:36px; font-weight:800;" id="qiblaDeg">0°</div>
-            <div style="font-size:13px; color:var(--text-muted); text-align:center; margin-top:15px;" id="txt-qibla-note">Keep phone flat and away from magnets.</div>
         </div>
     </div>
 
@@ -741,6 +708,8 @@
     window.openHadith40 = () => openReader("Hadis 40", "Imam Nawawi", "hadith40.html");
     window.openKutub = () => openReader("Kitab Sahih", "Bukhari & Muslim", "kutub.html");
     window.openAsbab = () => openReader("Asbabun Nuzul", "Kisah Di Sebalik Ayat", "asbab.html");
+    // NEW QIBLA OPENER
+    window.openQibla = () => openReader("Qibla Finder", "Arah Kiblat", "qiblat.html");
 
     window.togAyah = function(btn, s, a, ar, tr, name) {
         ar = decodeURIComponent(ar); tr = decodeURIComponent(tr);
@@ -793,28 +762,6 @@
         });
     }
 
-    /* QIBLA */
-    let qiblaBearing = 0;
-    function calcQibla(lat1, lon1) {
-        const kaabaLat = 21.422487, kaabaLon = 39.826206;
-        const φ1 = lat1 * Math.PI/180, λ1 = lon1 * Math.PI/180, φ2 = kaabaLat * Math.PI/180, λ2 = kaabaLon * Math.PI/180;
-        const y = Math.sin(λ2 - λ1) * Math.cos(φ2);
-        const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2 - λ1);
-        return (Math.atan2(y, x) * 180/Math.PI + 360) % 360;
-    }
-    async function toggleQibla(s) {
-        const m = document.getElementById('qiblaModal');
-        if(s) {
-            qiblaBearing = calcQibla(window.STATE.lat, window.STATE.lon);
-            document.getElementById('qiblaDeg').textContent = Math.round(qiblaBearing) + "°";
-            m.classList.add('active');
-            window.addEventListener('deviceorientation', (e) => {
-                const heading = e.webkitCompassHeading || (360 - e.alpha);
-                document.querySelector('.compass-arrow').style.transform = `rotate(${qiblaBearing - heading}deg)`;
-            });
-        } else m.classList.remove('active');
-    }
-    
     /* PWA */
     window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-android').style.display = 'flex'; });
     window.installPWA = () => { if(dp) dp.prompt(); };
