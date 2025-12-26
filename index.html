@@ -986,6 +986,85 @@
             window.removeEventListener('deviceorientation', handleCompass);
         }
     }
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    // --- YOUR SPECIFIC CONFIG ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
+        authDomain: "waktusolatlite.firebaseapp.com",
+        databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "waktusolatlite",
+        storageBucket: "waktusolatlite.firebasestorage.app",
+        messagingSenderId: "86910439082",
+        appId: "1:86910439082:web:e482d01e1451e58179cad3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 1. UNIQUE VISITOR ID (Tracks "Online" Users)
+    let visitorId = localStorage.getItem('wsl_vid');
+    if (!visitorId) {
+        // Create a random ID if not exists
+        visitorId = 'u_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('wsl_vid', visitorId);
+    }
+
+    // 2. CORE LOGGING FUNCTION
+    window.logEvent = async (type, feature = null, details = null) => {
+        try {
+            await addDoc(collection(db, "analytics"), {
+                type: type,          // e.g., 'page_view', 'feature_click', 'install'
+                feature: feature,    // e.g., 'Qibla Finder'
+                details: details,    // Extra info
+                visitorId: visitorId,// To count unique users
+                timestamp: serverTimestamp(),
+                userAgent: navigator.userAgent
+            });
+        } catch (e) {
+            console.error("Tracking Error (Silent):", e);
+        }
+    };
+
+    // 3. AUTO-TRACKING TRIGGERS
+    
+    // A. Log "Page View" on load
+    window.logEvent('page_view', 'home');
+
+    // B. Track App Installation
+    window.addEventListener('appinstalled', (evt) => {
+        window.logEvent('install', 'pwa_installed');
+    });
+
+    // C. Track All Interactions automatically
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // Track Main Feature Buttons
+        document.querySelectorAll('.feature-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Get clean text inside the button
+                const txt = btn.innerText.replace(/\n/g, ' ').trim();
+                window.logEvent('feature_click', txt);
+            });
+        });
+
+        // Track Bottom Navigation
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lbl = btn.querySelector('.nav-label');
+                if(lbl) window.logEvent('navigation', lbl.innerText);
+            });
+        });
+        
+        // Track External Links (like WhatsApp)
+        const waLink = document.querySelector('a[href*="wa.me"]');
+        if(waLink) {
+            waLink.addEventListener('click', () => window.logEvent('contact', 'whatsapp_click'));
+        }
+    });
+    
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
