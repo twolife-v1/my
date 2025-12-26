@@ -17,7 +17,6 @@
             --border: #E5E7EB;
         }
 
-        /* Dark Mode Support (Matches Parent App) */
         @media (prefers-color-scheme: dark) {
             :root {
                 --primary: #D4AF37;
@@ -38,6 +37,7 @@
             font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
+            padding-bottom: 50px;
         }
 
         /* Search Bar */
@@ -46,6 +46,7 @@
             top: 0;
             background: var(--bg);
             padding-bottom: 15px;
+            padding-top: 10px;
             z-index: 10;
         }
 
@@ -66,6 +67,34 @@
         input[type="text"]:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        /* Filter Chips */
+        .chips-wrapper {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+            scrollbar-width: none;
+        }
+        .chips-wrapper::-webkit-scrollbar { display: none; }
+        
+        .chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
 
         /* Doa Card */
@@ -134,126 +163,104 @@
         }
 
         .hidden { display: none; }
+        
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 12px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 13px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
 
     <div class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="🔍 Cari doa (contoh: makan, tidur...)" onkeyup="filterDoa()">
+        <input type="text" id="searchInput" placeholder="🔍 Cari doa (contoh: marah, rezeki...)" onkeyup="filterDoa()">
+    </div>
+    
+    <div class="chips-wrapper">
+        <div class="chip active" onclick="filterByTag('all')">Semua</div>
+        <div class="chip" onclick="filterByTag('pagi')">Pagi & Petang</div>
+        <div class="chip" onclick="filterByTag('solat')">Ibadah</div>
+        <div class="chip" onclick="filterByTag('keluarga')">Keluarga</div>
+        <div class="chip" onclick="filterByTag('emosi')">Emosi & Hati</div>
+        <div class="chip" onclick="filterByTag('rezeki')">Rezeki</div>
     </div>
 
     <div id="doaList"></div>
+    <div id="toast">Doa disalin ke clipboard!</div>
 
     <script>
         const doaData = [
-            {
-                title: "Bangun Tidur",
-                arab: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
-                rumi: "Alhamdullillahillazi ahyana ba'da ma amatana wa ilaihin nusyur",
-                mean: "Segala puji bagi Allah yang menghidupkan kami selepas mematikan kami dan kepada-Nya kami akan kembali."
-            },
-            {
-                title: "Sebelum Tidur",
-                arab: "بِسْمِكَ اللّهُمَّ أَحْيَا وَبِسْمِكَ أَمُوتُ",
-                rumi: "Bismika Allahumma ahya wa bismika amut",
-                mean: "Dengan nama-Mu Ya Allah aku hidup dan dengan nama-Mu aku mati."
-            },
-            {
-                title: "Sebelum Makan",
-                arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ",
-                rumi: "Allahumma barik lana fima razaqtana waqina 'azaban-nar",
-                mean: "Ya Allah, berkatilah rezeki yang Engkau berikan kepada kami dan peliharalah kami dari azab api neraka."
-            },
-            {
-                title: "Selepas Makan",
-                arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مِنَ الْمُسْلِمِينَ",
-                rumi: "Alhamdulillahillazi at'amana wa saqana waja'alana minal muslimin",
-                mean: "Segala puji bagi Allah yang telah memberi makan dan minum kepada kami serta menjadikan kami golongan orang Islam."
-            },
-            {
-                title: "Masuk Tandas",
-                arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ",
-                rumi: "Allahumma inni a'uzubika minal khubuthi wal khaba'ith",
-                mean: "Ya Allah, aku berlindung dengan-Mu daripada gangguan syaitan jantan dan syaitan betina."
-            },
-            {
-                title: "Keluar Tandas",
-                arab: "غُفْرَانَكَ الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنِّي الْأَذَى وَعَافَانِي",
-                rumi: "Ghufranaka alhamdulillahillazi azhaba 'annil aza wa 'afani",
-                mean: "Aku memohon keampunan-Mu. Segala puji bagi Allah yang telah menghilangkan penyakit daripadaku dan menyihatkan aku."
-            },
-            {
-                title: "Keluar Rumah",
-                arab: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
-                rumi: "Bismillahi tawakkaltu 'alallah, la haula wala quwwata illa billah",
-                mean: "Dengan nama Allah, aku bertawakkal kepada Allah. Tiada daya dan upaya melainkan dengan izin Allah."
-            },
-            {
-                title: "Masuk Rumah",
-                arab: "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا",
-                rumi: "Bismillahi walajna, wa bismillahi kharajna, wa 'ala rabbina tawakkalna",
-                mean: "Dengan nama Allah kami masuk, dengan nama Allah kami keluar, dan kepada Tuhan kami, kami bertawakkal."
-            },
-            {
-                title: "Naik Kenderaan",
-                arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ",
-                rumi: "Subhanallazi sakh-khara lana haza wa ma kunna lahu muqrinin wa inna ila rabbina lamunqalibun",
-                mean: "Maha Suci Tuhan yang telah memudahkan kenderaan ini untuk kami, sedang kami sebelum ini tidak terdaya menguasainya. Dan sesungguhnya kepada Tuhan kami, kami akan kembali."
-            },
-            {
-                title: "Masuk Masjid",
-                arab: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ",
-                rumi: "Allahummaftah li abwaba rahmatik",
-                mean: "Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu."
-            },
-            {
-                title: "Keluar Masjid",
-                arab: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ",
-                rumi: "Allahumma inni as-aluka min fadlik",
-                mean: "Ya Allah, sesungguhnya aku memohon limpah kurnia-Mu."
-            },
-            {
-                title: "Ketika Bercermin",
-                arab: "اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي",
-                rumi: "Allahumma kama hassanta khalqi fa hassin khuluqi",
-                mean: "Ya Allah, sebagaimana Engkau telah memperelokkan rupa parasku, maka perelokkanlah juga akhlakku."
-            },
-            {
-                title: "Memakai Pakaian",
-                arab: "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ",
-                rumi: "Alhamdulillahillazi kasani haza wa razaqanihi min ghairi haulin minni wala quwwah",
-                mean: "Segala puji bagi Allah yang telah memakaikan pakaian ini kepadaku dan merezekikannya kepadaku tanpa daya dan upaya daripadaku."
-            },
-            {
-                title: "Untuk Ibu Bapa",
-                arab: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
-                rumi: "Rabbighfir li wa liwalidayya warhamhuma kama rabbayani saghira",
-                mean: "Wahai Tuhanku, ampunilah dosaku dan dosa kedua ibu bapaku, dan kasihanilah mereka sebagaimana mereka mengasihaniku sewaktu kecil."
-            },
-            {
-                title: "Penerang Hati (Belajar)",
-                arab: "اللَّهُمَّ افْتَحْ عَلَيْنَا حِكْمَتَكَ وَانْشُرْ عَلَيْنَا مِنْ خَزَائِنِ رَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ",
-                rumi: "Allahummaftah 'alaina hikmataka wansyur 'alaina min khaza-ini rahmatika ya arhamar-rahimin",
-                mean: "Ya Allah, bukakanlah ke atas kami hikmah-Mu dan bentangkanlah ke atas kami dari perbendaharaan rahmat-Mu, wahai Tuhan Yang Maha Pemurah."
-            },
-            {
-                title: "Kebaikan Dunia Akhirat",
-                arab: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
-                rumi: "Rabbana atina fiddunya hasanah wa fil akhirati hasanah waqina 'azaban-nar",
-                mean: "Wahai Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami dari azab neraka."
-            },
-            {
-                title: "Ketika Hujan",
-                arab: "اللَّهُمَّ صَيِّبًا نَافِعًا",
-                rumi: "Allahumma sayyiban nafi'a",
-                mean: "Ya Allah, jadikanlah hujan ini hujan yang membawa manfaat."
-            },
-            {
-                title: "Ketika Sakit",
-                arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ أَنْتَ الشَّافِي لَا شِفَاءَ إِلَّا شِفَاؤُكَ شِفَاءً لَا يُغَادِرُ سَقَمًا",
-                rumi: "Allahumma rabban-nas azhibil-ba'sa isyfi antasy-syafi la syifa-a illa syifa-uka syifa-an la yughadiru saqama",
-                mean: "Ya Allah, Tuhan manusia, hilangkanlah penyakit ini, sembuhkanlah, Engkaulah yang Maha Menyembuhkan, tiada kesembuhan melainkan kesembuhan dari-Mu, kesembuhan yang tidak meninggalkan penyakit."
-            }
+            // --- Kategori: Harian & Rutin (Daily) ---
+            { tags: "pagi harian", title: "Bangun Tidur", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ", rumi: "Alhamdullillahillazi ahyana ba'da ma amatana wa ilaihin nusyur", mean: "Segala puji bagi Allah yang menghidupkan kami selepas mematikan kami dan kepada-Nya kami akan kembali." },
+            { tags: "malam harian", title: "Sebelum Tidur", arab: "بِسْمِكَ اللّهُمَّ أَحْيَا وَبِسْمِكَ أَمُوتُ", rumi: "Bismika Allahumma ahya wa bismika amut", mean: "Dengan nama-Mu Ya Allah aku hidup dan dengan nama-Mu aku mati." },
+            { tags: "harian makan", title: "Sebelum Makan", arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ", rumi: "Allahumma barik lana fima razaqtana waqina 'azaban-nar", mean: "Ya Allah, berkatilah rezeki yang Engkau berikan kepada kami dan peliharalah kami dari azab api neraka." },
+            { tags: "harian makan", title: "Selepas Makan", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مِنَ الْمُسْلِمِينَ", rumi: "Alhamdulillahillazi at'amana wa saqana waja'alana minal muslimin", mean: "Segala puji bagi Allah yang telah memberi makan dan minum kepada kami serta menjadikan kami golongan orang Islam." },
+            { tags: "harian", title: "Masuk Tandas", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ", rumi: "Allahumma inni a'uzubika minal khubuthi wal khaba'ith", mean: "Ya Allah, aku berlindung dengan-Mu daripada gangguan syaitan jantan dan syaitan betina." },
+            { tags: "harian", title: "Keluar Tandas", arab: "غُفْرَانَكَ الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنِّي الْأَذَى وَعَافَانِي", rumi: "Ghufranaka alhamdulillahillazi azhaba 'annil aza wa 'afani", mean: "Aku memohon keampunan-Mu. Segala puji bagi Allah yang telah menghilangkan penyakit daripadaku dan menyihatkan aku." },
+            { tags: "harian", title: "Memakai Pakaian", arab: "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ", rumi: "Alhamdulillahillazi kasani haza wa razaqanihi min ghairi haulin minni wala quwwah", mean: "Segala puji bagi Allah yang telah memakaikan pakaian ini kepadaku dan merezekikannya kepadaku tanpa daya dan upaya daripadaku." },
+            { tags: "harian", title: "Melihat Cermin", arab: "اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي", rumi: "Allahumma kama hassanta khalqi fa hassin khuluqi", mean: "Ya Allah, sebagaimana Engkau telah memperelokkan rupa parasku, maka perelokkanlah juga akhlakku." },
+            
+            // --- Kategori: Perjalanan & Luar (Travel/Outdoors) ---
+            { tags: "harian musafir", title: "Keluar Rumah", arab: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ", rumi: "Bismillahi tawakkaltu 'alallah, la haula wala quwwata illa billah", mean: "Dengan nama Allah, aku bertawakkal kepada Allah. Tiada daya dan upaya melainkan dengan izin Allah." },
+            { tags: "harian", title: "Masuk Rumah", arab: "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا", rumi: "Bismillahi walajna, wa bismillahi kharajna, wa 'ala rabbina tawakkalna", mean: "Dengan nama Allah kami masuk, dengan nama Allah kami keluar, dan kepada Tuhan kami, kami bertawakkal." },
+            { tags: "musafir kenderaan", title: "Naik Kenderaan", arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ", rumi: "Subhanallazi sakh-khara lana haza wa ma kunna lahu muqrinin wa inna ila rabbina lamunqalibun", mean: "Maha Suci Tuhan yang telah memudahkan kenderaan ini untuk kami, sedang kami sebelum ini tidak terdaya menguasainya. Dan sesungguhnya kepada Tuhan kami, kami akan kembali." },
+            { tags: "musafir", title: "Masuk Pasar/Mall", arab: "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، يُحْيِي وَيُمِيتُ وَهُوَ حَيٌّ لَا يَمُوتُ", rumi: "La ilaha illallahu wahdahu la syarika lah, lahul mulku wa lahul hamdu, yuhyi wa yumitu wa huwa hayyun la yamut", mean: "Tiada Tuhan selain Allah, tiada sekutu bagi-Nya. Bagi-Nya kerajaan dan pujian. Dia menghidupkan dan mematikan, dan Dia Maha Hidup tidak mati." },
+            
+            // --- Kategori: Ibadah & Solat ---
+            { tags: "solat", title: "Masuk Masjid", arab: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ", rumi: "Allahummaftah li abwaba rahmatik", mean: "Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu." },
+            { tags: "solat", title: "Keluar Masjid", arab: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ", rumi: "Allahumma inni as-aluka min fadlik", mean: "Ya Allah, sesungguhnya aku memohon limpah kurnia-Mu." },
+            { tags: "solat wuduk", title: "Selepas Wuduk", arab: "أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ", rumi: "Asyhadu an la ilaha illallah wahdahu la syarika lahu wa asyhadu anna Muhammadan 'abduhu wa rasuluh", mean: "Aku bersaksi tiada Tuhan selain Allah yang Esa tiada sekutu bagi-Nya, dan aku bersaksi bahawa Muhammad adalah hamba dan utusan-Nya." },
+            { tags: "solat", title: "Selepas Solat (Ringkas)", arab: "اللَّهُمَّ أَنْتَ السَّلاَمُ، وَمِنْكَ السَّلاَمُ، تَبَارَكْتَ يَا ذَا الْجَلاَلِ وَالإِكْرَامِ", rumi: "Allahumma antas-salam, wa minkas-salam, tabarakta ya zal-jalali wal-ikram", mean: "Ya Allah, Engkaulah Penyelamat, dan daripada-Mu datangnya keselamatan. Maha Suci Engkau wahai Tuhan yang mempunyai Kebesaran dan Kemuliaan." },
+            { tags: "ibadah puasa", title: "Berbuka Puasa", arab: "اللَّهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ", rumi: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu", mean: "Ya Allah, kerana-Mu aku berpuasa, dengan-Mu aku beriman, dan dengan rezeki-Mu aku berbuka." },
+            { tags: "ibadah lailatulqadar", title: "Malam Lailatul Qadar", arab: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي", rumi: "Allahumma innaka 'afuwwun tuhibbul 'afwa fa'fu 'anni", mean: "Ya Allah, sesungguhnya Engkau Maha Pemaaf dan suka memberi kemaafan, maka maafkanlah aku." },
+
+            // --- Kategori: Emosi & Kesukaran (Emotions/Hardship) ---
+            { tags: "emosi marah", title: "Ketika Marah", arab: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ", rumi: "A'uzu billahi minasy-syaitanir-rajim", mean: "Aku berlindung kepada Allah daripada syaitan yang direjam." },
+            { tags: "emosi sedih susah", title: "Ketika Sedih/Gelisah", arab: "لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ", rumi: "La ilaha illa anta subhanaka inni kuntu minaz-zalimin", mean: "Tiada Tuhan melainkan Engkau (Ya Allah)! Maha Suci Engkau, sesungguhnya aku adalah daripada orang-orang yang menganiaya diri sendiri." },
+            { tags: "emosi susah", title: "Dipermudah Urusan", arab: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي", rumi: "Rabbisyrah li sadri wa yassir li amri", mean: "Wahai Tuhanku, lapangkanlah dadaku dan mudahkanlah urusanku." },
+            { tags: "emosi rezeki hutang", title: "Melunaskan Hutang", arab: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ", rumi: "Allahummak-fini bihalalika 'an haramika wa aghnini bifadlika 'amman siwaka", mean: "Ya Allah, cukupkanlah aku dengan rezeki-Mu yang halal daripada yang haram, dan kayakanlah aku dengan limpah kurnia-Mu daripada meminta kepada selain-Mu." },
+            
+            // --- Kategori: Keluarga & Masyarakat ---
+            { tags: "keluarga ibu bapa", title: "Untuk Ibu Bapa", arab: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا", rumi: "Rabbighfir li wa liwalidayya warhamhuma kama rabbayani saghira", mean: "Wahai Tuhanku, ampunilah dosaku dan dosa kedua ibu bapaku, dan kasihanilah mereka sebagaimana mereka mengasihaniku sewaktu kecil." },
+            { tags: "keluarga anak", title: "Memohon Zuriat Baik", arab: "رَبِّ هَبْ لِي مِن لَّدُنكَ ذُرِّيَّةً طَيِّبَةً ۖ إِنَّكَ سَمِيعُ الدُّعَاءِ", rumi: "Rabbi hab li mil-ladunkazurriyyatan tayyibatan innaka sami'ud-du'a", mean: "Wahai Tuhanku, kurniakanlah kepadaku dari sisi-Mu zuriat keturunan yang baik. Sesungguhnya Engkau sentiasa Mendengar (menerima) doa permohonan." },
+            { tags: "keluarga jodoh", title: "Memohon Pasangan/Jodoh", arab: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا", rumi: "Rabbana hab lana min azwajina wa zurriyyatina qurrata a'yunin waj'alna lil-muttaqina imama", mean: "Wahai Tuhan kami, berilah kami beroleh dari isteri-isteri dan zuriat keturunan kami: perkara-perkara yang menyukakan hati melihatnya, dan jadikanlah kami imam ikutan bagi orang-orang yang bertakwa." },
+            { tags: "masyarakat sakit", title: "Menziarahi Orang Sakit", arab: "لَا بَأْسَ طَهُورٌ إِنْ شَاءَ اللَّهُ", rumi: "La ba'sa tahurun insya-Allah", mean: "Tidak mengapa, semoga penyakit ini menjadi pembersih dosa-dosamu, Insya-Allah." },
+            { tags: "masyarakat", title: "Apabila Bersin", arab: "الْحَمْدُ لِلَّهِ", rumi: "Alhamdulillah", mean: "Segala puji bagi Allah." },
+            { tags: "masyarakat", title: "Menjawab Orang Bersin", arab: "يَرْحَمُكَ اللَّهُ", rumi: "Yarhamukallah", mean: "Semoga Allah merahmatimu." },
+            
+            // --- Kategori: Ilmu & Taubat ---
+            { tags: "ilmu belajar", title: "Penerang Hati (Belajar)", arab: "اللَّهُمَّ افْتَحْ عَلَيْنَا حِكْمَتَكَ وَانْشُرْ عَلَيْنَا مِنْ خَزَائِنِ رَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ", rumi: "Allahummaftah 'alaina hikmataka wansyur 'alaina min khaza-ini rahmatika ya arhamar-rahimin", mean: "Ya Allah, bukakanlah ke atas kami hikmah-Mu dan bentangkanlah ke atas kami dari perbendaharaan rahmat-Mu, wahai Tuhan Yang Maha Pemurah." },
+            { tags: "ilmu", title: "Ditambah Ilmu", arab: "رَبِّ زِدْنِي عِلْمًا وَارْزُقْنِي فَهْمًا", rumi: "Rabbi zidni 'ilman warzuqni fahma", mean: "Wahai Tuhanku, tambahkanlah ilmuku dan kurniakanlah aku kefahaman." },
+            { tags: "taubat istighfar", title: "Sayyidul Istighfar", arab: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ", rumi: "Allahumma anta Rabbi la ilaha illa anta, khalaqtani wa ana 'abduka, wa ana 'ala 'ahdika wa wa'dika mastata'tu", mean: "Ya Allah, Engkaulah Tuhanku, tiada Tuhan selain Engkau. Engkau telah menciptakanku dan aku adalah hamba-Mu. Aku berpegang pada janji-Mu sekadar termampuku." },
+            
+            // --- Kategori: Umum & Alam ---
+            { tags: "umum dunia akhirat", title: "Kebaikan Dunia Akhirat", arab: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ", rumi: "Rabbana atina fiddunya hasanah wa fil akhirati hasanah waqina 'azaban-nar", mean: "Wahai Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami dari azab neraka." },
+            { tags: "alam hujan", title: "Ketika Hujan", arab: "اللَّهُمَّ صَيِّبًا نَافِعًا", rumi: "Allahumma sayyiban nafi'a", mean: "Ya Allah, jadikanlah hujan ini hujan yang membawa manfaat." },
+            { tags: "alam ribut", title: "Angin Kencang/Ribut", arab: "اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَهَا وَخَيْرَ مَا فِيْهَا", rumi: "Allahumma inni as-aluka khairaha wa khaira ma fiha", mean: "Ya Allah, aku memohon kepada-Mu kebaikannya dan kebaikan apa yang ada padanya." },
+            { tags: "alam petir", title: "Mendengar Petir", arab: "سُبْحَانَ الَّذِي يُسَبِّحُ الرَّعْدُ بِحَمْدِهِ وَالْمَلَائِكَةُ مِنْ خِيفَتِهِ", rumi: "Subhanallazi yusabbihur-ra'du bihamdihi wal-mala-ikatu min khifatih", mean: "Maha Suci Allah yang mana guruh bertasbih memuji-Nya, dan para malaikat juga bertasbih kerana takut kepada-Nya." },
+            { tags: "sakit", title: "Ketika Sakit", arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ أَنْتَ الشَّافِي لَا شِفَاءَ إِلَّا شِفَاؤُكَ", rumi: "Allahumma rabban-nas azhibil-ba'sa isyfi antasy-syafi la syifa-a illa syifa-uka", mean: "Ya Allah, Tuhan manusia, hilangkanlah penyakit ini, sembuhkanlah, Engkaulah yang Maha Menyembuhkan." },
+            { tags: "umum", title: "Mohon Perlindungan Syirik", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ أَنْ أُشْرِكَ بِكَ وَأَنَا أَعْلَمُ، وَأَسْتَغْفِرُكَ لِمَا لَا أَعْلَمُ", rumi: "Allahumma inni a'uzubika an usyrika bika wa ana a'lam, wa astaghfiruka lima la a'lam", mean: "Ya Allah, aku berlindung kepada-Mu daripada menyekutukan-Mu sedangkan aku mengetahuinya, dan aku memohon ampun terhadap apa yang tidak aku ketahui." },
+            { tags: "umum iman", title: "Keteguhan Iman", arab: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ", rumi: "Ya muqallibal qulub thabbit qalbi 'ala dinik", mean: "Wahai Tuhan yang membolak-balikkan hati, tetapkanlah hatiku di atas agama-Mu." },
+             { tags: "umum", title: "Ucapan Takziah", arab: "إِنَّ لِلَّهِ مَا أَخَذَ، وَلَهُ مَا أَعْطَى، وَكُلُّ شَيْءٍ عِنْدَهُ بِأَجَلٍ مُسَمًّى", rumi: "Inna lillahi ma akhaza, wa lahu ma a'ta, wa kullu syai-in 'indahu bi-ajalin musamma", mean: "Sesungguhnya hak Allah adalah mengambil sesuatu dan hak-Nya memberi sesuatu, dan segala sesuatu di sisi-Nya ada tempoh masa yang tertentu." }
         ];
 
         function renderDoa(data) {
@@ -263,10 +270,11 @@
             data.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'doa-card';
+                card.setAttribute('data-tags', item.tags);
                 card.innerHTML = `
                     <div class="doa-header">
                         <div class="doa-title">${item.title}</div>
-                        <button class="btn-copy" onclick="copyDoa(${index})">
+                        <button class="btn-copy" onclick="copyDoa('${item.title.replace(/'/g, "\\'")}', '${item.arab}', '${item.rumi.replace(/'/g, "\\'")}', '${item.mean.replace(/'/g, "\\'")}')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -286,10 +294,15 @@
             const filter = input.value.toLowerCase();
             const cards = document.getElementsByClassName('doa-card');
 
+            // Reset chips when typing
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            if(filter === '') document.querySelector('.chip:first-child').classList.add('active');
+
             for (let i = 0; i < cards.length; i++) {
                 const title = cards[i].getElementsByClassName('doa-title')[0];
-                const txtValue = title.textContent || title.innerText;
-                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                const rumi = cards[i].getElementsByClassName('doa-rumi')[0];
+                const txtValue = (title.textContent + " " + rumi.textContent).toLowerCase();
+                if (txtValue.indexOf(filter) > -1) {
                     cards[i].classList.remove('hidden');
                 } else {
                     cards[i].classList.add('hidden');
@@ -297,12 +310,32 @@
             }
         }
 
-        function copyDoa(index) {
-            const item = doaData[index];
-            const text = `*Doa ${item.title}*\n\n${item.arab}\n\n${item.rumi}\n\n"${item.mean}"\n\n- Mukmin.com`;
+        function filterByTag(tag) {
+            // Update Chips UI
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Clear search input
+            document.getElementById('searchInput').value = '';
+
+            const cards = document.getElementsByClassName('doa-card');
+            for (let i = 0; i < cards.length; i++) {
+                const tags = cards[i].getAttribute('data-tags');
+                if (tag === 'all' || tags.includes(tag)) {
+                    cards[i].classList.remove('hidden');
+                } else {
+                    cards[i].classList.add('hidden');
+                }
+            }
+        }
+
+        function copyDoa(title, arab, rumi, mean) {
+            const text = `*Doa ${title}*\n\n${arab}\n\n${rumi}\n\n"${mean}"\n\n- Mukmin.com`;
             
             navigator.clipboard.writeText(text).then(() => {
-                alert('Doa berjaya disalin!');
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 2500);
             });
         }
 
