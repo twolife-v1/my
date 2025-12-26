@@ -642,12 +642,18 @@
             const d = await r.json();
             list.innerHTML = '';
             d.data.forEach(s => {
-                list.innerHTML += `<div class="surah-item" onclick="openSurah(${s.number}, '${s.englishName}')">
+                // FIX: Escape apostrophes in names (e.g., "Ali 'Imran" becomes "Ali \'Imran")
+                const safeName = s.englishName.replace(/'/g, "\\'");
+                
+                list.innerHTML += `<div class="surah-item" onclick="openSurah(${s.number}, '${safeName}')">
                     <div class="surah-num">${s.number}</div>
                     <div style="flex:1"><b>${s.englishName}</b><br><small>${s.name}</small></div>
                 </div>`;
             });
-        } catch(e) { list.innerHTML = "Internet required for Quran."; }
+        } catch(e) { 
+            console.error(e);
+            list.innerHTML = "Internet required for Quran."; 
+        }
     }
 
     const SURAH_CACHE = {};
