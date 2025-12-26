@@ -656,7 +656,10 @@
             const d = await r.json();
             list.innerHTML = '';
             d.data.forEach(s => {
-                list.innerHTML += `<div class="surah-item" onclick="openSurah(${s.number}, '${s.englishName}')">
+                // FIX: Escape single quotes (e.g. Al-Isra' -> Al-Isra\')
+                const safeName = s.englishName.replace(/'/g, "\\'");
+                
+                list.innerHTML += `<div class="surah-item" onclick="openSurah(${s.number}, '${safeName}')">
                     <div class="surah-num">${s.number}</div>
                     <div style="flex:1"><b>${s.englishName}</b><br><small>${s.name}</small></div>
                 </div>`;
@@ -707,9 +710,6 @@
             let html = (num!==1 && num!==9) ? '<div style="text-align:center;font-family:Amiri;font-size:24px;margin-bottom:20px;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '';
             
             d1.data.ayahs.forEach((a, i) => {
-                // SAFE TRANSLATION LOGIC:
-                // Only try to read d2 if we confirmed it exists.
-                // Also check if the specific verse index [i] exists in the translation array.
                 const trans = (hasTranslation && d2.data.ayahs[i]) ? d2.data.ayahs[i].text : '';
                 
                 const saved = window.STATE.bookmarks.some(b => b.id === `ayah_${num}_${a.numberInSurah}`);
@@ -746,7 +746,7 @@
         }
     }
 
-    // Global Audio Player (Created once to fix auto-play issues)
+    // Global Audio Player
     const audioPlayer = new Audio();
     let currentPlayBtn = null;
     let isAutoNextEnabled = true;
@@ -754,49 +754,42 @@
     function playAyah(url, btn) {
         const ayahBlock = btn.closest('.ayah-block');
 
-        // 1. Handle Pause/Resume for the SAME verse
         if (currentPlayBtn === btn) {
             if (audioPlayer.paused) {
                 audioPlayer.play();
-                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; // Pause Icon
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
                 ayahBlock.classList.add('playing');
             } else {
                 audioPlayer.pause();
-                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; // Play Icon
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
                 ayahBlock.classList.remove('playing');
             }
             return;
         }
 
-        // 2. Reset Previous Verse UI (if any)
         if (currentPlayBtn) {
-            currentPlayBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; // Reset old icon
+            currentPlayBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
             const oldBlock = currentPlayBtn.closest('.ayah-block');
             if (oldBlock) oldBlock.classList.remove('playing');
         }
 
-        // 3. Setup New Verse
         currentPlayBtn = btn;
-        audioPlayer.src = url; // Change source of existing player
-        audioPlayer.load();    // Force load
+        audioPlayer.src = url;
+        audioPlayer.load();
 
-        // Update UI
         btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
         ayahBlock.classList.add('playing');
         ayahBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-        // 4. Play and Handle Errors
         const playPromise = audioPlayer.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
                 console.error("Auto-play blocked:", error);
-                // Reset UI if play fails
                 btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
                 ayahBlock.classList.remove('playing');
             });
         }
 
-        // 5. Auto-Next Logic
         audioPlayer.onended = () => {
             btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
             ayahBlock.classList.remove('playing');
@@ -918,11 +911,10 @@
         });
     }
 
-    /* IMPROVED COMPASS LOGIC FROM QIBLAT.HTML */
+    /* IMPROVED COMPASS LOGIC */
     let lastRotation = 0;
     let qiblaBearing = 0;
 
-    // 1. Precise Qibla Calculation
     function calcQibla(lat1, lon1) {
         const kaabaLat = 21.422487;
         const kaabaLon = 39.826206;
@@ -937,14 +929,12 @@
         return (θ + 360) % 360;
     }
 
-    // 2. Screen Orientation Helper
     function getScreenAngle() {
         if (screen && screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
         if (typeof window.orientation === 'number') return window.orientation || 0;
         return 0;
     }
 
-    // 3. Shortest Rotation Animation
     function rotateNeedle(deg) {
         const arrow = document.querySelector('.compass-arrow');
         if (!arrow) return;
@@ -953,11 +943,8 @@
         arrow.style.transform = `rotate(${lastRotation}deg)`;
     }
 
-    // 4. Unified Orientation Handler
     function handleCompass(e) {
         let heading = null;
-        
-        // iOS and modern Android Support
         if (typeof e.webkitCompassHeading === 'number') {
             heading = e.webkitCompassHeading;
         } else if (e.absolute && typeof e.alpha === 'number') {
@@ -968,19 +955,14 @@
 
         if (heading !== null) {
             const screenAngle = getScreenAngle();
-            // Convert magnetic heading to clockwise from North
             const magnetic = (360 - heading + screenAngle + 360) % 360;
-            
-            // Point the needle at the relative Qibla direction
             rotateNeedle(qiblaBearing - magnetic);
         }
     }
 
-    // 5. Updated Toggle with Permission handling
     async function toggleQibla(s) {
         const m = document.getElementById('qiblaModal');
         if(s) {
-            // Calculate the static bearing once based on location
             qiblaBearing = calcQibla(window.STATE.lat, window.STATE.lon);
             document.getElementById('qiblaDeg').textContent = Math.round(qiblaBearing) + "°";
 
