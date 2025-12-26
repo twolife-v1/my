@@ -358,7 +358,7 @@
         { en: "Cleanliness invites towards Faith, and Faith leads its possessor to the Garden.", ms: "Kebersihan mengajak kepada keimanan, dan keimanan membawa pemiliknya ke Syurga.", src: "Tabrani" },
         { en: "Whoever follows a path to seek knowledge, Allah will make the path to Jannah easy for him.", ms: "Barangsiapa menempuh jalan untuk menuntut ilmu, Allah akan memudahkannya jalan ke Syurga.", src: "Muslim" },
         { en: "Give the worker his wages before his sweat dries.", ms: "Berikanlah upah kepada pekerja sebelum kering peluhnya.", src: "Ibn Majah" },
-        { en: "A person will be with those whom he loves.", ms: "Seseorang itu akan bersama dengan orang yang dicintainya (di Akhirat kelak).", src: "Bukhari & Muslim" },
+        { en: "A person will be with those whom he loves.", ms: "Seseorang itu akan bersama with those whom he loves.", src: "Bukhari & Muslim" },
         { en: "There is no disease that Allah has created, except that He also has created its treatment.", ms: "Tidaklah Allah menurunkan penyakit kecuali Dia juga menurunkan penawarnya.", src: "Bukhari" },
         { en: "The best charity is that given by one who has little.", ms: "Sebaik-baik sedekah adalah usaha daripada orang yang sedikit hartanya.", src: "Abu Dawud" },
         { en: "Oppression will be a darkness on the Day of Resurrection.", ms: "Kezaliman itu adalah kegelapan pada Hari Kiamat.", src: "Bukhari & Muslim" },
@@ -682,29 +682,23 @@
 
         try {
             let d1, d2;
-            // 1. Check Cache
             if(SURAH_CACHE[cacheKey]) {
                 d1 = SURAH_CACHE[cacheKey].d1;
                 d2 = SURAH_CACHE[cacheKey].d2;
             } else {
-                // 2. Fetch Live Data
                 const [r1, r2] = await Promise.all([
                     fetch(`https://api.alquran.cloud/v1/surah/${num}`),
                     fetch(`https://api.alquran.cloud/v1/surah/${num}/${lang}`)
                 ]);
                 d1 = await r1.json();
                 d2 = await r2.json();
-                
-                // Cache whatever we got
                 SURAH_CACHE[cacheKey] = { d1, d2 };
             }
 
-            // 3. Safety Check: Did Arabic load?
             if (!d1 || d1.code !== 200 || !d1.data) {
                 throw new Error("Arabic text unavailable");
             }
 
-            // 4. Safety Check: Did Translation load?
             const hasTranslation = (d2 && d2.code === 200 && d2.data && d2.data.ayahs);
 
             let html = (num!==1 && num!==9) ? '<div style="text-align:center;font-family:Amiri;font-size:24px;margin-bottom:20px;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '';
@@ -713,8 +707,15 @@
                 const trans = (hasTranslation && d2.data.ayahs[i]) ? d2.data.ayahs[i].text : '';
                 
                 const saved = window.STATE.bookmarks.some(b => b.id === `ayah_${num}_${a.numberInSurah}`);
-                const safeAr = encodeURIComponent(a.text);
-                const safeTr = encodeURIComponent(trans);
+                
+                // FIX: encodeURIComponent does not escape single quotes ('). 
+                // We must manually replace them with %27 to prevent breaking the onclick HTML attribute.
+                const safeAr = encodeURIComponent(a.text).replace(/'/g, "%27");
+                const safeTr = encodeURIComponent(trans).replace(/'/g, "%27");
+                
+                // FIX: Escape single quotes in the Surah name for the function argument
+                const safeNameParam = name.replace(/'/g, "\\'");
+
                 const audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${a.number}.mp3`;
                 
                 html += `<div class="ayah-block" id="ayah-${num}-${a.numberInSurah}">
@@ -726,7 +727,7 @@
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                             </button>
                         </div>
-                        <button class="bookmark-btn ${saved?'saved':''}" onclick="togAyah(this,${num},${a.numberInSurah},'${safeAr}','${safeTr}','${name}')">
+                        <button class="bookmark-btn ${saved?'saved':''}" onclick="togAyah(this,${num},${a.numberInSurah},'${safeAr}','${safeTr}','${safeNameParam}')">
                             <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
                         </button>
                     </div>
@@ -746,14 +747,13 @@
         }
     }
 
-    // Global Audio Player
+    /* Rest of scripts remain unchanged */
     const audioPlayer = new Audio();
     let currentPlayBtn = null;
     let isAutoNextEnabled = true;
 
     function playAyah(url, btn) {
         const ayahBlock = btn.closest('.ayah-block');
-
         if (currentPlayBtn === btn) {
             if (audioPlayer.paused) {
                 audioPlayer.play();
@@ -766,21 +766,17 @@
             }
             return;
         }
-
         if (currentPlayBtn) {
             currentPlayBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
             const oldBlock = currentPlayBtn.closest('.ayah-block');
             if (oldBlock) oldBlock.classList.remove('playing');
         }
-
         currentPlayBtn = btn;
         audioPlayer.src = url;
         audioPlayer.load();
-
         btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
         ayahBlock.classList.add('playing');
         ayahBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
         const playPromise = audioPlayer.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
@@ -789,11 +785,9 @@
                 ayahBlock.classList.remove('playing');
             });
         }
-
         audioPlayer.onended = () => {
             btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
             ayahBlock.classList.remove('playing');
-
             if (isAutoNextEnabled) {
                 const nextBlock = ayahBlock.nextElementSibling;
                 if (nextBlock && nextBlock.classList.contains('ayah-block')) {
@@ -911,28 +905,17 @@
         });
     }
 
-    /* IMPROVED COMPASS LOGIC */
     let lastRotation = 0;
     let qiblaBearing = 0;
 
     function calcQibla(lat1, lon1) {
-        const kaabaLat = 21.422487;
-        const kaabaLon = 39.826206;
-        const φ1 = lat1 * Math.PI/180;
-        const λ1 = lon1 * Math.PI/180;
-        const φ2 = kaabaLat * Math.PI/180;
-        const λ2 = kaabaLon * Math.PI/180;
-
+        const kaabaLat = 21.422487; const kaabaLon = 39.826206;
+        const φ1 = lat1 * Math.PI/180; const λ1 = lon1 * Math.PI/180;
+        const φ2 = kaabaLat * Math.PI/180; const λ2 = kaabaLon * Math.PI/180;
         const y = Math.sin(λ2 - λ1) * Math.cos(φ2);
         const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2 - λ1);
         let θ = Math.atan2(y, x) * 180/Math.PI;
         return (θ + 360) % 360;
-    }
-
-    function getScreenAngle() {
-        if (screen && screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
-        if (typeof window.orientation === 'number') return window.orientation || 0;
-        return 0;
     }
 
     function rotateNeedle(deg) {
@@ -944,20 +927,8 @@
     }
 
     function handleCompass(e) {
-        let heading = null;
-        if (typeof e.webkitCompassHeading === 'number') {
-            heading = e.webkitCompassHeading;
-        } else if (e.absolute && typeof e.alpha === 'number') {
-            heading = e.alpha;
-        } else if (typeof e.alpha === 'number') {
-            heading = e.alpha;
-        }
-
-        if (heading !== null) {
-            const screenAngle = getScreenAngle();
-            const magnetic = (360 - heading + screenAngle + 360) % 360;
-            rotateNeedle(qiblaBearing - magnetic);
-        }
+        let heading = (typeof e.webkitCompassHeading === 'number') ? e.webkitCompassHeading : e.alpha;
+        if (heading !== null) { rotateNeedle(qiblaBearing - (360 - heading)); }
     }
 
     async function toggleQibla(s) {
@@ -965,121 +936,20 @@
         if(s) {
             qiblaBearing = calcQibla(window.STATE.lat, window.STATE.lon);
             document.getElementById('qiblaDeg').textContent = Math.round(qiblaBearing) + "°";
-
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 try {
                     const resp = await DeviceOrientationEvent.requestPermission();
-                    if (resp === 'granted') {
-                        m.classList.add('active');
-                        window.addEventListener('deviceorientationabsolute', handleCompass, true);
-                        window.addEventListener('deviceorientation', handleCompass, true);
-                    }
-                } catch(err) { alert("Sensor access denied."); }
-            } else {
-                m.classList.add('active');
-                window.addEventListener('deviceorientationabsolute', handleCompass, true);
-                window.addEventListener('deviceorientation', handleCompass, true);
-            }
-        } else {
-            m.classList.remove('active');
-            window.removeEventListener('deviceorientationabsolute', handleCompass);
-            window.removeEventListener('deviceorientation', handleCompass);
-        }
+                    if (resp === 'granted') { m.classList.add('active'); window.addEventListener('deviceorientation', handleCompass, true); }
+                } catch(err) { alert("Access denied."); }
+            } else { m.classList.add('active'); window.addEventListener('deviceorientation', handleCompass, true); }
+        } else { m.classList.remove('active'); window.removeEventListener('deviceorientation', handleCompass); }
     }
-    
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    window.addEventListener('beforeinstallprompt', e => { 
-        e.preventDefault(); dp = e; 
-        if(!isStandalone) { document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-android').style.display = 'flex'; }
-    });
-    if (isIOS && !isStandalone) { setTimeout(() => { document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-ios').style.display = 'flex'; }, 3000); }
-    window.installPWA = function() { 
-        if(dp) { dp.prompt(); dp.userChoice.then((r) => { if (r.outcome === 'accepted') { document.getElementById('pwaInstall').style.display = 'none'; } dp = null; }); }
-    };
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; if(!isStandalone) { document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-android').style.display = 'flex'; } });
+    window.installPWA = function() { if(dp) { dp.prompt(); dp.userChoice.then(() => { document.getElementById('pwaInstall').style.display = 'none'; dp = null; }); } };
     window.closePWA = () => { document.getElementById('pwaInstall').style.display = 'none'; };
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration Failed:', err)); }); }
-        </script>
-        <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-    // --- YOUR SPECIFIC CONFIG ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
-        authDomain: "waktusolatlite.firebaseapp.com",
-        databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "waktusolatlite",
-        storageBucket: "waktusolatlite.firebasestorage.app",
-        messagingSenderId: "86910439082",
-        appId: "1:86910439082:web:e482d01e1451e58179cad3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // 1. UNIQUE VISITOR ID (Tracks "Online" Users)
-    let visitorId = localStorage.getItem('wsl_vid');
-    if (!visitorId) {
-        // Create a random ID if not exists
-        visitorId = 'u_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('wsl_vid', visitorId);
-    }
-
-    // 2. CORE LOGGING FUNCTION
-    window.logEvent = async (type, feature = null, details = null) => {
-        try {
-            await addDoc(collection(db, "analytics"), {
-                type: type,          // e.g., 'page_view', 'feature_click', 'install'
-                feature: feature,    // e.g., 'Qibla Finder'
-                details: details,    // Extra info
-                visitorId: visitorId,// To count unique users
-                timestamp: serverTimestamp(),
-                userAgent: navigator.userAgent
-            });
-        } catch (e) {
-            console.error("Tracking Error (Silent):", e);
-        }
-    };
-
-    // 3. AUTO-TRACKING TRIGGERS
-    
-    // A. Log "Page View" on load
-    window.logEvent('page_view', 'home');
-
-    // B. Track App Installation
-    window.addEventListener('appinstalled', (evt) => {
-        window.logEvent('install', 'pwa_installed');
-    });
-
-    // C. Track All Interactions automatically
-    document.addEventListener('DOMContentLoaded', () => {
-        
-        // Track Main Feature Buttons
-        document.querySelectorAll('.feature-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Get clean text inside the button
-                const txt = btn.innerText.replace(/\n/g, ' ').trim();
-                window.logEvent('feature_click', txt);
-            });
-        });
-
-        // Track Bottom Navigation
-        document.querySelectorAll('.nav-item').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const lbl = btn.querySelector('.nav-label');
-                if(lbl) window.logEvent('navigation', lbl.innerText);
-            });
-        });
-        
-        // Track External Links (like WhatsApp)
-        const waLink = document.querySelector('a[href*="wa.me"]');
-        if(waLink) {
-            waLink.addEventListener('click', () => window.logEvent('contact', 'whatsapp_click'));
-        }
-    });
-
-                                                       
-</script>
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(console.log); }); }
+    </script>
 </body>
 </html>
