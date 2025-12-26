@@ -78,10 +78,60 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-header { padding: 15px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
-        /* FLOATING MODAL FOR QIBLA */
-        #qiblaFloatOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 650; display: none; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
-        #qiblaFloatModal { width: 90%; max-width: 350px; height: 450px; background: var(--surface); border-radius: 24px; position: relative; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.3); overflow: hidden; animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popUp { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        /* 3D FLOATING GLASS MODAL */
+        #qiblaFloatOverlay { 
+            position: fixed; inset: 0; 
+            background: rgba(0,0,0,0.3); 
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 650; display: none; 
+            align-items: center; justify-content: center; 
+            animation: fadeIn 0.4s ease;
+            perspective: 1000px; /* Setup 3D space */
+        }
+        #qiblaFloatModal { 
+            width: 320px; height: 460px; 
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 32px; 
+            position: relative; 
+            display: flex; flex-direction: column; 
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25), 
+                0 0 0 1px rgba(255,255,255,0.2) inset;
+            overflow: hidden; 
+            transform-style: preserve-3d;
+            animation: popUp3D 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        :root[data-theme="dark"] #qiblaFloatModal {
+            background: rgba(30, 30, 30, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .qibla-header-float {
+            position: absolute; top: 0; left: 0; right: 0; height: 60px;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10; pointer-events: none;
+        }
+        .qibla-title-badge {
+            background: var(--surface); padding: 8px 16px; border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-weight: 800; font-size: 13px;
+            border: 1px solid var(--border); pointer-events: auto;
+        }
+        
+        .close-float-btn {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--text); color: var(--bg);
+            border: none; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; z-index: 20;
+            transition: transform 0.2s;
+        }
+        .close-float-btn:active { transform: translateX(-50%) scale(0.9); }
+
+        @keyframes popUp3D { 
+            from { transform: translateY(40px) scale(0.9) rotateX(-10deg); opacity: 0; } 
+            to { transform: translateY(0) scale(1) rotateX(0); opacity: 1; } 
+        }
         
         /* Quran Text Styles */
         .ayah-block { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px dashed var(--border); transition: all 0.4s ease; border-left: 0 solid var(--primary); }
@@ -287,11 +337,13 @@
 
     <div id="qiblaFloatOverlay">
         <div id="qiblaFloatModal">
-            <div class="modal-header">
-                <div style="font-weight:800">Qibla Finder</div>
-                <button onclick="closeQibla()" style="background:none; border:none; font-size:24px;">&times;</button>
+            <div class="qibla-header-float">
+                <div class="qibla-title-badge">QIBLA FINDER</div>
             </div>
-            <iframe src="qiblat.html" style="width:100%; height:100%; border:none;"></iframe>
+            <iframe src="qiblat.html" style="width:100%; height:100%; border:none; border-radius:30px; margin-top:10px;"></iframe>
+            <button onclick="closeQibla()" class="close-float-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
         </div>
     </div>
 
