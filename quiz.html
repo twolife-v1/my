@@ -3,467 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Islamic Knowledge Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>Islamic Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #111827; color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .card { background: #1F2937; width: 100%; max-width: 500px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
-        .accent { color: #A67734; }
-        
-        .q-meta { color: #9CA3AF; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; }
-        .question { font-size: 18px; font-weight: 700; margin-bottom: 25px; line-height: 1.5; min-height: 60px; display: flex; align-items: center; justify-content: center; }
-        
-        .options { display: flex; flex-direction: column; gap: 10px; }
-        .opt-btn { background: #374151; border: 2px solid #374151; color: white; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: left; position: relative; }
-        .opt-btn:active { transform: scale(0.99); }
-        .opt-btn:disabled { cursor: default; }
-        .opt-btn.correct { background: #059669; border-color: #059669; }
-        .opt-btn.wrong { background: #DC2626; border-color: #DC2626; opacity: 0.6; }
+        /* --- MUKMIN THEME STYLES --- */
+        :root { 
+            --primary: #A67734; --primary-light: #FDF8F0; --bg: #F8F9FA; 
+            --surface: #FFFFFF; --text: #1F2937; --text-muted: #6B7280;
+            --success: #059669; --danger: #DC2626; --border: #E5E7EB;
+        }
+        @media (prefers-color-scheme: dark) { 
+            :root { 
+                --primary: #D4AF37; --primary-light: #2A2012; --bg: #121212; 
+                --surface: #1E1E1E; --text: #F3F4F6; --text-muted: #9CA3AF; --border: #374151;
+            } 
+        }
 
-        .dalil-container { margin-top: 20px; text-align: left; background: #111827; padding: 15px; border-radius: 10px; border-left: 3px solid #A67734; display: none; animation: fadeIn 0.4s ease; }
-        .dalil-label { color: #A67734; font-size: 11px; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .dalil-text { font-size: 14px; color: #D1D5DB; line-height: 1.5; font-style: italic; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
 
-        .btn-next { background: #A67734; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 700; margin-top: 15px; cursor: pointer; display: none; font-size: 15px; }
-        .btn-next:hover { opacity: 0.9; }
-
-        .level-select { width: 100%; padding: 15px; background: #374151; color: white; border: 2px solid #4B5563; border-radius: 12px; font-size: 16px; margin-bottom: 20px; font-family: 'Inter', sans-serif; outline: none; }
+        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { background: none; border: none; font-weight: 700; color: var(--text); font-size: 14px; opacity: 0.7; cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 0; }
         
-        .hidden { display: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .stats-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .stat-card { flex: 1; background: var(--surface); padding: 10px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
+        .stat-val { font-size: 18px; font-weight: 800; color: var(--primary); }
+
+        .quiz-card { background: var(--surface); border-radius: 24px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; border: 1px solid var(--border); }
+        
+        .progress-bg { position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: var(--border); display: block; }
+        .progress-bar { height: 100%; background: var(--primary); width: 100%; transition: width 1s linear; }
+        
+        .cat-tag { position: absolute; top: 15px; right: 15px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: var(--primary-light); color: var(--primary); padding: 4px 8px; border-radius: 6px; }
+
+        .question-text { font-size: 18px; font-weight: 800; margin-bottom: 25px; line-height: 1.5; text-align: center; margin-top: 20px; }
+        
+        .options-grid { display: grid; gap: 10px; width: 100%; overflow-y: auto; max-height: 40vh; padding-bottom: 5px; }
+        .opt-btn { background: var(--bg); border: 2px solid transparent; color: var(--text); padding: 14px; border-radius: 14px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; text-align: left; position: relative; }
+        .opt-btn:active { transform: scale(0.98); background: var(--primary-light); }
+        .opt-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .opt-btn.wrong { background: var(--danger); color: white; border-color: var(--danger); opacity: 0.8; }
+        .disabled { pointer-events: none; }
+
+        .nav-controls { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+        .nav-btn { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        #startScreen, #endScreen { text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; align-items: center; }
+        .big-icon { font-size: 60px; margin-bottom: 20px; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 50px; font-weight: 700; font-size: 16px; margin-top: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(166, 119, 52, 0.3); transition: transform 0.2s; width: 80%; max-width: 300px; }
+        .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 15px 40px; border-radius: 50px; font-weight: 700; font-size: 16px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; width: 80%; max-width: 300px; }
+        .btn-primary:active, .btn-outline:active { transform: scale(0.95); }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="startCard">
-        <h2 style="margin-bottom: 10px;" id="txt-title">Select Difficulty</h2>
-        <p style="color: #9CA3AF; font-size: 14px; margin-bottom: 20px;" id="txt-subtitle">Choose a level to begin.</p>
-        <select id="levelInput" class="level-select"></select>
-        <button class="btn-next" style="display:block;" onclick="startGame()" id="btn-start">Start Quiz</button>
+    <div id="startScreen">
+        <div class="big-icon">🕌</div>
+        <h1 style="margin:0; font-weight:800; color:var(--primary);" id="lbl-title">Islamic Quiz</h1>
+        <p style="color:var(--text-muted); margin-top:10px; margin-bottom: 30px;" id="lbl-subtitle">Choose your mode</p>
+        
+        <button class="btn-primary" onclick="startGame('timed')">
+            <span id="lbl-timed">⚡ Timed Challenge</span>
+        </button>
+        
+        <button class="btn-outline" onclick="startGame('free')">
+            <span id="lbl-free">🧘 Free Practice</span>
+        </button>
+
+        <button onclick="goBack()" style="background:none; border:none; color:var(--text-muted); margin-top:30px; font-weight:600; font-size:13px; cursor:pointer;" id="lbl-exit">Exit</button>
     </div>
 
-    <div class="card hidden" id="quizCard">
-        <div class="q-meta">
-            <span id="levelBadge" class="accent">Level 1</span>
-            <span><span id="txt-q-label">Question</span> <span id="qIndex">1</span>/<span id="qTotal">10</span></span>
+    <div id="gameUI" class="hidden">
+        <div class="game-header">
+            <button class="back-btn" onclick="goBack()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span id="lbl-exit-game">Exit</span>
+            </button>
+            <div style="font-weight:800; color:var(--primary); font-size:14px;">Q. <span id="qNum">1</span>/<span id="totalQ">10</span></div>
         </div>
-        <div class="question" id="qText">Loading...</div>
-        <div class="options" id="optContainer"></div>
-        <div class="dalil-container" id="dalilBox">
-            <span class="dalil-label" id="txt-dalil-label">Evidence</span>
-            <span class="dalil-text" id="dalilText"></span>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label" id="lbl-score">Score</div>
+                <div class="stat-val" id="score">0</div>
+            </div>
+            <div class="stat-card" id="timerBox">
+                <div class="stat-label" id="lbl-time">Time</div>
+                <div class="stat-val" id="timer">15</div>
+            </div>
         </div>
-        <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Next Question</button>
+
+        <div class="quiz-card">
+            <div class="progress-bg" id="timerBarBg"><div class="progress-bar" id="timeBar"></div></div>
+            <span id="catTag" class="cat-tag">General</span>
+            
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                <div id="question" class="question-text">Loading...</div>
+                <div class="options-grid" id="options"></div>
+            </div>
+
+            <div class="nav-controls hidden" id="navControls">
+                <button class="nav-btn" id="btnPrev" onclick="prevQuestion()">Previous</button>
+                <button class="nav-btn active" id="btnNext" onclick="nextQuestion()">Next</button>
+            </div>
+        </div>
     </div>
 
-    <div class="card hidden" id="resultCard">
-        <div style="font-size: 50px; margin-bottom: 10px;">🏆</div>
-        <h2 style="margin:0;" id="txt-complete">Quiz Completed</h2>
-        <p style="margin-top: 10px; color: #9CA3AF;"><span id="txt-score-label">You scored</span> <span id="finalScore" class="accent" style="font-weight:800; font-size: 18px;"></span></p>
-        <button class="btn-next" style="display:block;" onclick="location.reload()" id="btn-restart">Menu</button>
+    <div id="endScreen" class="hidden">
+        <div class="big-icon" id="endIcon">🏆</div>
+        <h1 id="endTitle" style="margin:0; font-weight:800;">Quiz Complete!</h1>
+        <p style="color:var(--text-muted); margin-top:5px;" id="lbl-final-score">Your Final Score</p>
+        <div style="font-size:48px; font-weight:800; color:var(--primary); margin: 10px 0;" id="finalScore">0</div>
+        <button class="btn-primary" onclick="startGame('timed')" id="lbl-replay-timed">Play Timed</button>
+        <button class="btn-outline" onclick="startGame('free')" id="lbl-replay-free">Play Practice</button>
+        <button onclick="goBack()" style="background:none; border:none; color:var(--text-muted); margin-top:20px; font-weight:600; font-size:13px; cursor:pointer;" id="lbl-back-menu">Back to Menu</button>
     </div>
 
-<script>
-    // === EXPANDED QUESTION BANK (15+ Per Level) ===
-    const db = [
-        // ================= LEVEL 1: BASICS (FARDHU AIN) =================
-        { 
-            lvl: 1, 
-            q: { en: "Who is the first Prophet in Islam?", ms: "Siapakah Nabi pertama dalam Islam?" },
-            options: { en: ["Nuh (AS)", "Ibrahim (AS)", "Adam (AS)", "Musa (AS)"], ms: ["Nuh (AS)", "Ibrahim (AS)", "Adam (AS)", "Musa (AS)"] },
-            a: 2, 
-            dalil: { en: "Quran 2:31: 'And He taught Adam the names - all of them...'", ms: "Quran 2:31: 'Dan Dia mengajarkan kepada Adam nama-nama (benda) semuanya...'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "Which Pillar of Islam is the pilgrimage to Mecca?", ms: "Rukun Islam manakah yang berkaitan dengan menunaikan haji di Mekah?" },
-            options: { en: ["Sawm", "Zakat", "Hajj", "Shahada"], ms: ["Puasa", "Zakat", "Haji", "Syahadah"] },
-            a: 2, 
-            dalil: { en: "Quran 3:97: 'And [due] to Allah from the people is a pilgrimage to the House...'", ms: "Quran 3:97: 'Dan Allah mewajibkan manusia mengerjakan ibadat Haji dengan mengunjungi Baitullah...'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "How many times do Muslims pray daily (Fardhu)?", ms: "Berapa kalikah umat Islam solat Fardu sehari semalam?" },
-            options: { en: ["3 Times", "5 Times", "4 Times", "6 Times"], ms: ["3 Kali", "5 Kali", "4 Kali", "6 Kali"] },
-            a: 1, 
-            dalil: { en: "The Prophet (ﷺ) received the command for 5 prayers during Isra Mi'raj (Bukhari).", ms: "Nabi (ﷺ) menerima perintah 5 waktu solat semasa peristiwa Isra Mi'raj (Bukhari)." }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "What is the Holy Book revealed to Prophet Muhammad (ﷺ)?", ms: "Apakah Kitab Suci yang diturunkan kepada Nabi Muhammad (ﷺ)?" },
-            options: { en: ["Injil", "Tawrat", "Quran", "Zabur"], ms: ["Injil", "Taurat", "Quran", "Zabur"] },
-            a: 2, 
-            dalil: { en: "Quran 2:185: 'The month of Ramadhan [is that] in which was revealed the Qur'an...'", ms: "Quran 2:185: 'Bulan Ramadan yang padanya diturunkan Al-Quran...'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "What comes after this life?", ms: "Apakah yang berlaku selepas kehidupan dunia ini?" },
-            options: { en: ["Nothingness", "Reincarnation", "Akhirah (Hereafter)", "Eternal Sleep"], ms: ["Tiada apa-apa", "Reinkarnasi", "Akhirat", "Tidur Kekal"] },
-            a: 2, 
-            dalil: { en: "Quran 2:4: 'And they believe in what has been sent down to you... and of the Hereafter they are certain.'", ms: "Quran 2:4: 'Dan mereka beriman kepada Kitab yang diturunkan kepadamu... dan mereka yakin akan adanya Akhirat.'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "Which Surah is the 'Heart of the Quran'?", ms: "Surah manakah yang digelar 'Jantung Al-Quran'?" },
-            options: { en: ["Al-Mulk", "Yasin", "Al-Rahman", "Al-Kahf"], ms: ["Al-Mulk", "Yasin", "Al-Rahman", "Al-Kahf"] },
-            a: 1, 
-            dalil: { en: "Hadith Tirmidhi: 'Everything has a heart, and the heart of the Quran is Yasin.'", ms: "Hadis Tirmidhi: 'Setiap sesuatu mempunyai jantung (hati), dan jantung Al-Quran adalah Yasin.'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "In which month do Muslims fast?", ms: "Dalam bulan manakah umat Islam berpuasa?" },
-            options: { en: ["Shawwal", "Ramadan", "Muharram", "Rajab"], ms: ["Syawal", "Ramadan", "Muharram", "Rejab"] },
-            a: 1, 
-            dalil: { en: "Quran 2:183: 'O you who have believed, decreed upon you is fasting...'", ms: "Quran 2:183: 'Wahai orang-orang yang beriman! Diwajibkan atas kamu berpuasa...'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "What is the direction of prayer called?", ms: "Apakah nama arah kiblat bagi solat?" },
-            options: { en: ["East", "Qibla", "North", "Medina"], ms: ["Timur", "Kiblat", "Utara", "Madinah"] },
-            a: 1, 
-            dalil: { en: "Quran 2:144: 'So turn your face toward al-Masjid al-Haram.'", ms: "Quran 2:144: 'Maka palingkanlah wajahmu ke arah Masjidil Haram.'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "Which Angel brought the revelation (Wahy)?", ms: "Malaikat manakah yang membawa wahyu?" },
-            options: { en: ["Mikail", "Israfil", "Jibril", "Malik"], ms: ["Mikail", "Israfil", "Jibril", "Malik"] },
-            a: 2, 
-            dalil: { en: "Quran 2:97: 'Say, Whoever is an enemy to Gabriel - it is [none but] he who has brought the Qur'an down upon your heart...'", ms: "Quran 2:97: 'Katakanlah: Barangsiapa yang memusuhi Jibril maka sesungguhnya dialah yang menurunkan Al-Quran ke dalam hatimu...'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "What is the shortest Surah in the Quran?", ms: "Apakah Surah terpendek dalam Al-Quran?" },
-            options: { en: ["Al-Ikhlas", "Al-Kawthar", "Al-Asr", "Al-Nas"], ms: ["Al-Ikhlas", "Al-Kauthar", "Al-Asr", "Al-Nas"] },
-            a: 1, 
-            dalil: { en: "Surah Al-Kawthar consists of only 3 verses.", ms: "Surah Al-Kauthar hanya mengandungi 3 ayat." }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "Does Allah have any partners or children?", ms: "Adakah Allah mempunyai sekutu atau anak?" },
-            options: { en: ["Yes", "Maybe", "No, He is One", "Only Angels"], ms: ["Ya", "Mungkin", "Tidak, Dia Esa", "Hanya Malaikat"] },
-            a: 2, 
-            dalil: { en: "Quran 112:3: 'He neither begets nor is born.'", ms: "Quran 112:3: 'Dia tiada beranak dan Dia pula tidak diperanakkan.'" }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "Which phrase means 'God is the Greatest'?", ms: "Apakah kalimah yang bermaksud 'Allah Maha Besar'?" },
-            options: { en: ["Alhamdulillah", "Allahu Akbar", "Subhanallah", "MashaAllah"], ms: ["Alhamdulillah", "Allahu Akbar", "Subhanallah", "MashaAllah"] },
-            a: 1, 
-            dalil: { en: "Used in Adhan and Salah to proclaim Allah's greatness.", ms: "Digunakan dalam Azan dan Solat untuk mengagungkan Allah." }
-        },
-        { 
-            lvl: 1, 
-            q: { en: "What is the key to Paradise according to Hadith?", ms: "Apakah kunci Syurga menurut Hadis?" },
-            options: { en: ["Money", "Salah (Prayer)", "Beauty", "Fame"], ms: ["Wang", "Solat", "Kecantikan", "Kemasyhuran"] },
-            a: 1, 
-            dalil: { en: "Hadith: 'The key to Paradise is Salah, and the key to Salah is Wudu.'", ms: "Hadis: 'Kunci Syurga adalah Solat, dan kunci Solat adalah Wuduk.'" }
-        },
+    <script>
+        /* LANGUAGE DATA */
+        let currentLang = 'en';
 
-        // ================= LEVEL 2: INTERMEDIATE =================
-        { 
-            lvl: 2, 
-            q: { en: "Which prayer has no Ruku or Sujood?", ms: "Solat manakah yang tiada Ruku atau Sujud?" },
-            options: { en: ["Witr", "Janazah (Funeral)", "Eid", "Duha"], ms: ["Witir", "Jenazah", "Raya", "Dhuha"] },
-            a: 1, 
-            dalil: { en: "The Funeral prayer consists of 4 Takbirs while standing.", ms: "Solat Jenazah hanya mempunyai 4 Takbir dalam keadaan berdiri." }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "What is the 'Nisab' of Zakat for Gold?", ms: "Apakah kadar 'Nisab' Zakat bagi Emas?" },
-            options: { en: ["85 grams", "100 grams", "40 grams", "1 kg"], ms: ["85 gram", "100 gram", "40 gram", "1 kg"] },
-            a: 0, 
-            dalil: { en: "Standard Nisab is 20 Dinars (~85g).", ms: "Nisab piawai ialah 20 Dinar (~85g)." }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "Can you perform Wudu with sea water?", ms: "Bolehkah berwuduk dengan air laut?" },
-            options: { en: ["No, it's salty", "Yes, it is pure", "Only if boiled", "Disliked"], ms: ["Tidak, ia masin", "Ya, ia suci", "Hanya jika dididihkan", "Makruh"] },
-            a: 1, 
-            dalil: { en: "Hadith: 'Its water is purifying and its dead (animals) are lawful.' (Tirmidhi)", ms: "Hadis: 'Laut itu suci airnya dan halal bangkainya.' (Tirmidhi)" }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "Who are the 'Kiraman Katibin'?", ms: "Siapakah 'Kiraman Katibin'?" },
-            options: { en: ["Guardians of Hell", "Angels writing deeds", "Angels of Death", "Prophets"], ms: ["Penjaga Neraka", "Mencatat amal", "Malaikat Maut", "Para Nabi"] },
-            a: 1, 
-            dalil: { en: "Quran 82:11: 'Noble and recording.'", ms: "Quran 82:11: 'Yang mulia (di sisi Allah) dan mencatat (pekerjaan itu).'" }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "What breaks Wudu?", ms: "Apakah yang membatalkan Wuduk?" },
-            options: { en: ["Eating camel meat", "Deep sleep", "Passing gas", "All of the above"], ms: ["Makan daging unta", "Tidur nyenyak", "Kentut", "Semua di atas"] },
-            a: 3, 
-            dalil: { en: "Various Hadiths confirm these invalidate Wudu (Camel meat specifically in Hanbali/Hadith).", ms: "Hadis mengesahkan perkara-perkara ini membatalkan wuduk." }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "When is the 'Time of Forbidden Prayer'?", ms: "Bilakah 'Waktu Haram Solat'?" },
-            options: { en: ["After Isha", "Before Dhuhr", "Sunrise, Sunset, Zawal", "Midnight"], ms: ["Selepas Isyak", "Sebelum Zohor", "Terbit, Terbenam, Zawal", "Tengah malam"] },
-            a: 2, 
-            dalil: { en: "Hadith Muslim: 'Three times the Prophet forbade us to pray... when the sun rises... sets... is overhead.'", ms: "Hadis Muslim: 'Tiga waktu Nabi larang solat... matahari terbit... terbenam... tegak di atas kepala.'" }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "Which Prophet was swallowed by a whale?", ms: "Nabi manakah yang ditelan ikan paus?" },
-            options: { en: ["Yusuf (AS)", "Yunus (AS)", "Musa (AS)", "Isa (AS)"], ms: ["Yusuf (AS)", "Yunus (AS)", "Musa (AS)", "Isa (AS)"] },
-            a: 1, 
-            dalil: { en: "Quran 37:142: 'Then the fish swallowed him...'", ms: "Quran 37:142: 'Maka dia ditelan oleh ikan besar...'" }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "Is it permissible to wipe over socks (Khuff) in Wudu?", ms: "Bolehkah menyapu atas khuf (stokin kulit) dalam Wuduk?" },
-            options: { en: ["No", "Yes, with conditions", "Only for men", "Only in winter"], ms: ["Tidak", "Ya, dengan syarat", "Lelaki sahaja", "Musim sejuk sahaja"] },
-            a: 1, 
-            dalil: { en: "Established Sunnah: 1 day for resident, 3 days for traveler.", ms: "Sunnah yang sabit: 1 hari bagi mukim, 3 hari bagi musafir." }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "How many rakats is Salatul Jumu'ah?", ms: "Berapa rakaat Solat Jumaat?" },
-            options: { en: ["4", "2", "3", "Same as Dhuhr"], ms: ["4", "2", "3", "Sama macam Zohor"] },
-            a: 1, 
-            dalil: { en: "Consensus: Friday prayer is 2 rakats after the Khutbah.", ms: "Ijmak: Solat Jumaat adalah 2 rakaat selepas Khutbah." }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "Which uncle of the Prophet (ﷺ) is cursed in the Quran?", ms: "Bapa saudara Nabi (ﷺ) manakah yang dilaknat dalam Quran?" },
-            options: { en: ["Abu Talib", "Abu Lahab", "Hamzah", "Abbas"], ms: ["Abu Talib", "Abu Lahab", "Hamzah", "Abbas"] },
-            a: 1, 
-            dalil: { en: "Surah Al-Masad: 'Perish the hands of Abu Lahab...'", ms: "Surah Al-Masad: 'Binasalah kedua-dua tangan Abu Lahab...'" }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "What is 'Ghibah'?", ms: "Apakah itu 'Ghibah'?" },
-            options: { en: ["Lying", "Stealing", "Backbiting", "Cheating"], ms: ["Menipu", "Mencuri", "Mengumpat", "Curang"] },
-            a: 2, 
-            dalil: { en: "Hadith: 'To mention your brother with something he dislikes.'", ms: "Hadis: 'Menyebut tentang saudaramu perkara yang tidak disukainya.'" }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "Which battle took place in Ramadan?", ms: "Perang manakah berlaku dalam bulan Ramadan?" },
-            options: { en: ["Uhud", "Badr", "Khandaq", "Tabuk"], ms: ["Uhud", "Badar", "Khandaq", "Tabuk"] },
-            a: 1, 
-            dalil: { en: "Battle of Badr occurred on 17th Ramadan, 2 AH.", ms: "Perang Badar berlaku pada 17 Ramadan, tahun 2 Hijrah." }
-        },
-        { 
-            lvl: 2, 
-            q: { en: "What is the ruling of Salatul Witr?", ms: "Apakah hukum Solat Witir?" },
-            options: { en: ["Fardhu Ain", "Sunnah Muakkadah", "Wajib (Hanafi)", "Mubah"], ms: ["Fardhu Ain", "Sunnah Muakkadah", "Wajib (Hanafi)", "Harus"] },
-            a: 1, 
-            dalil: { en: "Majority consider it confirmed Sunnah; Hanafis consider it Wajib.", ms: "Jumhur ulama: Sunnah Muakkadah; Hanafi: Wajib." }
-        },
+        const TEXTS = {
+            en: {
+                title: "Islamic Quiz", subtitle: "Choose your mode",
+                timed: "⚡ Timed Challenge", free: "🧘 Free Practice", exit: "Exit",
+                score: "Score", time: "Time", prev: "Previous", next: "Next", finish: "Finish",
+                complete: "Quiz Complete!", finalScore: "Your Final Score",
+                replayTimed: "Play Timed", replayFree: "Play Practice", backMenu: "Back to Menu"
+            },
+            ms: {
+                title: "Kuiz Islamik", subtitle: "Pilih mod anda",
+                timed: "⚡ Cabaran Masa", free: "🧘 Latihan Bebas", exit: "Keluar",
+                score: "Markah", time: "Masa", prev: "Sebelum", next: "Seterusnya", finish: "Tamat",
+                complete: "Kuiz Tamat!", finalScore: "Markah Akhir",
+                replayTimed: "Main Berwaktu", replayFree: "Main Latihan", backMenu: "Menu Utama"
+            }
+        };
 
-        // ================= LEVEL 3: ADVANCED (FIQH & USUL) =================
-        { 
-            lvl: 3, 
-            q: { en: "If one forgets a Rukun (Integral) of Salah, can Sujud Sahwi fix it?", ms: "Jika terlupa Rukun solat, adakah Sujud Sahwi memadai?" },
-            options: { en: ["Yes", "No, must perform the Rukun", "Only if Al-Fatiha", "Depends on Imam"], ms: ["Ya", "Tidak, wajib buat Rukun itu", "Hanya jika Al-Fatihah", "Ikut Imam"] },
-            a: 1, 
-            dalil: { en: "A Rukun cannot be compensated by Sujud Sahwi alone; the action itself must be done.", ms: "Rukun tidak boleh diganti dengan Sujud Sahwi sahaja; perbuatan itu mesti dilakukan." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "Does vomiting break Wudu?", ms: "Adakah muntah membatalkan Wuduk?" },
-            options: { en: ["Yes (Hanafi/Hanbali)", "No (Shafi'i/Maliki)", "Depends on color", "Only if intentional"], ms: ["Ya (Hanafi/Hanbali)", "Tidak (Syafi'i/Maliki)", "Ikut warna", "Jika sengaja"] },
-            a: 1, 
-            dalil: { en: "Shafi'i/Maliki: Vomit is najis but does not invalidate Wudu.", ms: "Syafi'i/Maliki: Muntah itu najis tetapi tidak membatalkan wuduk." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "Is 'Basmalah' part of Surah Al-Fatiha?", ms: "Adakah 'Basmalah' sebahagian Al-Fatihah?" },
-            options: { en: ["Yes (Shafi'i)", "No (Hanafi)", "Sunnah only", "Valid difference"], ms: ["Ya (Syafi'i)", "Tidak (Hanafi)", "Sunnah sahaja", "Khilaf muktabar"] },
-            a: 3, 
-            dalil: { en: "Shafi'is count it as verse 1. Hanafis/Malikis consider it a separator.", ms: "Syafi'i kira ayat 1. Hanafi/Maliki anggap ia pemisah." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "Can a traveler shorten (Qasar) Maghrib prayer?", ms: "Bolehkah musafir Qasar solat Maghrib?" },
-            options: { en: ["Yes, to 2", "No", "Yes, to 1.5", "Only if sick"], ms: ["Ya, jadi 2", "Tidak", "Ya, jadi 1.5", "Jika sakit"] },
-            a: 1, 
-            dalil: { en: "Qasar is only for 4-rakat prayers (Dhuhr, Asr, Isha).", ms: "Qasar hanya untuk solat 4 rakaat (Zohor, Asar, Isyak)." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "What is 'Talfiq'?", ms: "Apakah itu 'Talfiq'?" },
-            options: { en: ["Mixing Madhabs invalidly", "Following a concession", "Paying Zakat early", "Combining prayers"], ms: ["Campur aduk Mazhab yang membatalkan", "Ikut rukhsah", "Bayar Zakat awal", "Jamak solat"] },
-            a: 0, 
-            dalil: { en: "Mixing rulings such that the act is invalid in all Madhabs involved.", ms: "Mencampur hukum sehingga amalan itu tidak sah dalam semua mazhab yang terlibat." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "Is Zakat required on diamonds?", ms: "Adakah wajib Zakat ke atas berlian?" },
-            options: { en: ["Yes, always", "No, unless for trade", "Only if worn", "Yes, 2.5%"], ms: ["Ya, sentiasa", "Tidak, kecuali untuk niaga", "Jika dipakai", "Ya, 2.5%"] },
-            a: 1, 
-            dalil: { en: "Majority: Precious stones are not Zakatable unless they are trade inventory.", ms: "Jumhur: Batu permata tiada Zakat melainkan barang dagangan." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "What is the ruling of bleeding during Fasting?", ms: "Apakah hukum berdarah ketika Puasa?" },
-            options: { en: ["Breaks fast", "Does not break fast", "Only nosebleed breaks", "Depends on amount"], ms: ["Batal puasa", "Tidak batal", "Hidung berdarah batal", "Ikut jumlah"] },
-            a: 1, 
-            dalil: { en: "Bleeding (unintentional or extraction for tests) does not invalidate fasting according to majority.", ms: "Keluar darah (tidak sengaja atau ujian darah) tidak membatalkan puasa menurut jumhur." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "When does the time of Isha end?", ms: "Bilakah tamat waktu Isyak?" },
-            options: { en: ["Sunrise", "Islamic Midnight", "Fajr Adhan", "3 AM"], ms: ["Terbit Matahari", "Tengah Malam Islam", "Azan Subuh", "3 Pagi"] },
-            a: 2, 
-            dalil: { en: "It extends until Fajr Sadiq (True Dawn), though delaying past midnight is disliked.", ms: "Ia berlanjutan sehingga Fajar Sadiq, walaupun makruh melewatkan selepas tengah malam." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "Is it Halal to eat shark?", ms: "Adakah Halal makan ikan jerung?" },
-            options: { en: ["Haram (All predators)", "Halal (Sea creature)", "Makruh", "Hanafi says Haram"], ms: ["Haram", "Halal (Hidupan laut)", "Makruh", "Hanafi kata Haram"] },
-            a: 1, 
-            dalil: { en: "Quran 5:96: 'Lawful to you is game from the sea and its food.'", ms: "Quran 5:96: 'Dihalalkan bagi kamu binatang buruan laut dan makanannya.'" }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "What is the 'Awrah' of a woman in front of other Muslim women?", ms: "Apakah Aurat wanita sesama wanita Islam?" },
-            options: { en: ["Navel to Knee", "Whole body", "Everything except face", "Head to toe"], ms: ["Pusat ke Lutut", "Seluruh badan", "Semua kecuali muka", "Hujung rambut ke kaki"] },
-            a: 0, 
-            dalil: { en: "Majority view: It is the same as a man to a man (Navel to Knee).", ms: "Pendapat Jumhur: Sama seperti lelaki sesama lelaki (Pusat ke Lutut)." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "Can you touch the Quran without Wudu?", ms: "Bolehkah sentuh Quran tanpa Wuduk?" },
-            options: { en: ["Yes", "No (Majority)", "Only translation", "Yes if using gloves"], ms: ["Boleh", "Tidak (Jumhur)", "Terjemahan sahaja", "Boleh jika berlapik"] },
-            a: 1, 
-            dalil: { en: "Quran 56:79: 'None touch it except the purified.' (Four Madhabs agree).", ms: "Quran 56:79: 'Tidak menyentuhnya melainkan orang yang disucikan.' (Empat Mazhab sepakat)." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "Is insurance Halal?", ms: "Adakah insurans Halal?" },
-            options: { en: ["Yes", "No (Contains Riba/Gharar)", "Only Takaful", "Difference of Opinion"], ms: ["Ya", "Tidak (Riba/Gharar)", "Hanya Takaful", "Ada Khilaf"] },
-            a: 2, 
-            dalil: { en: "Conventional insurance has Gharar (uncertainty) & Riba. Takaful is the cooperative alternative.", ms: "Insurans konvensional ada Gharar & Riba. Takaful adalah alternatif kerjasama." }
-        },
-        { 
-            lvl: 3, 
-            q: { en: "What is 'Istihalah'?", ms: "Apakah itu 'Istihalah'?" },
-            options: { en: ["Transformation of substance", "Istighfar", "Travel prayer", "Toilet etiquette"], ms: ["Perubahan zat", "Istighfar", "Solat musafir", "Adab tandas"] },
-            a: 0, 
-            dalil: { en: "Concept where an impure substance transforms chemically into a pure one (e.g. Wine to Vinegar).", ms: "Konsep perubahan zat najis kepada suci secara kimia (cth: Arak jadi Cuka)." }
-        }
-    ];
+        /* BILINGUAL QUESTION DATABASE */
+        const DB = [
+            { 
+                cat: {en:"General", ms:"Umum"}, 
+                q: {en:"Which Surah is the 'Heart of the Quran'?", ms:"Surah manakah digelar 'Jantung Al-Quran'?"}, 
+                a: {en:["Al-Mulk","Yasin","Rahman","Fatiha"], ms:["Al-Mulk","Yasin","Rahman","Fatihah"]}, 
+                c: 1 
+            },
+            { 
+                cat: {en:"General", ms:"Umum"}, 
+                q: {en:"What is the first pillar of Islam?", ms:"Apakah rukun Islam pertama?"}, 
+                a: {en:["Salah","Zakat","Shahada","Hajj"], ms:["Solat","Zakat","Syahadah","Haji"]}, 
+                c: 2 
+            },
+            { 
+                cat: {en:"General", ms:"Umum"}, 
+                q: {en:"Which Prophet built the Kaaba?", ms:"Nabi manakah yang membina Kaabah?"}, 
+                a: {en:["Musa (AS)","Isa (AS)","Ibrahim (AS)","Nuh (AS)"], ms:["Musa (AS)","Isa (AS)","Ibrahim (AS)","Nuh (AS)"]}, 
+                c: 2 
+            },
+            { 
+                cat: {en:"General", ms:"Umum"}, 
+                q: {en:"Rakats in Fard Maghrib prayer?", ms:"Berapa rakaat solat Fardu Maghrib?"}, 
+                a: {en:["2","3","4","5"], ms:["2","3","4","5"]}, 
+                c: 1 
+            },
+            { 
+                cat: {en:"Sirah", ms:"Sirah"}, 
+                q: {en:"Companion known as 'As-Siddiq'?", ms:"Sahabat digelar 'As-Siddiq'?"}, 
+                a: {en:["Abu Bakr","Umar","Ali","Uthman"], ms:["Abu Bakar","Umar","Ali","Uthman"]}, 
+                c: 0 
+            },
+            { 
+                cat: {en:"Sirah", ms:"Sirah"}, 
+                q: {en:"First wife of Prophet (SAW)?", ms:"Isteri pertama Nabi Muhammad SAW?"}, 
+                a: {en:["Aisha","Khadijah","Hafsah","Fatimah"], ms:["Aisyah","Khadijah","Hafsah","Fatimah"]}, 
+                c: 1 
+            },
+            { 
+                cat: {en:"History", ms:"Sejarah"}, 
+                q: {en:"Conqueror of Constantinople?", ms:"Penakluk Kota Konstantinopel?"}, 
+                a: {en:["Suleiman","Mehmed II","Selim","Murad"], ms:["Suleiman","Muhammad Al-Fatih","Selim","Murad"]}, 
+                c: 1 
+            },
+            { 
+                cat: {en:"History", ms:"Sejarah"}, 
+                q: {en:"Liberator of Jerusalem?", ms:"Pembebas Baitulmaqdis?"}, 
+                a: {en:["Salahuddin","Tariq","Khalid","Saad"], ms:["Salahuddin","Tariq","Khalid","Saad"]}, 
+                c: 0 
+            }
+        ];
 
-    // UI TRANSLATIONS
-    const ui = {
-        en: {
-            title: "Select Difficulty", subtitle: "Choose a level to begin the quiz.", btnStart: "Start Quiz",
-            qLabel: "Question", dalilLabel: "Evidence (Dalil)", btnNext: "Next Question", btnFinish: "See Results",
-            complete: "Quiz Completed", scoreLabel: "You scored", btnRestart: "Return to Menu",
-            levels: ["Level 1: Basic (Fardhu Ain)", "Level 2: Intermediate", "Level 3: Advanced Fiqh"]
-        },
-        ms: {
-            title: "Pilih Tahap", subtitle: "Pilih tahap untuk memulakan kuiz.", btnStart: "Mula Kuiz",
-            qLabel: "Soalan", dalilLabel: "Dalil & Huraian", btnNext: "Soalan Seterusnya", btnFinish: "Lihat Keputusan",
-            complete: "Kuiz Tamat", scoreLabel: "Markah anda", btnRestart: "Kembali ke Menu",
-            levels: ["Tahap 1: Asas (Fardhu Ain)", "Tahap 2: Pertengahan", "Tahap 3: Fiqh Lanjutan"]
-        }
-    };
-
-    let currentLang = 'en';
-    let currentQuestions = [];
-    let currentIndex = 0;
-    let score = 0;
-    const QUESTIONS_PER_SESSION = 10; // Show 10 random questions per game
-
-    window.onload = function() {
-        const savedLang = localStorage.getItem('wsl_lang');
-        if (savedLang && (savedLang === 'ms' || savedLang === 'en')) currentLang = savedLang;
-        updateUIText();
-    };
-
-    function updateUIText() {
-        const t = ui[currentLang];
-        document.getElementById('txt-title').textContent = t.title;
-        document.getElementById('txt-subtitle').textContent = t.subtitle;
-        document.getElementById('btn-start').textContent = t.btnStart;
-        document.getElementById('txt-q-label').textContent = t.qLabel;
-        document.getElementById('txt-dalil-label').textContent = t.dalilLabel;
-        document.getElementById('nextBtn').textContent = t.btnNext;
-        document.getElementById('txt-complete').textContent = t.complete;
-        document.getElementById('txt-score-label').textContent = t.scoreLabel;
-        document.getElementById('btn-restart').textContent = t.btnRestart;
-
-        const lvlSelect = document.getElementById('levelInput');
-        lvlSelect.innerHTML = '';
-        t.levels.forEach((l, i) => {
-            const opt = document.createElement('option');
-            opt.value = i + 1;
-            opt.textContent = l;
-            lvlSelect.appendChild(opt);
+        /* INIT & LANGUAGE CHECK */
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check language from Parent App (index.html)
+            const savedLang = localStorage.getItem('wsl_lang');
+            if (savedLang && (savedLang === 'ms' || savedLang === 'en')) {
+                currentLang = savedLang;
+            }
+            updateUIText();
         });
-    }
 
-    function startGame() {
-        const lvl = parseInt(document.getElementById('levelInput').value);
-        
-        // Get ALL questions for this level
-        const allQuestionsForLevel = db.filter(item => item.lvl === lvl);
-        
-        // Shuffle and pick 10
-        currentQuestions = allQuestionsForLevel.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_SESSION);
-        
-        if(currentQuestions.length === 0) {
-            alert("No questions found.");
-            return;
+        function updateUIText() {
+            const t = TEXTS[currentLang];
+            document.getElementById('lbl-title').textContent = t.title;
+            document.getElementById('lbl-subtitle').textContent = t.subtitle;
+            document.getElementById('lbl-timed').textContent = t.timed;
+            document.getElementById('lbl-free').textContent = t.free;
+            document.getElementById('lbl-exit').textContent = t.exit;
+            document.getElementById('lbl-exit-game').textContent = t.exit;
+            document.getElementById('lbl-score').textContent = t.score;
+            document.getElementById('lbl-time').textContent = t.time;
+            document.getElementById('endTitle').textContent = t.complete;
+            document.getElementById('lbl-final-score').textContent = t.finalScore;
+            document.getElementById('lbl-replay-timed').textContent = t.replayTimed;
+            document.getElementById('lbl-replay-free').textContent = t.replayFree;
+            document.getElementById('lbl-back-menu').textContent = t.backMenu;
+            
+            document.getElementById('btnPrev').textContent = t.prev;
+            // Next button text is dynamic (Next/Finish), handled in loadQuestion
         }
 
-        score = 0;
-        currentIndex = 0;
-        document.getElementById('levelBadge').textContent = ui[currentLang].levels[lvl-1].split(':')[0];
-        document.getElementById('qTotal').textContent = currentQuestions.length;
-        
-        document.getElementById('startCard').classList.add('hidden');
-        document.getElementById('quizCard').classList.remove('hidden');
-        loadQuestion();
-    }
+        /* GAME LOGIC (UNCHANGED) */
+        let currentQ = 0;
+        let score = 0;
+        let timeLeft = 15;
+        let timerInt = null;
+        let isFreeMode = false;
+        let activeQuestions = []; 
+        let userAnswers = {}; 
 
-    function loadQuestion() {
-        const qData = currentQuestions[currentIndex];
-        document.getElementById('qIndex').textContent = currentIndex + 1;
-        document.getElementById('qText').textContent = qData.q[currentLang];
-        document.getElementById('dalilBox').style.display = 'none';
-        
-        const btn = document.getElementById('nextBtn');
-        btn.style.display = 'none';
-        btn.textContent = (currentIndex === currentQuestions.length - 1) ? ui[currentLang].btnFinish : ui[currentLang].btnNext;
-        
-        const c = document.getElementById('optContainer');
-        c.innerHTML = '';
+        function goBack() {
+            if (window.parent && window.parent.closeReader) window.parent.closeReader();
+            else window.location.href = 'index.html';
+        }
 
-        qData.options[currentLang].forEach((optText, i) => {
-            const b = document.createElement('button');
-            b.className = 'opt-btn';
-            b.textContent = optText;
-            b.onclick = () => checkAnswer(i, b, qData.a, qData.dalil[currentLang]);
-            c.appendChild(b);
-        });
-    }
+        function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
 
-    function checkAnswer(selected, btn, correctIndex, dalilText) {
-        const opts = document.querySelectorAll('.opt-btn');
-        opts.forEach(b => b.disabled = true);
-        if(selected === correctIndex) { btn.classList.add('correct'); score++; } 
-        else { btn.classList.add('wrong'); opts[correctIndex].classList.add('correct'); }
-        document.getElementById('dalilText').textContent = dalilText;
-        document.getElementById('dalilBox').style.display = 'block';
-        document.getElementById('nextBtn').style.display = 'block';
-        document.getElementById('quizCard').scrollTo({ top: 1000, behavior: 'smooth' });
-    }
+        function startGame(mode) {
+            isFreeMode = (mode === 'free');
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('gameUI').classList.remove('hidden');
+            
+            currentQ = 0; score = 0; userAnswers = {};
+            activeQuestions = shuffle([...DB]).slice(0, 8); // Pick 8 random questions
+            document.getElementById('totalQ').innerText = activeQuestions.length;
 
-    function nextQuestion() {
-        currentIndex++;
-        if(currentIndex < currentQuestions.length) loadQuestion();
-        else showResults();
-    }
+            if (isFreeMode) {
+                document.getElementById('timerBox').style.visibility = 'hidden';
+                document.getElementById('timerBarBg').style.display = 'none';
+                document.getElementById('navControls').classList.remove('hidden');
+            } else {
+                document.getElementById('timerBox').style.visibility = 'visible';
+                document.getElementById('timerBarBg').style.display = 'block';
+                document.getElementById('navControls').classList.add('hidden');
+            }
+            loadQuestion();
+        }
 
-    function showResults() {
-        document.getElementById('quizCard').classList.add('hidden');
-        document.getElementById('resultCard').classList.remove('hidden');
-        document.getElementById('finalScore').textContent = `${score} / ${currentQuestions.length}`;
-    }
-</script>
+        function loadQuestion() {
+            if (currentQ >= activeQuestions.length) return endGame();
+
+            const qData = activeQuestions[currentQ];
+            timeLeft = 15;
+            
+            document.getElementById('qNum').innerText = currentQ + 1;
+            document.getElementById('score').innerText = score;
+            document.getElementById('timer').innerText = timeLeft;
+            document.getElementById('timeBar').style.width = '100%';
+            
+            // USE CURRENT LANG FOR TEXT
+            document.getElementById('question').innerText = qData.q[currentLang];
+            document.getElementById('catTag').innerText = qData.cat[currentLang];
+            
+            const optsDiv = document.getElementById('options');
+            optsDiv.innerHTML = '';
+            
+            const savedAnswer = userAnswers[currentQ];
+            const isAnswered = (savedAnswer !== undefined);
+
+            qData.a[currentLang].forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                if (isAnswered) {
+                    btn.classList.add('disabled');
+                    if (idx === qData.c) btn.classList.add('correct');
+                    if (idx === savedAnswer && idx !== qData.c) btn.classList.add('wrong');
+                } else {
+                    btn.onclick = () => checkAnswer(idx, btn, qData.c);
+                }
+                optsDiv.appendChild(btn);
+            });
+
+            if (isFreeMode) {
+                const t = TEXTS[currentLang];
+                const btnPrev = document.getElementById('btnPrev');
+                const btnNext = document.getElementById('btnNext');
+                btnPrev.disabled = (currentQ === 0);
+                
+                if (currentQ === activeQuestions.length - 1) {
+                    btnNext.innerText = t.finish;
+                    btnNext.classList.add('active'); 
+                } else {
+                    btnNext.innerText = t.next;
+                    isAnswered ? btnNext.classList.add('active') : btnNext.classList.remove('active'); 
+                }
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if(timerInt) clearInterval(timerInt);
+            timerInt = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                document.getElementById('timeBar').style.width = (timeLeft/15 * 100) + '%';
+                if(timeLeft <= 0) { clearInterval(timerInt); handleTimeOut(); }
+            }, 1000);
+        }
+
+        function checkAnswer(selectedIdx, btn, correctIdx) {
+            if(timerInt) clearInterval(timerInt);
+            userAnswers[currentQ] = selectedIdx;
+
+            const buttons = document.querySelectorAll('.opt-btn');
+            buttons.forEach(b => b.classList.add('disabled'));
+
+            if(selectedIdx === correctIdx) {
+                btn.classList.add('correct');
+                score += isFreeMode ? 100 : (10 + Math.ceil(timeLeft / 2)); 
+            } else {
+                btn.classList.add('wrong');
+                buttons[correctIdx].classList.add('correct'); 
+            }
+
+            if (isFreeMode) {
+                document.getElementById('btnNext').classList.add('active');
+                document.getElementById('score').innerText = score;
+            } else {
+                document.getElementById('score').innerText = score;
+                setTimeout(() => { currentQ++; loadQuestion(); }, 1500);
+            }
+        }
+
+        function handleTimeOut() {
+            const qData = activeQuestions[currentQ];
+            const buttons = document.querySelectorAll('.opt-btn');
+            buttons[qData.c].classList.add('correct');
+            buttons.forEach(b => b.classList.add('disabled'));
+            setTimeout(() => { currentQ++; loadQuestion(); }, 1500);
+        }
+
+        function prevQuestion() { if (currentQ > 0) { currentQ--; loadQuestion(); } }
+        function nextQuestion() { if (currentQ < activeQuestions.length) { currentQ++; if (currentQ === activeQuestions.length) endGame(); else loadQuestion(); } }
+
+        function endGame() {
+            if(timerInt) clearInterval(timerInt);
+            document.getElementById('gameUI').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
+            document.getElementById('finalScore').innerText = score;
+        }
+    </script>
 </body>
 </html>
