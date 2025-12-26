@@ -50,8 +50,24 @@
         .nav-btn { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
         .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        #startScreen, #endScreen { text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; align-items: center; }
-        .big-icon { font-size: 60px; margin-bottom: 20px; }
+        /* --- NEW START SCREEN STYLES --- */
+        #startScreen, #endScreen { text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; align-items: center; width: 100%; max-width: 400px; margin: 0 auto; }
+        .big-icon { font-size: 60px; margin-bottom: 10px; }
+        
+        /* Mode Switcher */
+        .mode-switch { background: var(--surface); border: 1px solid var(--border); border-radius: 50px; padding: 5px; display: flex; width: 100%; margin-bottom: 20px; position: relative; }
+        .mode-btn { flex: 1; border: none; background: transparent; padding: 10px; border-radius: 40px; font-weight: 700; font-size: 13px; color: var(--text-muted); cursor: pointer; z-index: 2; transition: color 0.2s; }
+        .mode-btn.active { color: white; }
+        .mode-slider { position: absolute; top: 5px; left: 5px; width: calc(50% - 5px); height: calc(100% - 10px); background: var(--primary); border-radius: 40px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; }
+
+        /* Category Grid */
+        .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; overflow-y: auto; max-height: 50vh; padding: 5px; }
+        .cat-card { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 16px; cursor: pointer; transition: 0.2s; text-align: left; display: flex; flex-direction: column; justify-content: space-between; height: 80px; }
+        .cat-card:active { transform: scale(0.96); border-color: var(--primary); background: var(--primary-light); }
+        .cat-name { font-weight: 800; font-size: 14px; color: var(--text); }
+        .cat-count { font-size: 10px; color: var(--text-muted); font-weight: 600; margin-top: 5px; }
+        .cat-icon { font-size: 18px; margin-bottom: 5px; }
+
         .btn-primary { background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 50px; font-weight: 700; font-size: 16px; margin-top: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(166, 119, 52, 0.3); transition: transform 0.2s; width: 80%; max-width: 300px; }
         .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 15px 40px; border-radius: 50px; font-weight: 700; font-size: 16px; margin-top: 10px; cursor: pointer; transition: transform 0.2s; width: 80%; max-width: 300px; }
         .btn-primary:active, .btn-outline:active { transform: scale(0.95); }
@@ -63,25 +79,26 @@
 
     <div id="startScreen">
         <div class="big-icon">🕌</div>
-        <h1 style="margin:0; font-weight:800; color:var(--primary);" id="lbl-title">Islamic Quiz</h1>
-        <p style="color:var(--text-muted); margin-top:10px; margin-bottom: 30px;" id="lbl-subtitle">Choose your mode</p>
+        <h1 style="margin:0; font-weight:800; color:var(--primary); font-size: 24px;" id="lbl-title">Islamic Quiz</h1>
+        <p style="color:var(--text-muted); margin-top:5px; margin-bottom: 20px; font-size: 13px;" id="lbl-subtitle">Select Mode & Topic</p>
         
-        <button class="btn-primary" onclick="startGame('timed')">
-            <span id="lbl-timed">⚡ Timed Challenge</span>
-        </button>
-        
-        <button class="btn-outline" onclick="startGame('free')">
-            <span id="lbl-free">🏡 Free Practice</span>
-        </button>
+        <div class="mode-switch">
+            <div class="mode-slider" id="modeSlider"></div>
+            <button class="mode-btn active" onclick="setMode('timed')" id="btn-timed">⚡ Timed</button>
+            <button class="mode-btn" onclick="setMode('free')" id="btn-free">🧘 Practice</button>
+        </div>
 
-        <button onclick="goBack()" style="background:none; border:none; color:var(--text-muted); margin-top:30px; font-weight:600; font-size:13px; cursor:pointer;" id="lbl-exit">Exit</button>
+        <div class="cat-grid" id="categoryGrid">
+            </div>
+
+        <button onclick="goBack()" style="background:none; border:none; color:var(--text-muted); margin-top:20px; font-weight:600; font-size:13px; cursor:pointer;" id="lbl-exit">Exit</button>
     </div>
 
     <div id="gameUI" class="hidden">
         <div class="game-header">
-            <button class="back-btn" onclick="goBack()">
+            <button class="back-btn" onclick="returnToMenu()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
-                <span id="lbl-exit-game">Exit</span>
+                <span id="lbl-exit-game">Menu</span>
             </button>
             <div style="font-weight:800; color:var(--primary); font-size:14px;">Q. <span id="qNum">1</span>/<span id="totalQ">10</span></div>
         </div>
@@ -118,115 +135,183 @@
         <h1 id="endTitle" style="margin:0; font-weight:800;">Quiz Complete!</h1>
         <p style="color:var(--text-muted); margin-top:5px;" id="lbl-final-score">Your Final Score</p>
         <div style="font-size:48px; font-weight:800; color:var(--primary); margin: 10px 0;" id="finalScore">0</div>
-        <button class="btn-primary" onclick="startGame('timed')" id="lbl-replay-timed">Play Timed</button>
-        <button class="btn-outline" onclick="startGame('free')" id="lbl-replay-free">Play Practice</button>
-        <button onclick="goBack()" style="background:none; border:none; color:var(--text-muted); margin-top:20px; font-weight:600; font-size:13px; cursor:pointer;" id="lbl-back-menu">Back to Menu</button>
+        
+        <button class="btn-primary" onclick="returnToMenu()" id="lbl-back-menu">Back to Menu</button>
     </div>
 
     <script>
         /* LANGUAGE DATA */
         let currentLang = 'en';
+        let selectedMode = 'timed'; // Default
 
         const TEXTS = {
             en: {
-                title: "Islamic Quiz", subtitle: "Choose your mode",
-                timed: "⚡ Timed Challenge", free: "🧘 Free Practice", exit: "Exit",
+                title: "Islamic Quiz", subtitle: "Select Mode & Topic",
+                timed: "⚡ Timed", free: "🧘 Practice", exit: "Exit",
                 score: "Score", time: "Time", prev: "Previous", next: "Next", finish: "Finish",
                 complete: "Quiz Complete!", finalScore: "Your Final Score",
-                replayTimed: "Play Timed", replayFree: "Play Practice", backMenu: "Back to Menu"
+                backMenu: "Back to Menu", allTopics: "All Topics"
             },
             ms: {
-                title: "Kuiz Islamik", subtitle: "Pilih mod anda",
-                timed: "⚡ Cabaran Masa", free: "🧘 Latihan Bebas", exit: "Keluar",
+                title: "Kuiz Islamik", subtitle: "Pilih Mod & Topik",
+                timed: "⚡ Masa", free: "🧘 Latihan", exit: "Keluar",
                 score: "Markah", time: "Masa", prev: "Sebelum", next: "Seterusnya", finish: "Tamat",
                 complete: "Kuiz Tamat!", finalScore: "Markah Akhir",
-                replayTimed: "Main Berwaktu", replayFree: "Main Latihan", backMenu: "Menu Utama"
+                backMenu: "Menu Utama", allTopics: "Semua Topik"
             }
         };
 
-        /* BILINGUAL QUESTION DATABASE */
+        /* MEGA BILINGUAL QUESTION DATABASE */
         const DB = [
-            { 
-                cat: {en:"General", ms:"Umum"}, 
-                q: {en:"Which Surah is the 'Heart of the Quran'?", ms:"Surah manakah digelar 'Jantung Al-Quran'?"}, 
-                a: {en:["Al-Mulk","Yasin","Rahman","Fatiha"], ms:["Al-Mulk","Yasin","Rahman","Fatihah"]}, 
-                c: 1 
-            },
-            { 
-                cat: {en:"General", ms:"Umum"}, 
-                q: {en:"What is the first pillar of Islam?", ms:"Apakah rukun Islam pertama?"}, 
-                a: {en:["Salah","Zakat","Shahada","Hajj"], ms:["Solat","Zakat","Syahadah","Haji"]}, 
-                c: 2 
-            },
-            { 
-                cat: {en:"General", ms:"Umum"}, 
-                q: {en:"Which Prophet built the Kaaba?", ms:"Nabi manakah yang membina Kaabah?"}, 
-                a: {en:["Musa (AS)","Isa (AS)","Ibrahim (AS)","Nuh (AS)"], ms:["Musa (AS)","Isa (AS)","Ibrahim (AS)","Nuh (AS)"]}, 
-                c: 2 
-            },
-            { 
-                cat: {en:"General", ms:"Umum"}, 
-                q: {en:"Rakats in Fard Maghrib prayer?", ms:"Berapa rakaat solat Fardu Maghrib?"}, 
-                a: {en:["2","3","4","5"], ms:["2","3","4","5"]}, 
-                c: 1 
-            },
-            { 
-                cat: {en:"Sirah", ms:"Sirah"}, 
-                q: {en:"Companion known as 'As-Siddiq'?", ms:"Sahabat digelar 'As-Siddiq'?"}, 
-                a: {en:["Abu Bakr","Umar","Ali","Uthman"], ms:["Abu Bakar","Umar","Ali","Uthman"]}, 
-                c: 0 
-            },
-            { 
-                cat: {en:"Sirah", ms:"Sirah"}, 
-                q: {en:"First wife of Prophet (SAW)?", ms:"Isteri pertama Nabi Muhammad SAW?"}, 
-                a: {en:["Aisha","Khadijah","Hafsah","Fatimah"], ms:["Aisyah","Khadijah","Hafsah","Fatimah"]}, 
-                c: 1 
-            },
-            { 
-                cat: {en:"History", ms:"Sejarah"}, 
-                q: {en:"Conqueror of Constantinople?", ms:"Penakluk Kota Konstantinopel?"}, 
-                a: {en:["Suleiman","Mehmed II","Selim","Murad"], ms:["Suleiman","Muhammad Al-Fatih","Selim","Murad"]}, 
-                c: 1 
-            },
-            { 
-                cat: {en:"History", ms:"Sejarah"}, 
-                q: {en:"Liberator of Jerusalem?", ms:"Pembebas Baitulmaqdis?"}, 
-                a: {en:["Salahuddin","Tariq","Khalid","Saad"], ms:["Salahuddin","Tariq","Khalid","Saad"]}, 
-                c: 0 
-            }
+            // --- GENERAL / UMUM ---
+            { cat: {en:"General", ms:"Umum"}, q: {en:"Which Surah is 'Heart of Quran'?", ms:"Surah manakah 'Jantung Al-Quran'?"}, a: {en:["Al-Mulk","Yasin","Rahman","Fatiha"], ms:["Al-Mulk","Yasin","Rahman","Fatihah"]}, c: 1 },
+            { cat: {en:"General", ms:"Umum"}, q: {en:"First pillar of Islam?", ms:"Rukun Islam pertama?"}, a: {en:["Salah","Zakat","Shahada","Hajj"], ms:["Solat","Zakat","Syahadah","Haji"]}, c: 2 },
+            { cat: {en:"General", ms:"Umum"}, q: {en:"Prophet who built the Kaaba?", ms:"Nabi pembina Kaabah?"}, a: {en:["Musa","Isa","Ibrahim","Nuh"], ms:["Musa","Isa","Ibrahim","Nuh"]}, c: 2 },
+            { cat: {en:"General", ms:"Umum"}, q: {en:"Solar eclipse prayer name?", ms:"Nama solat gerhana matahari?"}, a: {en:["Kusuf","Khusuf","Istisqa","Duha"], ms:["Kusuf","Khusuf","Istisqa","Dhuha"]}, c: 0 },
+            { cat: {en:"General", ms:"Umum"}, q: {en:"Angels carrying the Throne?", ms:"Bilangan Malaikat pemikul Arasy?"}, a: {en:["4","8","10","99"], ms:["4","8","10","99"]}, c: 1 },
+            { cat: {en:"General", ms:"Umum"}, q: {en:"Guardian of Hell?", ms:"Penjaga Neraka?"}, a: {en:["Ridwan","Malik","Israfil","Munkar"], ms:["Ridwan","Malik","Israfil","Munkar"]}, c: 1 },
+            
+            // --- FARDHU AIN ---
+            { cat: {en:"Fardhu Ain", ms:"Fardu Ain"}, q: {en:"Pillars (Rukun) of Salah?", ms:"Bilangan Rukun Solat?"}, a: {en:["5","10","13","17"], ms:["5","10","13","17"]}, c: 2 },
+            { cat: {en:"Fardhu Ain", ms:"Fardu Ain"}, q: {en:"Najis Mughallazah example?", ms:"Contoh Najis Mughallazah?"}, a: {en:["Baby urine","Blood","Dog Saliva","Vomit"], ms:["Air kencing bayi","Darah","Air liur Anjing","Muntah"]}, c: 2 },
+            { cat: {en:"Fardhu Ain", ms:"Fardu Ain"}, q: {en:"Aurah limit for men?", ms:"Had Aurat lelaki?"}, a: {en:["Knee to ankle","Navel to knees","Shoulder to knees","Whole body"], ms:["Lutut ke buku lali","Pusat ke lutut","Bahu ke lutut","Seluruh badan"]}, c: 1 },
+            { cat: {en:"Fardhu Ain", ms:"Fardu Ain"}, q: {en:"Invalidates Wudu?", ms:"Membatalkan Wuduk?"}, a: {en:["Eating camel","Deep sleep","Laughing","Crying"], ms:["Makan unta","Tidur nyenyak","Ketawa","Menangis"]}, c: 1 },
+            { cat: {en:"Fardhu Ain", ms:"Fardu Ain"}, q: {en:"First Rukun of Salah?", ms:"Rukun Solat pertama?"}, a: {en:["Al-Fatihah","Ruku","Niyyah","Takbir"], ms:["Al-Fatihah","Rukuk","Niat","Takbir"]}, c: 2 },
+            { cat: {en:"Fardhu Ain", ms:"Fardu Ain"}, q: {en:"Reciting Al-Fatihah is?", ms:"Hukum baca Al-Fatihah?"}, a: {en:["Sunnah","Makruh","Rukun","Harus"], ms:["Sunat","Makruh","Rukun","Harus"]}, c: 2 },
+            { cat: {en:"Fardhu Ain", ms:"Fardu Ain"}, q: {en:"Water for purification?", ms:"Air untuk bersuci?"}, a: {en:["Mutlaq","Musta'mal","Juice","Coffee"], ms:["Mutlak","Musta'mal","Jus","Kopi"]}, c: 0 },
+            
+            // --- QURAN ---
+            { cat: {en:"Quran", ms:"Al-Quran"}, q: {en:"Shortest Surah?", ms:"Surah terpendek?"}, a: {en:["Al-Ikhlas","Al-Nas","Al-Kawthar","Al-Asr"], ms:["Al-Ikhlas","An-Nas","Al-Kawthar","Al-Asr"]}, c: 2 },
+            { cat: {en:"Quran", ms:"Al-Quran"}, q: {en:"Taurat revealed to?", ms:"Taurat diturunkan kepada?"}, a: {en:["Isa","Musa","Dawud","Ibrahim"], ms:["Isa","Musa","Daud","Ibrahim"]}, c: 1 },
+            { cat: {en:"Quran", ms:"Al-Quran"}, q: {en:"Quran revelation period?", ms:"Tempoh turun Al-Quran?"}, a: {en:["10 years","23 years","25 years","40 years"], ms:["10 tahun","23 tahun","25 tahun","40 tahun"]}, c: 1 },
+            { cat: {en:"Quran", ms:"Al-Quran"}, q: {en:"Surah without Bismillah?", ms:"Surah tanpa Bismillah?"}, a: {en:["At-Tawbah","Al-Fatiha","Yasin","Al-Mulk"], ms:["At-Taubah","Al-Fatihah","Yasin","Al-Mulk"]}, c: 0 },
+            { cat: {en:"Quran", ms:"Al-Quran"}, q: {en:"Surah 'The Bee'?", ms:"Surah 'Lebah'?"}, a: {en:["An-Nahl","An-Naml","Al-Ankabut","Al-Baqarah"], ms:["An-Nahl","An-Naml","Al-Ankabut","Al-Baqarah"]}, c: 0 },
+
+            // --- SIRAH ---
+            { cat: {en:"Sirah", ms:"Sirah"}, q: {en:"'As-Siddiq' Companion?", ms:"Sahabat 'As-Siddiq'?"}, a: {en:["Abu Bakr","Umar","Ali","Uthman"], ms:["Abu Bakar","Umar","Ali","Uthman"]}, c: 0 },
+            { cat: {en:"Sirah", ms:"Sirah"}, q: {en:"First wife of Prophet?", ms:"Isteri pertama Nabi?"}, a: {en:["Aisha","Khadijah","Hafsah","Fatimah"], ms:["Aisyah","Khadijah","Hafsah","Fatimah"]}, c: 1 },
+            { cat: {en:"Sirah", ms:"Sirah"}, q: {en:"Battle in Ramadan?", ms:"Perang dalam Ramadan?"}, a: {en:["Uhud","Badar","Khandaq","Tabuk"], ms:["Uhud","Badar","Khandaq","Tabuk"]}, c: 1 },
+            { cat: {en:"Sirah", ms:"Sirah"}, q: {en:"First Muazzin?", ms:"Muazzin pertama?"}, a: {en:["Bilal","Zaid","Mus'ab","Salman"], ms:["Bilal","Zaid","Mus'ab","Salman"]}, c: 0 },
+            { cat: {en:"Sirah", ms:"Sirah"}, q: {en:"Prophet died in?", ms:"Nabi wafat di?"}, a: {en:["Makkah","Madinah","Taif","Jerusalem"], ms:["Makkah","Madinah","Taif","Baitulmaqdis"]}, c: 1 },
+
+            // --- PROPHETS ---
+            { cat: {en:"Prophets", ms:"Para Nabi"}, q: {en:"Swallowed by whale?", ms:"Ditelan ikan nun?"}, a: {en:["Musa","Yunus","Yusuf","Yahya"], ms:["Musa","Yunus","Yusuf","Yahya"]}, c: 1 },
+            { cat: {en:"Prophets", ms:"Para Nabi"}, q: {en:"Father of mankind?", ms:"Bapa manusia?"}, a: {en:["Adam","Nuh","Ibrahim","Idris"], ms:["Adam","Nuh","Ibrahim","Idris"]}, c: 0 },
+            { cat: {en:"Prophets", ms:"Para Nabi"}, q: {en:"Spoke to animals?", ms:"Bicara dengan haiwan?"}, a: {en:["Sulaiman","Daud","Musa","Isa"], ms:["Sulaiman","Daud","Musa","Isa"]}, c: 0 },
+            { cat: {en:"Prophets", ms:"Para Nabi"}, q: {en:"Thrown into fire?", ms:"Dicampak ke api?"}, a: {en:["Musa","Ibrahim","Yusuf","Isa"], ms:["Musa","Ibrahim","Yusuf","Isa"]}, c: 1 },
+
+            // --- HISTORY ---
+            { cat: {en:"History", ms:"Sejarah"}, q: {en:"Father of Algebra?", ms:"Bapa Algebra?"}, a: {en:["Al-Khwarizmi","Al-Kindi","Al-Farabi","Ibn Battuta"], ms:["Al-Khwarizmi","Al-Kindi","Al-Farabi","Ibnu Batutah"]}, c: 0 },
+            { cat: {en:"History", ms:"Sejarah"}, q: {en:"Conqueror of Constantinople?", ms:"Penakluk Konstantinopel?"}, a: {en:["Suleiman","Mehmed II","Selim","Murad"], ms:["Suleiman","Al-Fatih","Selim","Murad"]}, c: 1 },
+            { cat: {en:"History", ms:"Sejarah"}, q: {en:"Liberator of Jerusalem?", ms:"Pembebas Baitulmaqdis?"}, a: {en:["Salahuddin","Tariq","Khalid","Saad"], ms:["Salahuddin","Tariq","Khalid","Saad"]}, c: 0 },
+            { cat: {en:"History", ms:"Sejarah"}, q: {en:"Author 'Sabilal Muhtadin'?", ms:"Pengarang 'Sabilal Muhtadin'?"}, a: {en:["Hamzah Fansuri","Arsyad Al-Banjari","Tok Kenali","Wali Songo"], ms:["Hamzah Fansuri","Arsyad Al-Banjari","Tok Kenali","Wali Songo"]}, c: 1 },
+            { cat: {en:"History", ms:"Sejarah"}, q: {en:"Founder of Malacca?", ms:"Pengasas Melaka?"}, a: {en:["Tun Perak","Parameswara","Hang Tuah","Sultan Muzaffar"], ms:["Tun Perak","Parameswara","Hang Tuah","Sultan Muzaffar"]}, c: 1 }
         ];
 
         /* INIT & LANGUAGE CHECK */
         window.addEventListener('DOMContentLoaded', () => {
-            // Check language from Parent App (index.html)
             const savedLang = localStorage.getItem('wsl_lang');
             if (savedLang && (savedLang === 'ms' || savedLang === 'en')) {
                 currentLang = savedLang;
             }
             updateUIText();
+            renderCategoryGrid();
         });
 
         function updateUIText() {
             const t = TEXTS[currentLang];
             document.getElementById('lbl-title').textContent = t.title;
             document.getElementById('lbl-subtitle').textContent = t.subtitle;
-            document.getElementById('lbl-timed').textContent = t.timed;
-            document.getElementById('lbl-free').textContent = t.free;
+            document.getElementById('btn-timed').textContent = t.timed;
+            document.getElementById('btn-free').textContent = t.free;
             document.getElementById('lbl-exit').textContent = t.exit;
-            document.getElementById('lbl-exit-game').textContent = t.exit;
+            document.getElementById('lbl-exit-game').textContent = t.backMenu; // "Menu" button
+            
             document.getElementById('lbl-score').textContent = t.score;
             document.getElementById('lbl-time').textContent = t.time;
             document.getElementById('endTitle').textContent = t.complete;
             document.getElementById('lbl-final-score').textContent = t.finalScore;
-            document.getElementById('lbl-replay-timed').textContent = t.replayTimed;
-            document.getElementById('lbl-replay-free').textContent = t.replayFree;
             document.getElementById('lbl-back-menu').textContent = t.backMenu;
             
             document.getElementById('btnPrev').textContent = t.prev;
-            // Next button text is dynamic (Next/Finish), handled in loadQuestion
         }
 
-        /* GAME LOGIC (UNCHANGED) */
+        /* START SCREEN LOGIC */
+        function setMode(mode) {
+            selectedMode = mode;
+            const slider = document.getElementById('modeSlider');
+            const btnTimed = document.getElementById('btn-timed');
+            const btnFree = document.getElementById('btn-free');
+
+            if (mode === 'timed') {
+                slider.style.transform = 'translateX(0)';
+                btnTimed.classList.add('active');
+                btnFree.classList.remove('active');
+            } else {
+                slider.style.transform = 'translateX(100%)';
+                btnFree.classList.add('active');
+                btnTimed.classList.remove('active');
+            }
+        }
+
+        function renderCategoryGrid() {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = '';
+            
+            // 1. Extract Unique Categories
+            const categories = {};
+            DB.forEach(item => {
+                const enKey = item.cat.en;
+                if (!categories[enKey]) {
+                    categories[enKey] = {
+                        en: item.cat.en,
+                        ms: item.cat.ms,
+                        count: 0
+                    };
+                }
+                categories[enKey].count++;
+            });
+
+            // 2. Add "All Topics" Button
+            const allBtn = document.createElement('div');
+            allBtn.className = 'cat-card';
+            allBtn.style.backgroundColor = 'var(--primary-light)';
+            allBtn.style.borderColor = 'var(--primary)';
+            allBtn.onclick = () => startGame('all');
+            allBtn.innerHTML = `
+                <div class="cat-icon">🌎</div>
+                <div>
+                    <div class="cat-name" style="color:var(--primary)">${TEXTS[currentLang].allTopics}</div>
+                    <div class="cat-count">${DB.length} Qs</div>
+                </div>
+            `;
+            grid.appendChild(allBtn);
+
+            // 3. Add Other Categories
+            // Map simple icons to categories for flair
+            const icons = {
+                "General": "🕌", "Fardhu Ain": "🤲", "Quran": "📖", 
+                "Sirah": "📜", "Prophets": "👳", "History": "⚔️", "Science": "🧪"
+            };
+
+            Object.values(categories).forEach(cat => {
+                const btn = document.createElement('div');
+                btn.className = 'cat-card';
+                btn.onclick = () => startGame(cat.en);
+                const icon = icons[cat.en] || "✨";
+                
+                btn.innerHTML = `
+                    <div class="cat-icon">${icon}</div>
+                    <div>
+                        <div class="cat-name">${currentLang === 'ms' ? cat.ms : cat.en}</div>
+                        <div class="cat-count">${cat.count} Qs</div>
+                    </div>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        /* GAME LOGIC */
         let currentQ = 0;
         let score = 0;
         let timeLeft = 15;
@@ -240,18 +325,35 @@
             else window.location.href = 'index.html';
         }
 
+        function returnToMenu() {
+            if(timerInt) clearInterval(timerInt);
+            document.getElementById('gameUI').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+        }
+
         function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
 
-        function startGame(mode) {
-            isFreeMode = (mode === 'free');
+        function startGame(categoryKey) {
+            isFreeMode = (selectedMode === 'free');
             document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('endScreen').classList.add('hidden');
             document.getElementById('gameUI').classList.remove('hidden');
             
             currentQ = 0; score = 0; userAnswers = {};
-            activeQuestions = shuffle([...DB]).slice(0, 8); // Pick 8 random questions
+            
+            // Filter DB based on category
+            let pool = [];
+            if (categoryKey === 'all') {
+                pool = [...DB];
+            } else {
+                pool = DB.filter(i => i.cat.en === categoryKey);
+            }
+
+            // Shuffle and slice (limit to 20 or max available)
+            activeQuestions = shuffle(pool).slice(0, 20); 
             document.getElementById('totalQ').innerText = activeQuestions.length;
 
+            // UI Setup
             if (isFreeMode) {
                 document.getElementById('timerBox').style.visibility = 'hidden';
                 document.getElementById('timerBarBg').style.display = 'none';
@@ -275,7 +377,6 @@
             document.getElementById('timer').innerText = timeLeft;
             document.getElementById('timeBar').style.width = '100%';
             
-            // USE CURRENT LANG FOR TEXT
             document.getElementById('question').innerText = qData.q[currentLang];
             document.getElementById('catTag').innerText = qData.cat[currentLang];
             
