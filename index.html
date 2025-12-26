@@ -986,7 +986,21 @@
             window.removeEventListener('deviceorientation', handleCompass);
         }
     }
-    <script type="module">
+    
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    window.addEventListener('beforeinstallprompt', e => { 
+        e.preventDefault(); dp = e; 
+        if(!isStandalone) { document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-android').style.display = 'flex'; }
+    });
+    if (isIOS && !isStandalone) { setTimeout(() => { document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-ios').style.display = 'flex'; }, 3000); }
+    window.installPWA = function() { 
+        if(dp) { dp.prompt(); dp.userChoice.then((r) => { if (r.outcome === 'accepted') { document.getElementById('pwaInstall').style.display = 'none'; } dp = null; }); }
+    };
+    window.closePWA = () => { document.getElementById('pwaInstall').style.display = 'none'; };
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration Failed:', err)); }); }
+        </script>
+        <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
@@ -1064,20 +1078,8 @@
             waLink.addEventListener('click', () => window.logEvent('contact', 'whatsapp_click'));
         }
     });
-    
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    window.addEventListener('beforeinstallprompt', e => { 
-        e.preventDefault(); dp = e; 
-        if(!isStandalone) { document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-android').style.display = 'flex'; }
-    });
-    if (isIOS && !isStandalone) { setTimeout(() => { document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-ios').style.display = 'flex'; }, 3000); }
-    window.installPWA = function() { 
-        if(dp) { dp.prompt(); dp.userChoice.then((r) => { if (r.outcome === 'accepted') { document.getElementById('pwaInstall').style.display = 'none'; } dp = null; }); }
-    };
-    window.closePWA = () => { document.getElementById('pwaInstall').style.display = 'none'; };
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration Failed:', err)); }); }
-    </script>
+                                                       
+</script>
 </body>
 </html>
