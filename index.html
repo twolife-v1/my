@@ -93,8 +93,22 @@
         .nav-item.active { color: var(--primary); }
         .nav-label { font-size: 10px; font-weight: 700; }
 
-        .compass-ring { width: 260px; height: 260px; border-radius: 50%; border: 6px solid var(--border); position: relative; display: flex; align-items: center; justify-content: center; background: var(--surface); margin: 40px auto; }
-        .compass-arrow { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 90px solid var(--primary); position: absolute; top: 30px; transform-origin: bottom center; }
+        .compass-ring { 
+            width: 260px; height: 260px; 
+            border-radius: 50%; border: 6px solid var(--border); 
+            position: relative; display: flex; 
+            align-items: center; justify-content: center; 
+            background: var(--surface); margin: 40px auto;
+            transform: none !important; /* Ring stays still */
+        }
+        .compass-arrow { 
+            width: 0; height: 0; 
+            border-left: 15px solid transparent; border-right: 15px solid transparent; 
+            border-bottom: 90px solid var(--primary); 
+            position: absolute; top: 30px; 
+            transform-origin: bottom center; 
+            transition: transform 180ms linear; /* Smooth movement */
+        }
         .kaaba-icon { position: absolute; top: -45px; font-size: 32px; }
 
         .bookmark-btn { background: none; border: none; color: var(--border); cursor: pointer; padding: 5px; }
@@ -339,12 +353,12 @@
         { en: "Richness is not having many belongings, but richness is contentment of the soul.", ms: "Kekayaan itu bukanlah banyaknya harta benda, tetapi kekayaan itu adalah kaya hati (cukup apa yang ada).", src: "Bukhari" },
         { en: "Do not get angry, and Paradise is yours.", ms: "Janganlah kamu marah, maka bagimu Syurga.", src: "Tabrani" },
         { en: "Fear Allah wherever you are.", ms: "Bertakwalah kepada Allah di mana sahaja kamu berada.", src: "Tirmidhi" },
-        { en: "Modesty brings nothing but good.", ms: "Sifat malu itu tidak mendatangkan sesuatu melainkan kebaikan.", src: "Bukhari & Muslim" },
+        { en: "Modesty brings nothing but good.", ms: "Sifat malu itu tidak mendatating sesuatu melainkan kebaikan.", src: "Bukhari & Muslim" },
         { en: "The Dua (supplication) is the essence of worship.", ms: "Doa itu adalah otak (inti) ibadah.", src: "Tirmidhi" },
         { en: "Cleanliness invites towards Faith, and Faith leads its possessor to the Garden.", ms: "Kebersihan mengajak kepada keimanan, dan keimanan membawa pemiliknya ke Syurga.", src: "Tabrani" },
         { en: "Whoever follows a path to seek knowledge, Allah will make the path to Jannah easy for him.", ms: "Barangsiapa menempuh jalan untuk menuntut ilmu, Allah akan memudahkannya jalan ke Syurga.", src: "Muslim" },
         { en: "Give the worker his wages before his sweat dries.", ms: "Berikanlah upah kepada pekerja sebelum kering peluhnya.", src: "Ibn Majah" },
-        { en: "A person will be with those whom he loves.", ms: "Seseorang itu akan bersama with those whom he loves.", ms: "Seseorang itu akan bersama dengan orang yang dicintainya (di Akhirat kelak).", src: "Bukhari & Muslim" },
+        { en: "A person will be with those whom he loves.", ms: "Seseorang itu akan bersama dengan orang yang dicintainya (di Akhirat kelak).", src: "Bukhari & Muslim" },
         { en: "There is no disease that Allah has created, except that He also has created its treatment.", ms: "Tidaklah Allah menurunkan penyakit kecuali Dia juga menurunkan penawarnya.", src: "Bukhari" },
         { en: "The best charity is that given by one who has little.", ms: "Sebaik-baik sedekah adalah usaha daripada orang yang sedikit hartanya.", src: "Abu Dawud" },
         { en: "Oppression will be a darkness on the Day of Resurrection.", ms: "Kezaliman itu adalah kegelapan pada Hari Kiamat.", src: "Bukhari & Muslim" },
@@ -642,18 +656,12 @@
             const d = await r.json();
             list.innerHTML = '';
             d.data.forEach(s => {
-                // FIX: Escape apostrophes in names (e.g., "Ali 'Imran" becomes "Ali \'Imran")
-                const safeName = s.englishName.replace(/'/g, "\\'");
-                
-                list.innerHTML += `<div class="surah-item" onclick="openSurah(${s.number}, '${safeName}')">
+                list.innerHTML += `<div class="surah-item" onclick="openSurah(${s.number}, '${s.englishName}')">
                     <div class="surah-num">${s.number}</div>
                     <div style="flex:1"><b>${s.englishName}</b><br><small>${s.name}</small></div>
                 </div>`;
             });
-        } catch(e) { 
-            console.error(e);
-            list.innerHTML = "Internet required for Quran."; 
-        }
+        } catch(e) { list.innerHTML = "Internet required for Quran."; }
     }
 
     const SURAH_CACHE = {};
@@ -889,33 +897,91 @@
         });
     }
 
-    function toggleQibla(s) { 
-        const m = document.getElementById('qiblaModal');
-        if(s) { 
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission().then(response => {
-                    if (response === 'granted') {
-                        m.classList.add('active'); 
-                        window.addEventListener('deviceorientation', handleCompass, true);
-                    } else { alert("Permission required for Compass."); }
-                }).catch(console.error);
-            } else { m.classList.add('active'); window.addEventListener('deviceorientation', handleCompass, true); }
-        } else { m.classList.remove('active'); window.removeEventListener('deviceorientation', handleCompass); }
+    /* IMPROVED COMPASS LOGIC FROM QIBLAT.HTML */
+    let lastRotation = 0;
+    let qiblaBearing = 0;
+
+    // 1. Precise Qibla Calculation
+    function calcQibla(lat1, lon1) {
+        const kaabaLat = 21.422487;
+        const kaabaLon = 39.826206;
+        const φ1 = lat1 * Math.PI/180;
+        const λ1 = lon1 * Math.PI/180;
+        const φ2 = kaabaLat * Math.PI/180;
+        const λ2 = kaabaLon * Math.PI/180;
+
+        const y = Math.sin(λ2 - λ1) * Math.cos(φ2);
+        const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2 - λ1);
+        let θ = Math.atan2(y, x) * 180/Math.PI;
+        return (θ + 360) % 360;
     }
 
-    function getQiblaBearing(lat, lon) {
-        const kaabaLat = 21.422487, kaabaLon = 39.826206;
-        const y = Math.sin(kaabaLon * Math.PI/180 - lon * Math.PI/180);
-        const x = Math.cos(lat * Math.PI/180) * Math.tan(kaabaLat * Math.PI/180) - Math.sin(lat * Math.PI/180) * Math.cos(kaabaLon * Math.PI/180 - lon * Math.PI/180);
-        return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    // 2. Screen Orientation Helper
+    function getScreenAngle() {
+        if (screen && screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
+        if (typeof window.orientation === 'number') return window.orientation || 0;
+        return 0;
     }
 
+    // 3. Shortest Rotation Animation
+    function rotateNeedle(deg) {
+        const arrow = document.querySelector('.compass-arrow');
+        if (!arrow) return;
+        let diff = (deg - lastRotation + 540) % 360 - 180;
+        lastRotation += diff;
+        arrow.style.transform = `rotate(${lastRotation}deg)`;
+    }
+
+    // 4. Unified Orientation Handler
     function handleCompass(e) {
-        let compass = e.webkitCompassHeading || Math.abs(e.alpha - 360);
-        document.getElementById('compassRing').style.transform = `rotate(${-compass}deg)`;
-        const qibla = getQiblaBearing(window.STATE.lat, window.STATE.lon);
-        document.querySelector('.compass-arrow').style.transform = `rotate(${qibla}deg)`;
-        document.getElementById('qiblaDeg').textContent = Math.round(qibla) + "°";
+        let heading = null;
+        
+        // iOS and modern Android Support
+        if (typeof e.webkitCompassHeading === 'number') {
+            heading = e.webkitCompassHeading;
+        } else if (e.absolute && typeof e.alpha === 'number') {
+            heading = e.alpha;
+        } else if (typeof e.alpha === 'number') {
+            heading = e.alpha;
+        }
+
+        if (heading !== null) {
+            const screenAngle = getScreenAngle();
+            // Convert magnetic heading to clockwise from North
+            const magnetic = (360 - heading + screenAngle + 360) % 360;
+            
+            // Point the needle at the relative Qibla direction
+            rotateNeedle(qiblaBearing - magnetic);
+        }
+    }
+
+    // 5. Updated Toggle with Permission handling
+    async function toggleQibla(s) {
+        const m = document.getElementById('qiblaModal');
+        if(s) {
+            // Calculate the static bearing once based on location
+            qiblaBearing = calcQibla(window.STATE.lat, window.STATE.lon);
+            document.getElementById('qiblaDeg').textContent = Math.round(qiblaBearing) + "°";
+
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const resp = await DeviceOrientationEvent.requestPermission();
+                    if (resp === 'granted') {
+                        m.classList.add('active');
+                        window.addEventListener('deviceorientationabsolute', handleCompass, true);
+                        window.addEventListener('deviceorientation', handleCompass, true);
+                    }
+                } catch(err) { alert("Sensor access denied."); }
+            } else {
+                m.classList.add('active');
+                window.addEventListener('deviceorientationabsolute', handleCompass, true);
+                window.addEventListener('deviceorientation', handleCompass, true);
+            }
+        } else {
+            m.classList.remove('active');
+            window.removeEventListener('deviceorientationabsolute', handleCompass);
+            window.removeEventListener('deviceorientation', handleCompass);
+        }
     }
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
