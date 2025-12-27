@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kisah 25 Rasul</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --shadow:0 10px 30px -10px rgba(0,0,0,0.1); }
+        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --shadow:0 10px 30px -10px rgba(0,0,0,0.5); }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 40px; transition: background 0.3s; }
+
+        /* HEADER */
+        .sticky-header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+        :root[data-theme="dark"] .sticky-header { background: rgba(18, 18, 18, 0.85); }
+        .header-title { font-weight: 800; font-size: 18px; }
+        .toggle-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+        /* LIST */
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .search-box { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; margin-bottom: 20px; font-size: 14px; }
+        
+        .prophet-card {
+            background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; align-items: flex-start; gap: 15px;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .prophet-card:active { transform: scale(0.98); background: var(--primary-light); }
+        .number-badge {
+            width: 40px; height: 40px; background: var(--primary-light); color: var(--primary);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 14px; flex-shrink: 0;
+        }
+        .card-content { flex: 1; }
+        .name-en { font-weight: 800; font-size: 15px; margin-bottom: 2px; }
+        .name-ar { font-family: 'Amiri', serif; font-size: 18px; color: var(--primary); }
+        .story-preview { font-size: 12px; color: var(--text-muted); margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; }
+
+        /* READER MODAL */
+        #storyModal {
+            position: fixed; inset: 0; background: var(--bg); z-index: 200;
+            display: none; flex-direction: column; animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .modal-nav { padding: 15px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { background: none; border: none; font-size: 24px; color: var(--text); cursor: pointer; }
+        
+        .story-scroll-area { flex: 1; overflow-y: auto; padding: 25px; padding-bottom: 80px; }
+        .story-header-ar { text-align: center; font-family: 'Amiri', serif; font-size: 36px; color: var(--primary); margin: 10px 0 5px 0; }
+        .story-subtitle { text-align: center; font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 30px; letter-spacing: 1px; }
+        
+        /* Typography for Story */
+        .story-body { font-size: 16px; line-height: 1.8; color: var(--text); white-space: pre-wrap; }
+        .story-body strong { color: var(--primary); font-weight: 700; }
+        .dropcap { float: left; font-size: 3.5em; line-height: 0.8; margin-right: 10px; color: var(--primary); font-family: 'Amiri', serif; }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-header">
+        <div class="header-title" id="pageTitle">Kisah 25 Rasul</div>
+        <div style="display:flex; gap:8px;">
+            <button class="toggle-btn" onclick="toggleLang()" id="langBtn">MS</button>
+            <button class="toggle-btn" onclick="toggleTheme()">◑</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <input type="text" id="searchInput" class="search-box" placeholder="Cari..." onkeyup="renderList()">
+        <div id="prophetList"></div>
+    </div>
+
+    <div id="storyModal">
+        <div class="modal-nav">
+            <button class="close-btn" onclick="closeStory()">&times;</button>
+            <div style="font-weight:700" id="modalTitle">Story</div>
+            <div style="width:24px"></div>
+        </div>
+        <div class="story-scroll-area" id="modalScroll">
+            <div class="story-header-ar" id="modalArabic"></div>
+            <div class="story-subtitle" id="modalSubtitle"></div>
+            <div class="story-body" id="modalText"></div>
+        </div>
+    </div>
+
+<script>
+    /* EXPANDED DATABASE: 
+       Contains key narratives (The Fruit, The Ark, The Fire, The Whale, etc.)
+       formatted with <br><br> for paragraphs.
+    */
+    const PROPHETS = [
+        { 
+            en: "Adam", ar: "آدم", title_en: "The First Creation", title_ms: "Penciptaan Pertama", 
+            story_ms: "Allah memerintahkan para malaikat untuk mengambil tanah dari bumi, dan daripadanya Allah menciptakan Adam. Apabila roh ditiupkan ke dalamnya, baginda menjadi manusia pertama.\n\nAllah memerintahkan para malaikat untuk sujud hormat kepada Adam. Semua sujud kecuali Iblis, yang sombong kerana merasa api lebih mulia daripada tanah. Akibatnya, Iblis diusir dari Syurga.\n\nAdam dan isterinya Hawa tinggal di Syurga dengan segala kenikmatan, kecuali satu pohon larangan. Iblis menipu mereka dengan bersumpah bahawa pohon itu akan memberikan keabadian. Mereka tergelincir dan memakan buah tersebut. Setelah bertaubat, mereka diturunkan ke bumi sebagai khalifah untuk memulakan kehidupan manusia.",
+            story_en: "Allah commanded the angels to gather clay from the earth, and from it, He created Adam. When the soul was breathed into him, he became the first human.\n\nAllah commanded the angels to bow down to Adam in respect. All bowed except Iblis (Satan), who was arrogant, believing fire was superior to clay. As a result, Iblis was expelled from Paradise.\n\nAdam and his wife Hawwa (Eve) lived in Paradise with every luxury, except for one forbidden tree. Iblis deceived them, swearing that the tree would grant them immortality. They slipped and ate from it. After repenting, they were sent down to Earth as vicegerents to begin the journey of mankind." 
+        },
+        { 
+            en: "Idris", ar: "إدريس", title_en: "The Inventor", title_ms: "Penulis Pertama", 
+            story_ms: "Nabi Idris (Enoch) adalah keturunan keenam daripada Adam. Baginda terkenal sebagai manusia pertama yang diajar menggunakan qalam (pena) untuk menulis, menjahit pakaian, dan mengkaji ilmu bintang.\n\nPada zamannya, manusia mula melakukan kerosakan. Idris berjuang menegakkan kebenaran dengan penuh kesabaran. Baginda diangkat ke martabat yang tinggi di sisi Allah. Dalam peristiwa Israk Mikraj, Nabi Muhammad SAW bertemu dengan Nabi Idris di langit keempat.",
+            story_en: "Prophet Idris (Enoch) was the sixth generation from Adam. He is known as the first human taught to write with a pen, sew clothes, and study the stars.\n\nDuring his time, people began to spread corruption. Idris fought to uphold the truth with great patience. He was raised to a high station by Allah. During the Isra' Mi'raj, Prophet Muhammad SAW met Prophet Idris in the fourth heaven." 
+        },
+        { 
+            en: "Nuh", ar: "نوح", title_en: "The Great Flood", title_ms: "Banjir Besar", 
+            story_ms: "Selama 950 tahun, Nabi Nuh menyeru kaumnya menyembah Allah, namun hanya sedikit yang beriman. Para pembesar kaumnya mengejek baginda dan menuduhnya sesat.\n\nAllah memerintahkan Nuh membina sebuah bahtera besar di atas daratan yang kering. Kaumnya ketawa melihat perbuatannya itu. Apabila perintah Allah tiba, air memancar dari bumi (tannur) dan hujan lebat turun dari langit.\n\nNuh memanggil anaknya, Kan'an, untuk naik ke bahtera, tetapi anaknya enggan dan memilih untuk mendaki gunung. Akhirnya, ombak besar menelan orang-orang kafir, termasuk anak dan isteri Nuh yang derhaka. Hanya mereka di dalam bahtera yang terselamat.",
+            story_en: "For 950 years, Prophet Nuh called his people to worship Allah, but only a few believed. The leaders of his people mocked him and accused him of being astray.\n\nAllah commanded Nuh to build a massive Ark on dry land. His people laughed at him. When Allah's command came, water gushed from the earth (the oven) and torrential rain fell from the sky.\n\nNuh called out to his son, Kan'an, to board the Ark, but his son refused, choosing to climb a mountain instead. Eventually, massive waves swallowed the disbelievers, including Nuh's rebellious son and wife. Only those in the Ark were saved." 
+        },
+        { 
+            en: "Hud", ar: "هود", title_en: "The Wind of 'Ad", title_ms: "Angin Kaum 'Ad", 
+            story_ms: "Kaum 'Ad tinggal di kawasan berpasir bernama Al-Ahqaf. Mereka dikurniakan tubuh badan yang besar dan kuat, serta membina bangunan-bangunan tinggi yang belum pernah diciptakan sebelumnya di negeri lain.\n\nNamun mereka sombong dan menyembah berhala. Nabi Hud memberi amaran bahawa kekuatan mereka adalah ujian dari Allah. Mereka menjawab dengan angkuh: 'Siapakah yang lebih kuat dari kami?'\n\nAllah menghantar angin ribut yang sangat sejuk dan kencang (Sarsar) selama 7 malam dan 8 hari. Angin itu membinasakan mereka sehingga mereka mati bergelimpangan seperti batang pohon kurma yang tumbang.",
+            story_en: "The people of 'Ad lived in a sandy region called Al-Ahqaf. They were blessed with massive, strong bodies and built towering structures unlike anything created in other lands.\n\nHowever, they were arrogant and worshipped idols. Prophet Hud warned them that their strength was a test from Allah. They replied arrogantly: 'Who is mightier than us?'\n\nAllah sent a violently cold and furious wind (Sarsar) for 7 nights and 8 days. The wind destroyed them until they lay dead like fallen palm tree trunks." 
+        },
+        { 
+            en: "Saleh", ar: "صالح", title_en: "The She-Camel", title_ms: "Mukjizat Unta", 
+            story_ms: "Kaum Thamud pakar memahat gunung menjadi istana. Mereka mencabar Nabi Saleh untuk mengeluarkan seekor unta betina dari bongkah batu besar sebagai bukti kerasulannya.\n\nDengan izin Allah, batu itu terbelah dan keluarlah unta betina yang bunting. Saleh berkata: 'Ini adalah unta Allah. Biarkan ia makan di bumi Allah dan jangan menyakitinya.'\n\nNamun, sembilan orang jahat dari kaumnya bersepakat membunuh unta tersebut. Akibat keingkaran itu, pada hari ketiga setelah pembunuhan, satu tempikan kuat (halilintar) dari langit membinasakan mereka semua di dalam rumah mereka.",
+            story_en: "The people of Thamud were experts at carving mountains into palaces. They challenged Prophet Saleh to bring a she-camel out of a massive solid rock as proof of his prophethood.\n\nBy Allah's leave, the rock split and a pregnant she-camel emerged. Saleh said: 'This is Allah's she-camel. Let her graze on Allah's earth and do not harm her.'\n\nHowever, nine wicked men among his people plotted and killed the camel. Due to this defiance, on the third day after the killing, a massive blast (thunderbolt) from the sky destroyed them all within their homes." 
+        },
+        { 
+            en: "Ibrahim", ar: "إبراهيم", title_en: "Friend of Allah", title_ms: "Kisah Api & Korban", 
+            story_ms: "Ibrahim menghancurkan berhala-berhala kaumnya dan meninggalkan kapak pada berhala yang paling besar. Raja Namrud murka dan memerintahkan Ibrahim dibakar hidup-hidup. Namun Allah berfirman: 'Wahai api, jadilah sejuk dan penyelamat bagi Ibrahim.'\n\nDi usia tua, baginda diuji dengan perintah menyembelih anaknya, Ismail. Ketika pisau diletakkan di leher Ismail, Allah menggantikannya dengan seekor kibas besar sebagai tebusan. Inilah asal usul ibadah korban.\n\nBaginda juga membina Kaabah bersama Ismail dan berdoa agar keturunannya mendirikan solat dan menjadikan Mekah negeri yang aman.",
+            story_en: "Ibrahim destroyed his people's idols, leaving the axe hanging on the largest one. King Namrud was furious and ordered Ibrahim to be burned alive. But Allah commanded: 'O fire, be cool and safe for Ibrahim.'\n\nIn his old age, he was tested with the command to sacrifice his son, Ismail. As he placed the knife on Ismail's neck, Allah replaced him with a great ram as a ransom. This is the origin of the Qurbani sacrifice.\n\nHe also built the Kaaba with Ismail and prayed for his descendants to establish prayer and for Mecca to be a city of peace." 
+        },
+        { 
+            en: "Luth", ar: "لوط", title_en: "The City of Sodom", title_ms: "Kota Sodom", 
+            story_ms: "Nabi Luth adalah anak saudara Ibrahim. Baginda diutus ke Sodom, di mana penduduknya melakukan maksiat yang tidak pernah dilakukan oleh umat sebelumnya—hubungan sesama jenis.\n\nMalaikat datang dalam rupa pemuda kacak bertamu di rumah Luth. Kaum Luth datang menyerbu rumahnya untuk menuntut tetamu itu. Malaikat kemudian membutakan mata mereka.\n\nAllah memerintahkan Luth keluar di malam hari dan jangan menoleh ke belakang. Pada waktu subuh, Allah menterbalikkan kota itu (tanah yang atas ke bawah) dan menghujani mereka dengan batu dari tanah yang terbakar. Isteri Luth turut binasa kerana bersubahat.",
+            story_en: "Prophet Luth was the nephew of Ibrahim. He was sent to Sodom, where the inhabitants practiced an immorality never committed by any nation before them—homosexuality.\n\nAngels came in the form of handsome young men to visit Luth. The people of Sodom stormed his house demanding the guests. The angels then blinded their eyes.\n\nAllah commanded Luth to leave at night and not look back. At dawn, Allah turned the city upside down and rained upon them stones of baked clay. Luth's wife also perished for being complicit." 
+        },
+        { 
+            en: "Ismail", ar: "إسماعيل", title_en: "Zamzam & Sacrifice", title_ms: "Telaga Zamzam", 
+            story_ms: "Ketika bayi, ibunya Hajar berlari-lari anak antara bukit Safa dan Marwah mencari air di padang pasir yang tandus. Hentakan kaki Ismail menyebabkan terpancarnya air Zamzam yang tidak pernah kering hingga hari ini.\n\nBaginda membesar menjadi seorang yang penyabar dan menepati janji. Baginda membantu ayahnya Ibrahim membina Kaabah. Daripada keturunannya lahirlah Nabi Muhammad SAW.",
+            story_en: "As an infant, his mother Hajar ran between the hills of Safa and Marwah searching for water in the barren desert. Ismail's kicking of the ground caused the Zamzam water to gush forth, which has never dried up to this day.\n\nHe grew up to be patient and true to his promise. He assisted his father Ibrahim in building the Kaaba. From his lineage came the Prophet Muhammad SAW." 
+        },
+        { 
+            en: "Ishaq", ar: "إسحاق", title_en: "The Glad Tidings", title_ms: "Berita Gembira", 
+            story_ms: "Malaikat memberi khabar gembira kepada Sarah (isteri Ibrahim) bahawa dia akan melahirkan anak walaupun sudah tua dan mandul. Sarah ketawa kerana hairan.\n\nIshaq lahir sebagai anugerah Allah. Baginda adalah bapa kepada Yaqub. Daripada keturunan Ishaq, lahirnya ramai nabi-nabi Bani Israel seperti Musa, Dawud, dan Isa.",
+            story_en: "Angels gave glad tidings to Sarah (Ibrahim's wife) that she would bear a son despite being old and barren. Sarah laughed in astonishment.\n\nIshaq was born as a gift from Allah. He was the father of Yaqub. From Ishaq's lineage came many prophets of the Children of Israel, such as Musa, Dawud, and Isa." 
+        },
+        { 
+            en: "Yaqub", ar: "يعقوب", title_en: "Grief & Patience", title_ms: "Kesedihan & Sabar", 
+            story_ms: "Yaqub (digelar Israel) mempunyai 12 orang anak lelaki. Kasih sayangnya kepada Yusuf menyebabkan abang-abangnya cemburu.\n\nApabila Yusuf dilaporkan 'dimakan serigala', Yaqub bersabar dengan 'Sabar yang Cantik' (Sabrun Jamil). Baginda menangis kerana kerinduan sehingga matanya menjadi putih (buta). Akhirnya, bau baju Yusuf mengembalikan penglihatannya dan keluarga itu bersatu semula di Mesir.",
+            story_en: "Yaqub (also called Israel) had 12 sons. His love for Yusuf caused jealousy among the older brothers.\n\nWhen Yusuf was reported 'eaten by a wolf', Yaqub bore it with 'Beautiful Patience' (Sabrun Jamil). He wept out of longing until his eyes turned white (blind). Eventually, the scent of Yusuf's shirt restored his sight, and the family was reunited in Egypt." 
+        },
+        { 
+            en: "Yusuf", ar: "يوسف", title_en: "The Most Beautiful Story", title_ms: "Ahsanul Qasas", 
+            story_ms: "Yusuf bermimpi 11 bintang, matahari, dan bulan sujud kepadanya. Abang-abangnya mencampaknya ke dalam perigi kerana dengki. Baginda dijual sebagai hamba di Mesir.\n\nIsteri menteri (Zulaikha) cuba menggodanya, tetapi Yusuf menolak. Apabila Zulaikha menarik bajunya dari belakang hingga koyak, terbuktilah Yusuf tidak bersalah. Namun, baginda tetap dipenjara.\n\nDi penjara, baginda mentafsir mimpi Raja tentang 7 lembu gemuk dimakan 7 lembu kurus. Kebijaksanaannya menyelamatkan Mesir dari kemarau. Baginda menjadi Menteri dan akhirnya memaafkan saudara-saudaranya.",
+            story_en: "Yusuf dreamed that 11 stars, the sun, and the moon prostrated to him. His brothers threw him into a well out of envy. He was sold as a slave in Egypt.\n\nThe minister's wife (Zulaikha) tried to seduce him, but Yusuf refused. When she pulled his shirt from the back and tore it, his innocence was proven. Yet, he was still imprisoned.\n\nIn prison, he interpreted the King's dream about 7 fat cows being eaten by 7 lean ones. His wisdom saved Egypt from famine. He became a Minister and eventually forgave his brothers." 
+        },
+        { 
+            en: "Ayyub", ar: "أيوب", title_en: "The Test of Suffering", title_ms: "Ujian Penyakit", 
+            story_ms: "Iblis mendakwa Ayyub hanya taat kerana dia kaya dan sihat. Allah menguji Ayyub dengan memusnahkan hartanya, mematikan anak-anaknya, dan memberikannya penyakit kulit yang dahsyat sehingga dia diasingkan orang ramai.\n\nIsterinya bertanya, 'Kenapa tidak berdoa supaya sembuh?' Ayyub menjawab dia malu meminta kerana masa sihatnya jauh lebih lama dari masa sakitnya. Akhirnya, Allah memerintahkannya menghentakkan kaki ke tanah, lalu memancar air sejuk untuk mandi dan minum, yang menyembuhkan segala penyakitnya.",
+            story_en: "Iblis claimed Ayyub was only obedient because he was wealthy and healthy. Allah tested Ayyub by destroying his wealth, taking the lives of his children, and afflicting him with a severe skin disease until people shunned him.\n\nHis wife asked, 'Why not pray for a cure?' Ayyub replied he was ashamed to ask, as his years of health far outnumbered his years of sickness. Finally, Allah commanded him to strike the ground with his foot, causing cool water to gush forth for bathing and drinking, which cured all his ailments." 
+        },
+        { 
+            en: "Shu'aib", ar: "شعيب", title_en: "Justice in Trade", title_ms: "Keadilan Timbangan", 
+            story_ms: "Penduduk Madyan adalah peniaga yang curang. Mereka mengurangkan timbangan dan memotong jalan untuk merompak. Nabi Shu'aib digelar 'Khatib Para Nabi' kerana kefasihannya berhujah.\n\nBaginda menyeru mereka berlaku adil. Mereka mengejek: 'Adakah solatmu menyuruh kami meninggalkan harta kami?' Akhirnya, Allah menimpakan 'Azab Hari Naungan'—awan hitam yang disangka membawa hujan, tetapi membawa petir dan api yang membinasakan.",
+            story_en: "The people of Madyan were dishonest traders. They cheated in weights and measures and waylaid travelers to rob them. Prophet Shu'aib was called the 'Speaker of Prophets' for his eloquence.\n\nHe called them to be just. They mocked: 'Does your prayer command us to leave our wealth?' Finally, Allah sent the 'Punishment of the Shadowing Cloud'—a dark cloud they thought brought rain, but instead brought lightning and fire that destroyed them." 
+        },
+        { 
+            en: "Musa", ar: "موسى", title_en: "The Staff & The Sea", title_ms: "Tongkat & Laut Merah", 
+            story_ms: "Musa dihanyutkan di Sungai Nil semasa bayi dan membesar di istana Firaun. Selepas tidak sengaja membunuh seorang lelaki, baginda lari ke Madyan.\n\nDi Lembah Tuwa, Allah berkata-kata dengannya dan memberinya mukjizat tongkat menjadi ular dan tangan yang bercahaya. Musa mencabar ahli sihir Firaun, dan ular Musa menelan ular-ular sihir mereka.\n\nApabila terperangkap di hadapan Laut Merah, Musa memukul laut dengan tongkatnya, dan laut terbelah menjadi jalan kering. Firaun yang mengejar mati lemas. Musa juga bertemu Nabi Khidr untuk belajar ilmu tentang takdir Allah.",
+            story_en: "Musa was set adrift in the Nile as a baby and grew up in Pharaoh's palace. After accidentally killing a man, he fled to Madyan.\n\nIn the Valley of Tuwa, Allah spoke to him and gave him the miracles of the staff turning into a snake and his hand shining white. Musa challenged Pharaoh's magicians, and his snake swallowed their magic serpents.\n\nTrapped before the Red Sea, Musa struck the sea with his staff, and it parted into a dry path. Pharaoh pursued and drowned. Musa also met Prophet Khidr to learn about the hidden wisdom of Allah's decree." 
+        },
+        { 
+            en: "Harun", ar: "هارون", title_en: "The Loyal Brother", title_ms: "Saudara Setia", 
+            story_ms: "Nabi Musa berdoa agar Allah melantik Harun sebagai pembantunya kerana Harun lebih fasih berbicara. Harun sentiasa menyokong Musa berdepan dengan Firaun.\n\nSemasa Musa ke Bukit Sinai selama 40 hari, Samiri menyesatkan Bani Israel untuk menyembah patung anak lembu emas. Harun cuba menghalang mereka tetapi dia hampir dibunuh oleh kaumnya sendiri kerana kedegilan mereka.",
+            story_en: "Prophet Musa prayed for Allah to appoint Harun as his helper because Harun was more eloquent in speech. Harun constantly supported Musa in facing Pharaoh.\n\nWhile Musa was at Mount Sinai for 40 days, Samiri misled the Israelites into worshipping a golden calf statue. Harun tried to stop them, but he was almost killed by his own people due to their stubbornness." 
+        },
+        { 
+            en: "Dhu'l-Kifli", ar: "ذو الكفل", title_en: "Man of Guarantee", title_ms: "Orang Yang Menjamin", 
+            story_ms: "Raja di zamannya berjanji menyerahkan takhta kepada sesiapa yang sanggup berpuasa di siang hari, solat di malam hari, dan tidak marah. Seorang pemuda bangun dan berkata 'Aku sanggup'.\n\nSyaitan cuba berkali-kali memancing kemarahannya dengan mengganggu waktu tidurnya, tetapi baginda tetap sabar dan menunaikan janjinya. Allah memujinya dalam Al-Quran sebagai orang yang sabar.",
+            story_en: "The King of his time promised to hand over the throne to anyone who would fast by day, pray by night, and never get angry. A young man stood up and said 'I guarantee it'.\n\nSatan tried repeatedly to provoke his anger by disturbing his sleep, but he remained patient and fulfilled his guarantee. Allah praises him in the Quran as one of the steadfast." 
+        },
+        { 
+            en: "Dawud", ar: "داود", title_en: "Iron & Psalms", title_ms: "Besi & Zabur", 
+            story_ms: "Dawud hanyalah seorang remaja ketika menyertai tentera Talut. Dengan hanya menggunakan lastik dan batu, baginda berjaya membunuh gergasi Jalut (Goliath).\n\nAllah mengurniakan kerajaan dan hikmah. Suara baginda sangat merdu sehingga burung dan gunung bertasbih bersamanya. Allah juga melembutkan besi di tangannya, membolehkan baginda membuat baju besi (zirah) dengan tangan kosong.",
+            story_en: "Dawud was just a youth when he joined Talut's army. Using only a sling and a stone, he succeeded in killing the giant Jalut (Goliath).\n\nAllah granted him a kingdom and wisdom. His voice was so beautiful that birds and mountains glorified Allah along with him. Allah also made iron soft in his hands, allowing him to mold chainmail armor with his bare hands." 
+        },
+        { 
+            en: "Sulaiman", ar: "سليمان", title_en: "The Magnificent Kingdom", title_ms: "Kerajaan Agung", 
+            story_ms: "Nabi Sulaiman mewarisi kerajaan Dawud. Baginda berdoa memohon kerajaan yang tidak akan dimiliki sesiapa selepasnya. Allah menundukkan angin, jin, dan haiwan kepadanya.\n\nBurung Hud-hud memberitahu tentang Ratu Balqis yang menyembah matahari. Sulaiman menghantar surat 'Bismillah...'. Jin Ifrit menawarkan membawa singgahsana Balqis sebelum Sulaiman bangun dari tempat duduk, tetapi seorang yang berilmu membawanya dalam sekelip mata.\n\nBaginda wafat dalam keadaan berdiri solat bertongkatkan kayu, dan jin terus bekerja kerana tidak sedar baginda sudah wafat sehingga anai-anai memakan tongkatnya.",
+            story_en: "Prophet Sulaiman inherited Dawud's kingdom. He prayed for a kingdom no one else would possess. Allah subjected the wind, jinn, and animals to his command.\n\nThe Hoopoe bird informed him of Queen Balqis who worshipped the sun. Sulaiman sent a letter 'Bismillah...'. A powerful Ifrit offered to bring her throne before Sulaiman stood up, but a man with knowledge brought it in the blink of an eye.\n\nHe passed away while standing in prayer leaning on his staff. The jinn continued working, unaware of his death, until termites ate through the staff and he fell." 
+        },
+        { 
+            en: "Ilyas", ar: "إلياس", title_en: "Baalbek", title_ms: "Berhala Baal", 
+            story_ms: "Kaum Bani Israel di Baalbek menyembah berhala bernama Baal. Nabi Ilyas memberi amaran, tetapi mereka ingkar.\n\nAllah menahan hujan selama 3 tahun sehingga berlaku kebuluran dan kematian ternakan. Selepas mereka merayu, Ilyas berdoa dan hujan turun. Namun, selepas itu mereka kembali kufur dan cuba membunuh Ilyas.",
+            story_en: "The Israelites in Baalbek worshipped an idol named Baal. Prophet Ilyas warned them, but they disobeyed.\n\nAllah withheld rain for 3 years, causing famine and the death of livestock. After they begged, Ilyas prayed and rain fell. However, they later returned to disbelief and tried to kill Ilyas." 
+        },
+        { 
+            en: "Al-Yasa", ar: "اليسع", title_en: "The Successor", title_ms: "Penerus Ilyas", 
+            story_ms: "Baginda adalah anak murid Nabi Ilyas yang setia. Semasa Ilyas dikejar musuh, Al-Yasa sentiasa bersamanya. Setelah Ilyas diangkat, Al-Yasa meneruskan dakwah membimbing Bani Israel berpegang kepada Kitab Taurat, walaupun raja-raja ketika itu sangat zalim.",
+            story_en: "He was the loyal student of Prophet Ilyas. When Ilyas was pursued by enemies, Al-Yasa stayed with him. After Ilyas was raised, Al-Yasa continued the mission of guiding the Israelites to hold fast to the Torah, even though the kings of that time were tyrants." 
+        },
+        { 
+            en: "Yunus", ar: "يونس", title_en: "The Whale's Belly", title_ms: "Perut Ikan Nun", 
+            story_ms: "Nabi Yunus marah kerana kaumnya di Ninawa tidak mahu beriman, lalu baginda pergi tanpa izin Allah. Baginda menaiki kapal yang kemudian dipukul badai.\n\nUndian dibuat untuk membuang seorang penumpang, dan nama Yunus terpilih tiga kali. Baginda terjun dan ditelan ikan paus (Nun). Dalam kegelapan perut ikan, baginda bertaubat: 'Tiada Tuhan selain Engkau, Maha Suci Engkau, sesungguhnya aku termasuk orang yang zalim.' Allah menyelamatkannya, dan baginda mendapati kaumnya telah bertaubat.",
+            story_en: "Prophet Yunus was angry because his people in Nineveh refused to believe, so he left without Allah's permission. He boarded a ship which was then hit by a storm.\n\nLots were drawn to throw one passenger overboard, and Yunus's name was picked three times. He jumped and was swallowed by a whale (Nun). In the darkness of the belly, he repented: 'There is no God but You, Glory be to You, I have indeed been of the wrongdoers.' Allah saved him, and he found that his people had repented." 
+        },
+        { 
+            en: "Zakariya", ar: "زكريا", title_en: "Prayer in Old Age", title_ms: "Doa di Usia Tua", 
+            story_ms: "Zakariya adalah penjaga Maryam di Mihrab. Setiap kali baginda masuk, baginda melihat buah-buahan musim panas di musim sejuk di sisi Maryam. Maryam berkata: 'Ia dari sisi Allah'.\n\nTerinspirasi dengan itu, Zakariya berdoa memohon anak walaupun isterinya mandul dan baginda sudah tua. Allah mengabulkan doanya dengan kelahiran Yahya.",
+            story_en: "Zakariya was the guardian of Maryam in the sanctuary. Every time he entered, he found summer fruits during winter with Maryam. She said: 'It is from Allah'.\n\nInspired by this, Zakariya prayed for a son even though his wife was barren and he was old. Allah answered his prayer with the birth of Yahya." 
+        },
+        { 
+            en: "Yahya", ar: "يحيى", title_en: "Wisdom in Youth", title_ms: "Hikmah Sejak Kecil", 
+            story_ms: "Allah memberi Yahya hikmah dan ilmu sejak kanak-kanak. Baginda sangat bertaqwa, lembut hati terhadap ibu bapa, dan tidak sombong. Baginda berani menegur Raja Herodus yang ingin mengahwini anak saudaranya sendiri, yang menyebabkan baginda dibunuh syahid.",
+            story_en: "Allah granted Yahya wisdom and knowledge since childhood. He was very pious, kind to his parents, and not arrogant. He bravely rebuked King Herod who wanted to marry his own niece, which led to Yahya being martyred." 
+        },
+        { 
+            en: "Isa", ar: "عيسى", title_en: "Miracles of Messiah", title_ms: "Mukjizat Al-Masih", 
+            story_ms: "Isa lahir tanpa bapa. Apabila Maryam dituduh melakukan maksiat, bayi Isa berbicara membela ibunya: 'Sesungguhnya aku hamba Allah...'.\n\nAntara mukjizatnya: membentuk burung dari tanah lalu meniupnya menjadi hidup, menyembuhkan orang buta dan sopak, serta menghidupkan orang mati dengan izin Allah. Kaum Hawariyyun meminta hidangan dari langit (Ma'idah). Apabila musuh mengepung untuk membunuhnya, Allah mengangkatnya ke langit dan wajah orang yang mengkhianatinya (Yahuza) diserupakan dengan Isa lalu disalib.",
+            story_en: "Isa was born without a father. When Maryam was accused of unchastity, the infant Isa spoke to defend his mother: 'Indeed, I am the servant of Allah...'.\n\nAmong his miracles: forming a bird from clay and breathing life into it, curing the blind and lepers, and raising the dead by Allah's leave. The disciples asked for a table spread from heaven (Ma'idah). When enemies surrounded him to kill him, Allah raised him to the heavens, and the traitor (Judas) was made to look like Isa and was crucified instead." 
+        },
+        { 
+            en: "Muhammad", ar: "محمد", title_en: "The Final Messenger", title_ms: "Penutup Para Rasul", 
+            story_ms: "Lahir di Tahun Gajah. Menjadi anak yatim piatu sejak kecil. Dikenali sebagai Al-Amin. Pada usia 40 tahun di Gua Hira, Jibril memeluknya dan wahyu pertama 'Iqra' (Bacalah) turun.\n\nBaginda dakwah secara rahsia kemudian terang-terangan. Diboikot dan diseksa di Mekah. Peristiwa Israk Mikraj membawanya bertemu Allah untuk menerima perintah solat.\n\nBaginda berhijrah ke Madinah, membina negara Islam pertama, memenangi Perang Badar, dan akhirnya membebaskan Mekah (Fathu Makkah) tanpa pertumpahan darah. Baginda wafat setelah menyempurnakan amanah Allah.",
+            story_en: "Born in the Year of the Elephant. Orphaned at a young age. Known as Al-Amin (Trustworthy). At age 40 in Cave Hira, Jibril embraced him and the first revelation 'Iqra' (Read) descended.\n\nHe preached secretly then openly. Boycotted and persecuted in Mecca. The Isra' Mi'raj journey took him to meet Allah to receive the prayer command.\n\nHe migrated to Madinah, established the first Islamic state, won the Battle of Badr, and eventually Liberated Mecca (Fathu Makkah) without bloodshed. He passed away after fulfilling Allah's trust." 
+        }
+    ];
+
+    let currentLang = localStorage.getItem('wsl_lang') || 'ms';
+    let currentTheme = localStorage.getItem('wsl_theme') || 'light';
+
+    window.addEventListener('DOMContentLoaded', () => {
+        applyTheme();
+        updateUI();
+        renderList();
+        try { const p = window.parent.document.documentElement.getAttribute('data-theme'); if(p) { currentTheme = p; applyTheme(); } } catch(e) {}
+    });
+
+    function toggleLang() { currentLang = currentLang === 'en' ? 'ms' : 'en'; updateUI(); renderList(); }
+    function toggleTheme() { currentTheme = currentTheme === 'light' ? 'dark' : 'light'; applyTheme(); }
+    function applyTheme() { document.documentElement.setAttribute('data-theme', currentTheme); }
+    
+    function updateUI() {
+        document.getElementById('langBtn').textContent = currentLang.toUpperCase();
+        document.getElementById('pageTitle').textContent = currentLang === 'ms' ? "Kisah 25 Rasul" : "Stories of 25 Prophets";
+        document.getElementById('searchInput').placeholder = currentLang === 'ms' ? "Cari Nabi..." : "Search Prophet...";
+    }
+
+    function renderList() {
+        const list = document.getElementById('prophetList');
+        const filter = document.getElementById('searchInput').value.toLowerCase();
+        list.innerHTML = '';
+
+        PROPHETS.forEach((p, index) => {
+            if (p.en.toLowerCase().includes(filter) || p.ar.includes(filter)) {
+                const title = currentLang === 'ms' ? p.title_ms : p.title_en;
+                const story = currentLang === 'ms' ? p.story_ms : p.story_en;
+                // Create a short preview for the card
+                const preview = story.split('\n')[0].substring(0, 120) + '...';
+                
+                list.innerHTML += `
+                    <div class="prophet-card" onclick="openStory(${index})">
+                        <div class="number-badge">${index + 1}</div>
+                        <div class="card-content">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div class="name-en">${p.en}</div>
+                                <div class="name-ar">${p.ar}</div>
+                            </div>
+                            <div style="font-size:11px; color:var(--primary); font-weight:700; text-transform:uppercase;">${title}</div>
+                            <div class="story-preview">${preview}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    }
+
+    function openStory(index) {
+        const p = PROPHETS[index];
+        const isMs = currentLang === 'ms';
+        
+        document.getElementById('modalTitle').textContent = p.en;
+        document.getElementById('modalArabic').textContent = p.ar;
+        document.getElementById('modalSubtitle').textContent = isMs ? p.title_ms : p.title_en;
+        
+        // Process text for paragraphs and formatting
+        let rawText = isMs ? p.story_ms : p.story_en;
+        // Add dropcap to first letter
+        const firstLetter = rawText.charAt(0);
+        const restText = rawText.slice(1);
+        
+        // Simple formatter: \n\n becomes new paragraphs
+        document.getElementById('modalText').innerHTML = `<span class="dropcap">${firstLetter}</span>${restText}`;
+        
+        document.getElementById('storyModal').style.display = 'flex';
+    }
+
+    function closeStory() { document.getElementById('storyModal').style.display = 'none'; }
+</script>
+</body>
+</html>
