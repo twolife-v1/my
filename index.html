@@ -52,22 +52,68 @@
             transition: opacity 2s ease; mix-blend-mode: screen;
         }
 
-        /* Celestial Body (Sun/Moon) */
-        .celestial-anchor {
-            position: absolute; left: 50%; bottom: 0; width: 100%; height: 100%;
-            transform-origin: 50% 150%; /* Pivot point below screen for arc movement */
-            transition: transform 1.5s cubic-bezier(0.25, 1, 0.5, 1);
-            z-index: 2; pointer-events: none;
-        }
+    /* --- UPDATED: TIGHTER ORBIT (MOBILE FRIENDLY) --- */
+.celestial-anchor {
+    position: absolute;
+    left: 50%;
+    bottom: 0px; /* Pivot sits exactly at the bottom of the hero */
+    width: 0;
+    height: 0;
+    transform-origin: center center;
+    z-index: 2; /* Behind the glass card, above the sky */
+    pointer-events: none;
+    transition: transform 1s linear;
+}
 
-        .celestial-body {
-            position: absolute; left: 50%; top: 20%; 
-            width: 70px; height: 70px; border-radius: 50%;
-            transform: translateX(-50%);
-            background: var(--orb-bg);
-            box-shadow: var(--orb-glow);
-            transition: all 2s ease;
-        }
+.celestial-body {
+    position: absolute;
+    /* REDUCED RADIUS: -230px keeps it inside mobile screens */
+    top: -230px; 
+    left: -35px; /* Centers the 70px ball */
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--orb-bg);
+    box-shadow: var(--orb-glow);
+    transition: all 1s ease;
+}
+
+/* MOON TEXTURE RESTORED */
+.is-moon .celestial-body {
+    background: radial-gradient(circle at 35% 35%, #fdfdfd 0%, #e0e0e0 20%, #c2c2c2 100%);
+    box-shadow: 0 0 25px rgba(255,255,255,0.4);
+}
+
+.is-moon .celestial-body::before { 
+    content: '';
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
+    background-image: 
+        radial-gradient(circle at 60% 70%, rgba(0,0,0,0.08) 10%, transparent 11%),
+        radial-gradient(circle at 30% 65%, rgba(0,0,0,0.1) 6%, transparent 7%),
+        radial-gradient(circle at 75% 40%, rgba(0,0,0,0.07) 12%, transparent 13%);
+    transform: rotate(-30deg);
+}
+
+/* BIRDS (Stick Style) */
+.bird-container {
+    position: absolute; top: 10%; left: 0; width: 100%; height: 60%;
+    z-index: 1; pointer-events: none; transition: opacity 2s ease;
+}
+.bird {
+    position: absolute;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' stroke='rgba(0,0,0,0.5)' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 12s4-4 9-4 9 4 9 4'/%3E%3Cpath d='M11 8v.5'/%3E%3C/svg%3E");
+   background-size: contain; width: 40px; height: 40px;
+}
+.bird-1 { top: 15%; animation: flyRight 35s linear infinite; opacity: 0.7; }
+.bird-2 { top: 30%; animation: flyRight 25s linear infinite 5s; transform: scale(0.8); opacity: 0.6; }
+.bird-3 { top: 35%; animation: flyRight 26s linear infinite 5.2s; transform: scale(0.6); opacity: 0.5; }
+
+@keyframes flyRight {
+    0% { transform: translateX(-10vw) translateY(0) rotate(5deg); }
+    50% { transform: translateY(-15px) rotate(-5deg); }
+    100% { transform: translateX(110vw) translateY(0) rotate(5deg); }
+}
+
 
         /* MOON TEXTURE (CSS Procedural) */
         .is-moon .celestial-body {
@@ -284,41 +330,47 @@
 
     <div id="view-home" class="view active">
         <div class="hero-wrapper">
-            <div id="skyBg" class="sky-container state-dhuhr">
-                <canvas id="cosmosCanvas"></canvas>
-                <div class="cloud-layer c1"></div>
-                <div class="cloud-layer c2"></div>
-                <div class="cloud-layer c3"></div>
-                
-                <div class="celestial-anchor" id="celestialAnchor">
-                    <div class="celestial-body"></div>
-                </div>
-            </div>
-
-            <div class="hero-content-layer">
-                <div class="hero-card-bg">
-                    <div class="hero-top">
-                        <div class="hero-left">
-                            <div id="locationName">Detecting...</div>
-                            <div class="hero-date-group">
-                                <div id="heroDate" style="font-size:12px; opacity:0.9; font-weight:600;">...</div>
-                                <div id="hijriDate" style="font-size:11px; opacity:0.75; font-family:'Amiri', sans-serif;">...</div>
-                            </div>
-                        </div>
-                        <div class="hero-right" style="text-align:right;">
-                            <div id="heroTime">--:--</div>
-                            <div id="countdown">--:--:--</div>
-                            <div id="nextPrayer" style="font-size:11px; font-weight:800; color:#FFD700; margin-top:4px; text-transform:uppercase;">Next: --</div>
-                        </div>
-                    </div>
-                    <div class="hero-divider"></div>
-                    <div id="heroPrayers">
-                        <div id="prayerNames"></div>
-                        <div id="prayerTimes"></div>
-                    </div>
-                </div>
-            </div>
+    <div id="skyBg" class="sky-container state-dhuhr">
+        <canvas id="cosmosCanvas"></canvas>
+        <div class="cloud-layer c1"></div>
+        <div class="cloud-layer c2"></div>
+        <div class="cloud-layer c3"></div>
+        
+        <div class="bird-container" id="birdLayer" style="opacity: 0;">
+            <div class="bird bird-1"></div>
+            <div class="bird bird-2"></div>
+            <div class="bird bird-3"></div>
         </div>
+        
+        <div class="celestial-anchor" id="celestialAnchor">
+            <div class="celestial-body"></div>
+        </div>
+    </div>
+    
+    <div class="hero-content-layer">
+        <div class="hero-card-bg">
+             <div class="hero-top">
+                 <div class="hero-left">
+                     <div id="locationName">Detecting...</div>
+                     <div class="hero-date-group">
+                         <div id="heroDate" style="font-size:12px; opacity:0.9; font-weight:600;">...</div>
+                         <div id="hijriDate" style="font-size:11px; opacity:0.75; font-family:'Amiri', sans-serif;">...</div>
+                     </div>
+                 </div>
+                 <div class="hero-right" style="text-align:right;">
+                     <div id="heroTime">--:--</div>
+                     <div id="countdown">--:--:--</div>
+                     <div id="nextPrayer" style="font-size:11px; font-weight:800; color:#FFD700; margin-top:4px; text-transform:uppercase;">Next: --</div>
+                 </div>
+             </div>
+             <div class="hero-divider"></div>
+             <div id="heroPrayers">
+                 <div id="prayerNames"></div>
+                 <div id="prayerTimes"></div>
+             </div>
+        </div>
+    </div>
+</div>
 
         <div id="app-container">
             <div id="last-read-container" style="display:none; margin-bottom: 20px;">
@@ -333,18 +385,26 @@
                 </div>
             </div>
 
-            <div class="section-header" id="cat-tools">🛠️ Alatan & Ibadah</div>
-            <div class="feature-grid">
-                <div class="feature-btn" onclick="openQibla()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-                    <span id="txt-tool-qibla">Qibla Finder</span>
-                </div>
-                <div class="feature-btn" onclick="openDuas()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                    <span id="txt-tool-duas">Daily Duas</span>
-                </div>
-            </div>
+           <div class="section-header" id="cat-tools">🛠️ Alatan & Ibadah</div>
+<div class="feature-grid">
+    <div class="feature-btn" onclick="trackClick('qibla'); openQibla()"> 
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+        </svg>
+        <span id="txt-tool-qibla">Qibla Finder</span>
+    </div>
 
+    <div class="feature-btn" onclick="trackClick('duas'); openDuas()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+        <span id="txt-tool-duas">Daily Duas</span>
+    </div>
+</div>
+
+            
             <div class="section-header" id="cat-knowledge">📚 Ilmu & Hikmah</div>
             <div class="feature-grid">
                 <div class="feature-btn" onclick="openHadithModal()">
@@ -920,10 +980,16 @@
             }
         });
     }
+    
 
     /* PWA */
-    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; document.getElementById('pwaInstall').style.display = 'flex'; document.getElementById('pwa-android').style.display = 'flex'; });
-    window.installPWA = () => { if(dp) dp.prompt(); };
+let dp = null; 
+window.addEventListener('beforeinstallprompt', e => { 
+    e.preventDefault(); 
+    dp = e; 
+    document.getElementById('pwaInstall').style.display = 'flex'; 
+    document.getElementById('pwa-android').style.display = 'flex'; 
+}); window.installPWA = () => { if(dp) dp.prompt(); };
     window.closePWA = () => { document.getElementById('pwaInstall').style.display = 'none'; };
 
     /* --- REALISTIC HERO ENGINE --- */
@@ -999,67 +1065,122 @@
     }
     setTimeout(() => { resizeCanvas(); animateCosmos(); }, 100);
 
-    /* --- UPDATE HERO STATE --- */
-    function updateHero() {
-        if(heroInterval) clearInterval(heroInterval);
-        const tick = () => {
-            const now = new Date();
-            const nowMins = (now.getHours() * 60) + now.getMinutes();
+    /* --- UPDATE HERO STATE (FIXED: With Azan Trigger) --- */
+function updateHero() {
+    if(heroInterval) clearInterval(heroInterval);
+    
+    const tick = () => {
+        const now = new Date();
+        // Calculate total minutes for current time (used for both Animation and Azan check)
+        const totalMins = (now.getHours() * 60) + now.getMinutes();
+        
+        // --- 1. Basic Text Updates ---
+        document.getElementById('heroTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
+        document.getElementById('heroDate').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
+        const hObj = PrayerCalc.getHijriDate(now);
+        const mList = HIJRI_MONTHS[window.STATE.lang];
+        document.getElementById('hijriDate').textContent = `${hObj.day} ${mList[hObj.month]} ${hObj.year}`;
+
+        // --- 2. Countdown Logic & Azan Trigger (FIXED) ---
+        let minDiff = Infinity; let nextKey = 'Fajr';
+        const timings = window.STATE.prayerTimes;
+        
+        ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
+            const [h,m] = timings[k].split(':').map(Number);
             
-            document.getElementById('heroTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
-            document.getElementById('heroDate').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
-            const hObj = PrayerCalc.getHijriDate(now);
-            const mList = HIJRI_MONTHS[window.STATE.lang];
-            document.getElementById('hijriDate').textContent = `${hObj.day} ${mList[hObj.month]} ${hObj.year}`;
-
-            let minDiff = Infinity; let nextKey = 'Fajr';
-            const timings = window.STATE.prayerTimes;
-            ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
-                const [h,m] = timings[k].split(':').map(Number);
-                const pMins = (h*60) + m;
-                const notifKey = `${k}_${now.toDateString()}`;
-                if (nowMins === pMins && !window.STATE.notified[notifKey]) {
-                    window.STATE.notified[notifKey] = true;
-                    azanAudio.play().catch(console.log);
-                    if (Notification.permission === 'granted') new Notification(`Time for ${prayerDisplayMap[k]}`);
+            // --- NEW: AZAN TRIGGER LOGIC ---
+            const pMins = (h * 60) + m;
+            const notifKey = `${k}_${now.toDateString()}`;
+            
+            // Check if current minute matches prayer time AND hasn't been notified today
+            if (totalMins === pMins && !window.STATE.notified[notifKey]) {
+                window.STATE.notified[notifKey] = true;
+                // Save to storage so it doesn't ring again if user refreshes page in the same minute
+                localStorage.setItem('wsl_notified', JSON.stringify(window.STATE.notified)); 
+                
+                // Play Audio
+                azanAudio.play().catch(e => console.log("Audio play failed (user interaction needed first):", e));
+                
+                // Send System Notification
+                if (Notification.permission === 'granted') {
+                    new Notification(`Time for ${prayerDisplayMap[k]}`, {
+                        body: `It is now ${window.STATE.prayerTimes[k]}`,
+                        icon: 'icon-192.png' // Ensure you have an icon, or remove this line
+                    });
                 }
-                let tDate = new Date(); tDate.setHours(h,m,0,0);
-                if(tDate < now) tDate.setDate(tDate.getDate()+1);
-                const diff = tDate - now;
-                if(diff < minDiff) { minDiff = diff; nextKey = k; }
-            });
-            const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0');
-            const mm = Math.floor((minDiff%3600000)/60000).toString().padStart(2,'0');
-            const ss = Math.floor((minDiff%60000)/1000).toString().padStart(2,'0');
-            document.getElementById('countdown').textContent = `- ${hh}:${mm}:${ss}`;
-            document.getElementById('nextPrayer').textContent = `${TRANSLATIONS[window.STATE.lang].next}: ${prayerDisplayMap[nextKey]}`;
-
-            const skyBg = document.getElementById('skyBg');
-            const anchor = document.getElementById('celestialAnchor');
-            const cvsElem = document.getElementById('cosmosCanvas');
-            const hr = now.getHours();
-
-            skyBg.className = 'sky-container'; 
-            let rotation = 0;
-            let isNight = false;
-
-            if(hr >= 5 && hr < 7) { skyBg.classList.add('state-fajr', 'is-sun'); rotation = -40; } 
-            else if(hr >= 7 && hr < 16) { skyBg.classList.add('state-dhuhr', 'is-sun'); rotation = ((hr - 7) / 9) * 60 - 30; } 
-            else if(hr >= 16 && hr < 19) { skyBg.classList.add('state-asr', 'is-sun'); rotation = 40; } 
-            else if(hr >= 19 && hr < 20) { skyBg.classList.add('state-maghrib', 'is-sun'); rotation = 60; } 
-            else { 
-                skyBg.classList.add('state-isha', 'is-moon'); 
-                isNight = true;
-                let nightHr = hr >= 20 ? hr - 20 : hr + 4; 
-                rotation = (nightHr / 9) * 60 - 30;
             }
+            // -------------------------------
 
-            anchor.style.transform = `rotate(${rotation}deg)`;
-            cvsElem.style.opacity = isNight ? 0.8 : (hr === 5 || hr === 6 ? 0.3 : 0);
-        };
-        tick(); 
-        heroInterval = setInterval(tick, 1000);
-    }
+            let tDate = new Date(); tDate.setHours(h,m,0,0);
+            if(tDate < now) tDate.setDate(tDate.getDate()+1);
+            const diff = tDate - now;
+            if(diff < minDiff) { minDiff = diff; nextKey = k; }
+        });
+
+        const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0');
+        const mm = Math.floor((minDiff%3600000)/60000).toString().padStart(2,'0');
+        const ss = Math.floor((minDiff%60000)/1000).toString().padStart(2,'0');
+        document.getElementById('countdown').textContent = `- ${hh}:${mm}:${ss}`;
+        document.getElementById('nextPrayer').textContent = `${TRANSLATIONS[window.STATE.lang].next}: ${prayerDisplayMap[nextKey]}`;
+
+        // --- 3. SUN/MOON & BIRDS LOGIC (Kept from index.html) ---
+        const skyBg = document.getElementById('skyBg');
+        const anchor = document.getElementById('celestialAnchor');
+        const cvsElem = document.getElementById('cosmosCanvas');
+        const birdLayer = document.getElementById('birdLayer');
+
+        // Day is 7:00 AM to 7:00 PM (19:00)
+        const sunriseMin = 7 * 60; 
+        const sunsetMin = 19 * 60;
+        
+        let rotation = 0;
+        let isDay = (totalMins >= sunriseMin && totalMins < sunsetMin);
+
+        if (isDay) {
+            // DAY Calculation (Smooth Orbit)
+            const dayLength = sunsetMin - sunriseMin;
+            const elapsed = totalMins - sunriseMin;
+            const percent = elapsed / dayLength; 
+            
+            // 90 (Right) -> 0 (Top) -> -90 (Left)
+            rotation = -90 + (percent * 180);
+
+            skyBg.className = 'sky-container is-sun';
+            if(percent < 0.15) skyBg.classList.add('state-fajr'); 
+            else if(percent > 0.85) skyBg.classList.add('state-maghrib'); 
+            else if(percent > 0.60) skyBg.classList.add('state-asr'); 
+            else skyBg.classList.add('state-dhuhr');
+
+            birdLayer.style.opacity = '1';
+            cvsElem.style.opacity = '0';
+
+        } else {
+            // NIGHT Calculation (Smooth Orbit)
+            let elapsed = 0;
+            const nightLength = (24 * 60) - sunsetMin + sunriseMin; // 720 mins
+            
+            if(totalMins >= sunsetMin) elapsed = totalMins - sunsetMin; // Before Midnight
+            else elapsed = (totalMins + (24*60)) - sunsetMin; // After Midnight
+            
+            const percent = elapsed / nightLength;
+            
+            // Moon: 90 (Right) -> 0 (Top) -> -90 (Left)
+            rotation = 90 - (percent * 180);
+
+            skyBg.className = 'sky-container state-isha is-moon';
+            birdLayer.style.opacity = '0';
+            cvsElem.style.opacity = '0.9'; // Stars visible
+        }
+
+        anchor.style.transform = `rotate(${rotation}deg)`;
+    };
+    
+    tick(); 
+    heroInterval = setInterval(tick, 1000);
+}
+
+
+
 </script>
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
@@ -1107,7 +1228,7 @@
     window.trackClick = (featureName) => {
         logEvent('feature_click', featureName);
     }
-    </script>
-    
+</script>
+
 </body>
 </html>
