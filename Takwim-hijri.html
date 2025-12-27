@@ -1,422 +1,308 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Takwim Hijri — Calendar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Takwim Hijri Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--primary:#A67734;--muted:#666;--card:rgba(255,255,255,0.36);--glass-blur:4px}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:linear-gradient(180deg,#fff 0%,#f6f4ef 100%);color:#222}
+    /* THEME VARIABLES (Synced with Mukmin.com) */
+    :root[data-theme="light"] { 
+        --primary: #A67734; --bg: #F8F9FA; --surface: #FFFFFF; 
+        --text: #1F2937; --text-muted: #6B7280; --border: #E5E7EB; 
+        --glass: rgba(255,255,255,0.95); --highlight: rgba(166,119,52,0.1); 
+    }
+    :root[data-theme="dark"] { 
+        --primary: #D4AF37; --bg: #121212; --surface: #1E1E1E; 
+        --text: #F3F4F6; --text-muted: #9CA3AF; --border: #374151; 
+        --glass: rgba(30,30,30,0.95); --highlight: rgba(212,175,55,0.15); 
+    }
 
-/* --- SCALED DOWN SIZING --- */
-.header{padding:8px;display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
-.brand{font-weight:700;color:var(--primary);font-size:14px}
-.controls{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
-.controls input,.controls select{padding:4px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px}
-.btn{background:var(--primary);color:#fff;padding:4px 8px;border-radius:6px;border:0;cursor:pointer;font-size:12px;}
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    /* LAYOUT: Forces the body to fit exactly in the iframe height (320px) */
+    body { 
+        margin: 0; font-family: 'Inter', sans-serif; 
+        background: var(--bg); color: var(--text); 
+        height: 100vh; width: 100vw; overflow: hidden; 
+        position: relative;
+    }
 
-.wrap{
-    max-width:100%;
-    margin:4px auto;
-    padding:0;
-    font-size: 13px;
-}
-.month-head{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:4px 0;flex-wrap:wrap}
-.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:4px}
-.weekday{text-align:center;color:var(--muted);font-size:11px;padding:3px}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:4px}
+    /* --- PAGE 1: CALENDAR VIEW --- */
+    #view-calendar {
+        height: 100%; display: flex; flex-direction: column;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* HEADER */
+    .header { 
+        padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; 
+        background: var(--surface); border-bottom: 1px solid var(--border); 
+        height: 50px; flex-shrink: 0;
+    }
+    .title-main { font-weight: 800; font-size: 15px; color: var(--primary); }
+    .title-sub { font-family: 'Amiri', serif; font-size: 11px; color: var(--text-muted); margin-top: -2px; }
+    
+    .nav-group { display: flex; gap: 4px; }
+    .btn-icon { 
+        width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); 
+        background: var(--surface); color: var(--text); display: flex; align-items: center; justify-content: center; 
+        cursor: pointer; padding: 0;
+    }
+    .btn-today { font-size: 9px; font-weight: 700; width: auto; padding: 0 8px; }
 
-.day{
-    background:var(--card);
-    backdrop-filter:blur(var(--glass-blur));
-    min-height:45px;
-    border-radius:6px;
-    padding:4px;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:transform .12s;position:relative
-}
-.day:hover{transform:translateY(-2px)}
-.gdate{font-weight:700;font-size:13px;}
-.hdate{font-size:10px;color:var(--primary);margin-top:2px}
-.outside{opacity:.35}
-.badge{position:absolute;right:4px;top:4px;background:rgba(166,119,52,0.12);padding:1px 4px;border-radius:999px;font-size:9px;color:var(--primary)}
+    /* GRID */
+    .calendar-body { flex: 1; padding: 5px; overflow-y: auto; display: flex; flex-direction: column; }
+    .week-row { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+    .w-day { font-size: 9px; text-align: center; color: var(--text-muted); font-weight: 700; }
+    
+    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; flex: 1; align-content: start; }
+    .day-cell {
+        aspect-ratio: 1; background: var(--surface); border-radius: 6px; border: 1px solid var(--border);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        position: relative; cursor: pointer; transition: 0.1s;
+    }
+    .day-cell:active { transform: scale(0.92); background: var(--border); }
+    .day-cell.today { background: var(--primary); border-color: var(--primary); }
+    .day-cell.today * { color: white !important; }
+    .day-cell.empty { background: transparent; border: none; pointer-events: none; }
+    
+    .num-g { font-weight: 700; font-size: 12px; }
+    .num-h { font-family: 'Amiri', serif; font-size: 9px; color: var(--primary); margin-top: -2px; }
+    
+    .dot { width: 3px; height: 3px; border-radius: 50%; position: absolute; top: 3px; right: 3px; }
+    .dot.islam { background: #22c55e; }
+    .dot.public { background: #ef4444; }
 
-.footer{margin-top:6px;padding:6px;background:#fff;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.04);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
-.small-muted{font-size:11px;color:var(--muted)}
+    /* --- PAGE 2: DETAIL SLIDE (The "Modal") --- */
+    #view-detail {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--bg); z-index: 50;
+        transform: translateY(100%); /* Hidden by default (pushed down) */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex; flex-direction: column;
+    }
+    #view-detail.active { transform: translateY(0); } /* Slides Up to cover iframe */
 
-.modal-back{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);visibility:hidden;opacity:0;transition:opacity .18s;z-index:999}
-.modal-back.show{visibility:visible;opacity:1}
-.modal{width:96%;max-width:500px;background:#fff;border-radius:8px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,0.18)}
-.modal-body{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px !important;}
-.prayers{flex:1 1 180px;display:flex;flex-direction:column;gap:4px;font-size:13px;}
-.prayer{display:flex;justify-content:space-between;padding:6px;border-radius:6px;background:#f5f5f5}
-.holidays{flex:1 1 120px;font-size:13px;}
-.holiday-item{background:#fff3f0;padding:6px;border-radius:6px;margin-bottom:4px}
+    .detail-header {
+        padding: 10px 15px; background: var(--surface); border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; gap: 10px; height: 50px; flex-shrink: 0;
+    }
+    .back-btn { 
+        background: none; border: none; color: var(--text); font-size: 14px; 
+        font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; 
+    }
+    
+    .detail-content { flex: 1; overflow-y: auto; padding: 15px; }
+    
+    /* Detail Cards */
+    .info-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .box-label { font-size: 10px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+    
+    .date-lg { font-size: 20px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+    .hijri-lg { font-family: 'Amiri', serif; font-size: 14px; color: var(--text); }
+    
+    .prayer-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
+    .prayer-row:last-child { border-bottom: none; }
+    
+    .tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 5px; margin-bottom: 4px; }
+    .tag.red { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .tag.green { background: rgba(34,197,94,0.1); color: #16a34a; }
 
-.day.today{border:2px solid var(--primary);background:rgba(166,119,52,0.15);}
-.day.searched{border:2px dashed var(--primary);background:rgba(255,223,186,0.3);}
-@media(max-width:420px){.day{min-height:40px;padding:3px}.gdate{font-size:12px}.hdate{font-size:9px}}
+    /* SCROLLBAR HIDING */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; opacity: 0.3; }
 </style>
 </head>
 <body>
-  <div class="header">
-    <div class="brand">Takwim Hijri</div>
-    <div class="controls">
-      <input id="searchDay" type="number" min="1" max="31" placeholder="DD" style="width:40px">
-      <select id="searchMonth"></select>
-      <input id="searchYear" type="number" placeholder="YYYY" style="width:60px">
-      <button id="goBtn" class="btn">Go</button>
-    </div>
-  </div>
 
-  <div class="wrap">
-    <div class="month-head">
-      <div>
-        <div id="monthYearTitle" class="month-title"></div>
-        <div class="small-muted" id="globalYears"></div>
-      </div>
-      <div style="display:flex;gap:4px;align-items:center">
-        <button id="prev" class="btn">◀</button>
-        <button id="next" class="btn">▶</button>
-        <button id="todayBtn" class="btn">Today</button>
-      </div>
-    </div>
-
-    <div class="weekdays">
-      <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
-      <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
-    </div>
-
-    <div class="grid" id="calendarGrid" aria-live="polite"></div>
-
-    <div class="footer">
-      <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-        <div class="small-muted">Loc:</div>
-        <input id="lat" placeholder="lat" style="width:70px;padding:4px;border-radius:6px;border:1px solid #ddd" value="3.046">
-        <input id="lng" placeholder="lng" style="width:70px;padding:4px;border-radius:6px;border:1px solid #ddd" value="101.58">
-        <input id="tz" placeholder="UTC" style="width:40px;padding:4px;border-radius:6px;border:1px solid #ddd" value="8">
+    <div id="view-calendar">
+        <div class="header">
+            <div>
+                <div id="mTitle" class="title-main">Loading...</div>
+                <div id="hTitle" class="title-sub">...</div>
+            </div>
+            <div class="nav-group">
+                <button class="btn-icon btn-today" onclick="goToday()">TODAY</button>
+                <button class="btn-icon" onclick="changeMonth(-1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button class="btn-icon" onclick="changeMonth(1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            </div>
+        </div>
         
-        <button id="recalc" class="btn">Recalc</button>
-      </div>
-      <div style="text-align:right;">
-        <div class="small-muted">Note: hijri/holiday dates are approx.</div>
-      </div>
+        <div class="calendar-body">
+            <div class="week-row">
+                <div class="w-day">SUN</div><div class="w-day">MON</div><div class="w-day">TUE</div><div class="w-day">WED</div>
+                <div class="w-day">THU</div><div class="w-day">FRI</div><div class="w-day">SAT</div>
+            </div>
+            <div id="grid" class="days-grid"></div>
+        </div>
     </div>
-  </div>
 
-  <div class="modal-back" id="modalBack">
-    <div class="modal">
-      <button id="closeModal" style="float:right;border:0;background:transparent;cursor:pointer;font-size:18px">✕</button>
-      <h3 id="modalTitle" style="font-size:16px; margin: 4px 0;"></h3>
-      <div class="small-muted" id="modalSub"></div>
-      <div class="modal-body">
-        <div class="prayers" id="prayersBox"></div>
-        <div class="holidays" id="holidaysBox"></div>
-      </div>
+    <div id="view-detail">
+        <div class="detail-header">
+            <button class="back-btn" onclick="closeDetail()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                BACK
+            </button>
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted);">Detail View</div>
+        </div>
+        
+        <div class="detail-content">
+            <div class="info-box" style="text-align:center;">
+                <div id="dDate" class="date-lg"></div>
+                <div id="dHijri" class="hijri-lg"></div>
+                <div id="dEvents" style="margin-top:8px;"></div>
+            </div>
+
+            <div class="info-box">
+                <div class="box-label">Prayer Times</div>
+                <div id="dPrayers"></div>
+            </div>
+            
+            <div style="text-align:center; font-size:9px; color:var(--text-muted); opacity:0.5; margin-top:10px;">
+                Times approximated for <span id="dLoc">KL</span>
+            </div>
+        </div>
     </div>
-  </div>
 
 <script>
-/* ----------------------------------------------------- */
-/* INJECTED UTILITIES FROM index (4).html               */
-/* ----------------------------------------------------- */
-const APP = { location: null, use24:false, kaaba:{lat:21.422487, lon:39.826206} };
-const storage = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){localStorage.setItem(k,JSON.stringify(v))} };
-// MODIFIED: Added Imsak to default timings (using Fajr/Dhuhr/Isha keys for internal logic)
-const DEFAULT_TIMINGS = {Imsak:'05:35', Fajr:'05:45',Dhuhr:'13:00',Asr:'16:30',Maghrib:'19:00',Isha:'20:15'};
-
-// Placeholder for Reverse Geocoding
-async function reverseGeocode(lat, lon) {
-  return "Current GPS Location"; 
-}
-
-// Format time (reusing function from index.html)
-function formatTime(t){
-  if(!t) return '--:--';
-  const [h,m]=t.split(':').map(n=>parseInt(n));
-  const dt=new Date(); dt.setHours(h,m,0,0);
-  return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:true});
-}
-
-// Get user location (reusing function from index.html)
-async function getLocation(){
-  let loc=storage.get('loc') || APP.location;
-  if(loc?.lat && loc?.lon && loc?.name) { 
-      APP.location=loc; 
-      document.getElementById('lat').value = loc.lat;
-      document.getElementById('lng').value = loc.lon;
-      return loc; 
-  }
-  
-  if(navigator.geolocation){
-    try{
-      const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:12000,enableHighAccuracy:true}));
-      const name = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
-      loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, name };
-      
-      APP.location = loc;
-      storage.set('loc', loc);
-      document.getElementById('lat').value = loc.lat;
-      document.getElementById('lng').value = loc.lon;
-      return loc;
-      
-    }catch(e){
-        console.warn('Geolocation error (user denied or timeout):', e);
-    }
-  }
-  // Set Fallback location to Subang Jaya
-  const fallbackLoc = { lat: 3.046, lon: 101.58, name: 'Subang Jaya (Default)' };
-  APP.location = fallbackLoc;
-  return fallbackLoc;
-}
-
-// Fetch accurate prayer times (reusing function from index.html)
-async function fetchOnlinePrayerTimes(lat, lon) {
-  try {
-    // Using method 11 (Singapore/JAKIM Proxy)
-    let apiMethod = 11; 
-    const ts = Math.floor(Date.now() / 1000);
-    
-    const res = await fetch(`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=${apiMethod}`);
-    const data = await res.json();
-    const timings = { 
-        // Renaming keys internally for consistency
-        Imsak: data.data.timings.Imsak,
-        Fajr: data.data.timings.Fajr, // Retained API key for storage
-        Dhuhr: data.data.timings.Dhuhr, // Retained API key for storage
-        Asr: data.data.timings.Asr, 
-        Maghrib: data.data.timings.Maghrib, 
-        Isha: data.data.timings.Isha // Retained API key for storage
+    /* --- STATE --- */
+    const STORAGE = { 
+        get(k) { try{ return JSON.parse(localStorage.getItem(k)) } catch(e){ return null } },
+        set(k,v) { localStorage.setItem(k, JSON.stringify(v)) }
     };
-    localStorage.setItem('lastPrayerTimes', JSON.stringify(timings));
-    return timings;
-  } catch(e) {
-    console.warn("API Error: Unable to fetch fresh data.");
-    return null;
-  }
-}
-/* ----------------------------------------------------- */
-/* END INJECTED UTILITIES                               */
-/* ----------------------------------------------------- */
 
-/* ====== Hijri Utilities ====== */
-const hijriMonths = ['Muharram','Safar','Rabiul-Awal','Rabiul-Akhir','Jamadil-Awal','Jamadil-Akhir','Rejab','Syaaban','Ramadhan','Shawal','Dzul-Qaedah','Dzul-Hijjah'];
+    // Detect Theme
+    const savedTheme = localStorage.getItem('wsl_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 
-function jdFromDate(y,m,d){ var a = Math.floor((14-m)/12); var y2=y+4800-a; var m2=m+12*a-3; return d + Math.floor((153*m2+2)/5) + 365*y2 + Math.floor(y2/4) - Math.floor(y2/100)+Math.floor(y2/400)-32045; }
-function islamicToJd(y,m,d){return d+Math.ceil(29.5*(m-1)) + (y-1)*354 + Math.floor((3+11*y)/30)+1948440-1;}
-function jdToIslamic(jd){jd=Math.floor(jd)+0.5; var days=jd-1948439.5; var y=Math.floor((30*days+10646)/10631); var m=Math.min(12,Math.ceil((jd-islamicToJd(y,1,1)+1)/29.5)); var d=jd-islamicToJd(y,m,1)+1; return {iy:y,im:m,id:Math.floor(d)};}
-function formatIslamic(i){return i.id + ' ' + hijriMonths[i.im-1] + ' ' + i.iy;}
+    let currDate = new Date(); // Real Today
+    let viewDate = new Date(); // Calendar View Month
+    let userLoc = STORAGE.get('wsl_coords') || { lat: 3.1390, lon: 101.6869 };
 
-/* ====== Prayer Times Algorithm (Simplified Fallback ONLY) ====== */
-var PT=(function(){
-  function dtr(d){return d*Math.PI/180;}
-  function rtd(r){return r*180/Math.PI;}
-  function sin(d){return Math.sin(dtr(d));}
-  function cos(d){return Math.cos(dtr(d));}
-  function fixHour(h){h=h%24; if(h<0) h+=24; return h;}
-  function julianDate(y,m,d){return jdFromDate(y,m,d)-0.5;}
-  function sunPos(jd){
-    var D=jd-2451545.0; var g=(357.529+0.98560028*D)%360; var q=(280.459+0.98564736*D)%360;
-    var L=(q+1.915*Math.sin(dtr(g))+0.02*Math.sin(dtr(2*g)))%360;
-    var e=23.439-0.00000036*D;
-    var RA=rtd(Math.atan2(Math.cos(dtr(e))*Math.sin(dtr(L)), Math.cos(dtr(L))))/15;
-    var decl=rtd(Math.asin(Math.sin(dtr(e))*Math.sin(dtr(L))));
-    var eqt=(q/15-RA); return {decl:decl, eqt:eqt};
-  }
-  function hourAngle(lat, decl, angle){ var term=(Math.sin(dtr(angle))-Math.sin(dtr(lat))*Math.sin(dtr(decl)))/(Math.cos(dtr(lat))*Math.cos(dtr(decl))); if(term>1)term=1;if(term<-1)term=-1; return rtd(Math.acos(term))/15;}
-  
-  // Returns 24-hour time string (HH:MM) - USED for internal calculation and return value
-  function toTimeStr24(t){
-      var H=Math.floor(t);
-      var M=Math.floor((t-H)*60+0.5); 
-      if(M===60){H+=1;M=0;} 
-      H=(H+24)%24; 
-      return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0');
-  }
+    /* --- DATA --- */
+    const HIJRI_M = ['Muharram','Safar','Rabiul Awal','Rabiul Akhir','Jamadil Awal','Jamadil Akhir','Rejab','Syaaban','Ramadan','Syawal','Zulkaedah','Zulhijjah'];
+    const HOLIDAYS = [
+        {m:1,d:1,n:"New Year"}, {m:5,d:1,n:"Labour Day"}, {m:8,d:31,n:"Merdeka"}, {m:9,d:16,n:"Malaysia Day"}, {m:12,d:25,n:"Christmas"}
+    ];
+    const ISLAMIC = [
+        {im:1,id:1,n:'Maal Hijrah'}, {im:9,id:1,n:'Ramadan Starts'}, {im:10,id:1,n:'Aidilfitri'}, {im:12,id:10,n:'Aidiladha'}
+    ];
 
-  // toTimeStr (12h format) is kept but not used for time calculation logic
-  function toTimeStr(t){var H=Math.floor(t);var M=Math.floor((t-H)*60+0.5); if(M===60){H+=1;M=0;} H=(H+24)%24; var ap=H>=12?'PM':'AM'; var h12=H%12; if(h12===0)h12=12; return String(h12).padStart(2,'0')+':'+String(M).padStart(2,'0')+' '+ap;}
-  
-  // Helper to subtract 10 minutes for Imsak (for fallback) - EXPECTS 24-hour time string
-  function subtract10Minutes(timeStr) {
-      if (!timeStr || timeStr.indexOf(':') === -1) return '--:--'; 
-      const [h, m] = timeStr.split(':').map(Number);
-      let totalMinutes = h * 60 + m - 10;
-      let newH = Math.floor(totalMinutes / 60);
-      let newM = totalMinutes % 60;
-      if (newM < 0) { newM += 60; newH -= 1; }
-      if (newH < 0) { newH += 24; }
-      return String(newH).padStart(2, '0') + ':' + String(newM).padStart(2, '0');
-  }
+    /* --- MATH --- */
+    function jdFromDate(y,m,d){ var a=Math.floor((14-m)/12), y2=y+4800-a, m2=m+12*a-3; return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045; }
+    function islamicToJd(y,m,d){ return d+Math.ceil(29.5*(m-1))+(y-1)*354+Math.floor((3+11*y)/30)+1948440-1; }
+    function jdToIslamic(jd){ jd=Math.floor(jd)+0.5; var days=jd-1948439.5, y=Math.floor((30*days+10646)/10631), m=Math.min(12,Math.ceil((jd-islamicToJd(y,1,1)+1)/29.5)), d=jd-islamicToJd(y,m,1)+1; return {iy:y,im:m,id:Math.floor(d)}; }
 
-  return {
-    getTimes:function(date,coords,tz){
-      var y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
-      var jd=julianDate(y,m,d); var sp=sunPos(jd);
-      var lat=coords.lat||0,lng=coords.lng||0; var noon=fixHour(12-sp.eqt-(lng/15)+tz);
+    const PrayerCalc = {
+        calc(date, lat, lng) {
+            // Simplified Offline Algo (Matches Index.html logic)
+            const D2R = Math.PI/180, R2D = 180/Math.PI;
+            const jd = jdFromDate(date.getFullYear(), date.getMonth()+1, date.getDate()) - 2451545.0;
+            const g = (357.529 + 0.98560028 * jd) % 360;
+            const q = (280.459 + 0.98564736 * jd) % 360;
+            const L = (q + 1.915 * Math.sin(g*D2R) + 0.02 * Math.sin(2*g*D2R)) % 360;
+            const e = 23.439 - 0.00000036 * jd;
+            const RA = R2D * Math.atan2(Math.cos(e*D2R) * Math.sin(L*D2R), Math.cos(L*D2R)) / 15;
+            const decl = R2D * Math.asin(Math.sin(e*D2R) * Math.sin(L*D2R));
+            const eqt = q/15 - RA;
+            const noon = 12 - eqt - (lng/15) + 8; // UTC+8
+            
+            const hourAngle = (angle) => {
+                const term = (Math.sin(angle*D2R) - Math.sin(lat*D2R)*Math.sin(decl*D2R)) / (Math.cos(lat*D2R)*Math.cos(decl*D2R));
+                return Math.abs(term) <= 1 ? R2D * Math.acos(term) / 15 : 0;
+            }
 
-      var FajrAngle = -20; // JAKIM/Singapore angle
-      var IshaAngle = -18; // JAKIM/Singapore angle
-      var MaghribAngle = 0.833;
+            const imsak = noon - hourAngle(-19.5) - (10/60); 
+            const fajr = noon - hourAngle(-20);
+            const asr = noon + (Math.abs((Math.sin(Math.atan(1/(1+Math.tan(Math.abs(lat-decl)*D2R))))) - Math.sin(lat*D2R)*Math.sin(decl*D2R)) <= 1 ? R2D*Math.acos((Math.sin(Math.atan(1/(1+Math.tan(Math.abs(lat-decl)*D2R))))) - Math.sin(lat*D2R)*Math.sin(decl*D2R))/(Math.cos(lat*D2R)*Math.cos(decl*D2R)) : 0)/15;
+            const maghrib = noon + hourAngle(0.833);
+            const isha = noon + hourAngle(-18);
 
-      var fajr=noon-hourAngle(lat,sp.decl,FajrAngle);
-      var dhuhr=noon;
-      
-      var asrAlt = rtd(Math.atan(1 / (1 + Math.tan(Math.abs(dtr(lat - sp.decl))))));
-      var asr = noon + hourAngle(lat, sp.decl, asrAlt);
-      
-      var maghrib=noon+hourAngle(lat,sp.decl,MaghribAngle);
-      var isha=noon+hourAngle(lat,sp.decl,IshaAngle);
-      
-      // Use toTimeStr24 for all returned times
-      return {
-        Imsak: subtract10Minutes(toTimeStr24(fajr)), 
-        Fajr: toTimeStr24(fajr), // Stored as Fajr for API compatibility
-        Dhuhr:toTimeStr24(dhuhr), // Stored as Dhuhr for API compatibility
-        Asr:toTimeStr24(asr),
-        Maghrib:toTimeStr24(maghrib),
-        Isha:toTimeStr24(isha) // Stored as Isha for API compatibility
-      };
+            const fmt = (t) => { t=(t+24)%24; let h=Math.floor(t), m=Math.floor((t-h)*60); return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; };
+            
+            return { Imsak: fmt(imsak), Subuh: fmt(fajr), Zohor: fmt(noon), Asar: fmt(asr), Maghrib: fmt(maghrib), Isyak: fmt(isha) };
+        }
+    };
+
+    /* --- UI LOGIC --- */
+    function render() {
+        const y = viewDate.getFullYear(), m = viewDate.getMonth();
+        const firstDay = new Date(y, m, 1);
+        const lastDay = new Date(y, m + 1, 0);
+        
+        // Titles
+        document.getElementById('mTitle').textContent = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        
+        const startH = jdToIslamic(jdFromDate(y, m+1, 1));
+        const endH = jdToIslamic(jdFromDate(y, m+1, lastDay.getDate()));
+        document.getElementById('hTitle').textContent = `${startH.id} ${HIJRI_M[startH.im-1]} - ${endH.id} ${HIJRI_M[endH.im-1]}`;
+
+        // Grid
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        
+        // Padding Days
+        for(let i=0; i<firstDay.getDay(); i++) grid.innerHTML += `<div class="day-cell empty"></div>`;
+
+        // Real Days
+        for(let d=1; d<=lastDay.getDate(); d++) {
+            const date = new Date(y, m, d);
+            const isToday = (date.toDateString() === currDate.toDateString());
+            const jd = jdFromDate(y, m+1, d);
+            const h = jdToIslamic(jd);
+            
+            const pub = HOLIDAYS.find(x => x.m === m+1 && x.d === d);
+            const isl = ISLAMIC.find(x => x.im === h.im && x.id === h.id);
+
+            const el = document.createElement('div');
+            el.className = `day-cell ${isToday ? 'today' : ''}`;
+            el.innerHTML = `
+                <div class="num-g">${d}</div>
+                <div class="num-h">${h.id}</div>
+                ${isl ? '<div class="dot islam"></div>' : ''}
+                ${pub ? '<div class="dot public" style="right:${isl?7:3}px"></div>' : ''}
+            `;
+            el.onclick = () => openDetail(date, h, pub, isl);
+            grid.appendChild(el);
+        }
     }
-  };
-})();
 
-/* ---------- Holidays (sample Malaysia) ---------- */
-const publicHolidays=[{m:1,d:1,name:"New Year's Day"},{m:5,d:1,name:"Labour Day"},{m:8,d:31,name:"National Day"},{m:9,d:16,name:"Malaysia Day"},{m:12,d:25,name:"Christmas Day"}];
-const islamicDays=[{im:1,id:1,name:'Islamic New Year'},{im:9,id:1,name:'Start of Ramadan (est.)'},{im:10,id:1,name:'Eid al-Fitr'},{im:12,id:9,name:'Arafah'},{im:12,id:10,name:'Eid al-Adha'}];
+    function openDetail(date, h, pub, isl) {
+        document.getElementById('dDate').textContent = date.toLocaleDateString('en-US', { weekday:'short', day:'numeric', month:'short' });
+        document.getElementById('dHijri').textContent = `${h.id} ${HIJRI_M[h.im-1]} ${h.iy}`;
+        document.getElementById('dLoc').textContent = `Lat: ${userLoc.lat.toFixed(2)}`;
 
-/* ---------- Calendar State ---------- */
-let now=new Date(); let viewYear=now.getFullYear(); let viewMonth=now.getMonth(); let searchDay=null;
-const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const monthSelect=document.getElementById('searchMonth');
-monthNames.forEach((n,i)=>{let o=document.createElement('option'); o.value=i+1; o.textContent=n; monthSelect.appendChild(o);});
-document.getElementById('searchYear').value=viewYear;
+        // Events
+        const evBox = document.getElementById('dEvents');
+        evBox.innerHTML = '';
+        if(pub) evBox.innerHTML += `<span class="tag red">${pub.n}</span>`;
+        if(isl) evBox.innerHTML += `<span class="tag green">${isl.n}</span>`;
 
-function findPublicHoliday(gd){for(let h of publicHolidays) if(h.m===gd.getMonth()+1&&h.d===gd.getDate()) return h.name; return null;}
-function findIslamicEvent(is){for(let e of islamicDays) if(e.im===is.im&&is.id===is.id) return e.name; return null;}
+        // Prayers
+        const times = PrayerCalc.calc(date, userLoc.lat, userLoc.lon);
+        const pBox = document.getElementById('dPrayers');
+        pBox.innerHTML = '';
+        Object.entries(times).forEach(([k,v]) => {
+            pBox.innerHTML += `
+                <div class="prayer-row">
+                    <span style="font-weight:500">${k}</span>
+                    <span style="font-weight:700">${v}</span>
+                </div>`;
+        });
 
-/* ---------- Events ---------- */
-document.getElementById('prev').addEventListener('click',()=>{viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} renderCalendar();});
-document.getElementById('next').addEventListener('click',()=>{viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} renderCalendar();});
-document.getElementById('todayBtn').addEventListener('click',()=>{let t=new Date(); viewYear=t.getFullYear(); viewMonth=t.getMonth(); searchDay=null; renderCalendar();});
-document.getElementById('recalc').addEventListener('click', renderCalendar);
-document.getElementById('closeModal').addEventListener('click',()=>{document.getElementById('modalBack').classList.remove('show'); document.getElementById('modalBack').style.visibility='hidden';});
-document.getElementById('goBtn').addEventListener('click',()=>{
-  let dd=parseInt(document.getElementById('searchDay').value,10);
-  let mm=parseInt(document.getElementById('searchMonth').value,10);
-  let yy=parseInt(document.getElementById('searchYear').value,10);
-  if(!yy) return alert('Enter year'); if(!mm) mm=1; if(!dd) dd=1;
-  viewYear=yy; viewMonth=mm-1; searchDay={date:dd,month:mm-1,year:yy}; renderCalendar();
-});
-
-/* ---------- Render Calendar ---------- */
-function renderCalendar(){
-  const grid=document.getElementById('calendarGrid'); grid.innerHTML='';
-  const first=new Date(viewYear,viewMonth,1); const startDay=first.getDay();
-  const daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
-  const totalCells=Math.ceil((startDay+daysInMonth)/7)*7;
-  document.getElementById('monthYearTitle').textContent=first.toLocaleString(undefined,{month:'long'})+' '+viewYear;
-  const firstJd=jdFromDate(viewYear,viewMonth+1,1), lastJd=jdFromDate(viewYear,viewMonth+1,daysInMonth);
-  const firstIs=jdToIslamic(firstJd), lastIs=jdToIslamic(lastJd);
-  document.getElementById('globalYears').textContent='Hijri: '+firstIs.iy+' — '+lastIs.iy;
-  const today=new Date();
-
-  for(let i=0;i<totalCells;i++){
-    const cell=document.createElement('div'); cell.className='day';
-    const cellIndex=i-startDay+1;
-    let gd;
-    if(i<startDay||cellIndex>daysInMonth){
-      gd=new Date(viewYear,viewMonth,cellIndex); cell.classList.add('outside'); cell.innerHTML=`<div class="gdate">${gd.getDate()}</div>`;
-    } else {
-      const d=cellIndex; gd=new Date(viewYear,viewMonth,d);
-      const jd=jdFromDate(gd.getFullYear(),gd.getMonth()+1,gd.getDate());
-      const is=jdToIslamic(jd);
-      cell.innerHTML=`<div class="gdate">${d}</div><div class="hdate">${is.id} ${hijriMonths[is.im-1]}</div>`;
-      const pub=findPublicHoliday(gd); const iev=findIslamicEvent(is);
-      if(pub) cell.innerHTML+=`<div class="badge">H</div>`;
-      if(iev) cell.innerHTML+=`<div class="badge" style="right:26px">✪</div>`;
-      if(gd.toDateString()===today.toDateString()) cell.classList.add('today');
-      if(searchDay && gd.getDate()===searchDay.date && gd.getMonth()===searchDay.month && gd.getFullYear()===searchDay.year) cell.classList.add('searched');
-      cell.addEventListener('click',()=>openModal(gd,is));
+        document.getElementById('view-detail').classList.add('active');
     }
-    grid.appendChild(cell);
-  }
-}
 
-/* ---------- Open Modal (FIXED) ---------- */
-function openModal(gd,is){
-  const modalBack=document.getElementById('modalBack'); modalBack.style.visibility='visible'; modalBack.classList.add('show');
-  document.getElementById('modalTitle').textContent=gd.toDateString();
-  document.getElementById('modalSub').textContent='Hijri: '+formatIslamic(is);
+    function closeDetail() { document.getElementById('view-detail').classList.remove('active'); }
+    function changeMonth(d) { viewDate.setMonth(viewDate.getMonth() + d); render(); }
+    function goToday() { viewDate = new Date(); render(); }
 
-  const pb=document.getElementById('prayersBox'); pb.innerHTML='';
-  
-  let times;
-  const todayDateStr = new Date().toDateString();
-  const selectedDateStr = gd.toDateString();
-
-  if (selectedDateStr === todayDateStr) {
-      times = JSON.parse(localStorage.getItem('lastPrayerTimes'));
-  } 
-
-  if (!times || !times.Fajr) { // Check for Fajr as it's the stable API/Fallback key
-      const lat=parseFloat(document.getElementById('lat').value)||0;
-      const lng=parseFloat(document.getElementById('lng').value)||0;
-      const tz=parseFloat(document.getElementById('tz').value)||0;
-      times=PT.getTimes(gd,{lat:lat,lng:lng},tz);
-  }
-
-  // UPDATED PRAYER NAMES for Display
-  const prayerOrder = [
-    { key: 'Imsak', display: 'Imsak' },
-    { key: 'Fajr', display: 'Subuh' },
-    { key: 'Dhuhr', display: 'Zohor' },
-    { key: 'Asr', display: 'Asar' },
-    { key: 'Maghrib', display: 'Maghrib' },
-    { key: 'Isha', display: 'Ishaa' }
-  ];
-  
-  // Render times
-  prayerOrder.forEach(p=>{
-    const timeStr = times ? (formatTime(times[p.key]) || '-') : '-';
-    const r=document.createElement('div'); r.className='prayer';
-    r.innerHTML=`<div>${p.display}</div><div style="font-weight:700">${timeStr}</div>`;
-    pb.appendChild(r);
-  });
-
-  const hb=document.getElementById('holidaysBox'); hb.innerHTML='';
-  
-  const pub=findPublicHoliday(gd); 
-  if(pub){ 
-    const el=document.createElement('div'); 
-    el.className='holiday-item'; 
-    el.innerHTML=`<strong>Public</strong><div>${pub}</div>`; 
-    hb.appendChild(el); 
-  }
-  
-  const iev=findIslamicEvent(is); 
-  if(iev){ 
-    const el2=document.createElement('div'); 
-    el2.className='holiday-item'; 
-    el2.innerHTML=`<strong>Islamic</strong><div>${iev}</div>`; 
-    hb.appendChild(el2); 
-  }
-  
-  if(!pub && !iev) hb.innerHTML='<div class="small-muted">No public or islamic events on this date (edit list in script to add).</div>';
-}
-/* ---------- Initial Execution (MODIFIED) ---------- */
-async function runTakwim() {
-    await getLocation();
-    
-    const lat = parseFloat(document.getElementById('lat').value);
-    const lng = parseFloat(document.getElementById('lng').value);
-    // Fetch fresh data once to populate local storage correctly (method=11)
-    await fetchOnlinePrayerTimes(lat, lng); 
-
-    renderCalendar();
-}
-
-window.addEventListener('DOMContentLoaded', runTakwim);
+    render();
 </script>
 </body>
-  </html>
+</html>
