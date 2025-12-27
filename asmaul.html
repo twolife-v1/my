@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asmaul Husna</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --border:#E5E7EB; }
+        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; }
+        
+        * { box-sizing: border-box; }
+        body { margin:0; padding:20px; font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); padding-bottom: 50px; }
+        
+        .header { text-align:center; margin-bottom:25px; }
+        .header h1 { margin:0; font-size:24px; font-weight:800; color:var(--primary); }
+        .header p { margin:5px 0 0; opacity:0.7; font-size:13px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        
+        .name-card { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            padding: 15px 10px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transition: 0.2s; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
+            position: relative;
+        }
+        .name-card:active { transform: scale(0.98); border-color: var(--primary); }
+        
+        .num-badge { 
+            position: absolute; top: 10px; left: 10px;
+            background: var(--bg); font-size: 9px; font-weight: 700; 
+            width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; opacity: 0.6; color: var(--text);
+        }
+        
+        .arabic { font-family: 'Amiri', serif; font-size: 28px; color: var(--primary); margin-top: 15px; margin-bottom: 5px; line-height: 1.4; }
+        .latin { font-weight: 700; font-size: 13px; margin-bottom: 4px; color: var(--text); }
+        .meaning { font-size: 11px; opacity: 0.7; line-height: 1.3; color: var(--text); padding: 0 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Asmaul Husna</h1>
+        <p>99 Nama Allah Yang Maha Indah</p>
+    </div>
+
+    <div class="grid" id="container"></div>
+
+    <script>
+        // Sync Theme with Main App
+        const theme = localStorage.getItem('wsl_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+
+        // FULL DATABASE OF 99 NAMES
+        const NAMES = [
+            {n:1, a:"ٱلرَّحْمَـٰنُ", l:"Ar-Rahman", m:"Maha Pemurah"},
+            {n:2, a:"ٱلرَّحِيمُ", l:"Ar-Rahim", m:"Maha Penyayang"},
+            {n:3, a:"ٱلْمَلِكُ", l:"Al-Malik", m:"Maha Merajai"},
+            {n:4, a:"ٱلْقُدُّوسُ", l:"Al-Quddus", m:"Maha Suci"},
+            {n:5, a:"ٱلسَّلَـٰمُ", l:"As-Salam", m:"Maha Sejahtera"},
+            {n:6, a:"ٱلْمُؤْمِنُ", l:"Al-Mu'min", m:"Maha Terpercaya"},
+            {n:7, a:"ٱلْمُهَيْمِنُ", l:"Al-Muhaimin", m:"Maha Memelihara"},
+            {n:8, a:"ٱلْعَزِيزُ", l:"Al-Aziz", m:"Maha Perkasa"},
+            {n:9, a:"ٱلْجَبَّارُ", l:"Al-Jabbar", m:"Maha Gagah"},
+            {n:10, a:"ٱلْمُتَكَبِّرُ", l:"Al-Mutakabbir", m:"Maha Megah"},
+            {n:11, a:"ٱلْخَـٰلِقُ", l:"Al-Khaliq", m:"Maha Pencipta"},
+            {n:12, a:"ٱلْبَارِئُ", l:"Al-Bari'", m:"Maha Mengadakan"},
+            {n:13, a:"ٱلْمُصَوِّرُ", l:"Al-Musawwir", m:"Maha Pembentuk"},
+            {n:14, a:"ٱلْغَفَّارُ", l:"Al-Ghaffar", m:"Maha Pengampun"},
+            {n:15, a:"ٱلْقَهَّارُ", l:"Al-Qahhar", m:"Maha Perkasa"},
+            {n:16, a:"ٱلْوَهَّابُ", l:"Al-Wahhab", m:"Maha Pemberi"},
+            {n:17, a:"ٱلرَّزَّاقُ", l:"Ar-Razzaq", m:"Maha Pemberi Rezeki"},
+            {n:18, a:"ٱلْفَتَّاحُ", l:"Al-Fattah", m:"Maha Pembuka"},
+            {n:19, a:"ٱلْعَلِيمُ", l:"Al-'Alim", m:"Maha Mengetahui"},
+            {n:20, a:"ٱلْقَابِضُ", l:"Al-Qabid", m:"Maha Menyempitkan"},
+            {n:21, a:"ٱلْبَاسِطُ", l:"Al-Basit", m:"Maha Melapangkan"},
+            {n:22, a:"ٱلْخَافِضُ", l:"Al-Khafid", m:"Maha Merendahkan"},
+            {n:23, a:"ٱلرَّافِعُ", l:"Ar-Rafi'", m:"Maha Meninggikan"},
+            {n:24, a:"ٱلْمُعِزُّ", l:"Al-Mu'izz", m:"Maha Memuliakan"},
+            {n:25, a:"ٱلْمُذِلُّ", l:"Al-Mudhill", m:"Maha Menghinakann"},
+            {n:26, a:"ٱلسَّمِيعُ", l:"As-Sami'", m:"Maha Mendengar"},
+            {n:27, a:"ٱلْبَصِيرُ", l:"Al-Basir", m:"Maha Melihat"},
+            {n:28, a:"ٱلْحَكَمُ", l:"Al-Hakam", m:"Maha Menetapkan"},
+            {n:29, a:"ٱلْعَدْلُ", l:"Al-'Adl", m:"Maha Adil"},
+            {n:30, a:"ٱللَّطِيفُ", l:"Al-Latif", m:"Maha Lembut"},
+            {n:31, a:"ٱلْخَبِيرُ", l:"Al-Khabir", m:"Maha Mengenal"},
+            {n:32, a:"ٱلْحَلِيمُ", l:"Al-Halim", m:"Maha Penyantun"},
+            {n:33, a:"ٱلْعَظِيمُ", l:"Al-'Azim", m:"Maha Agung"},
+            {n:34, a:"ٱلْغَفُورُ", l:"Al-Ghafur", m:"Maha Pengampun"},
+            {n:35, a:"ٱلشَّكُورُ", l:"Ash-Shakur", m:"Maha Bersyukur"},
+            {n:36, a:"ٱلْعَلِىُّ", l:"Al-'Ali", m:"Maha Tinggi"},
+            {n:37, a:"ٱلْكَبِيرُ", l:"Al-Kabir", m:"Maha Besar"},
+            {n:38, a:"ٱلْحَفِيظُ", l:"Al-Hafiz", m:"Maha Memelihara"},
+            {n:39, a:"ٱلْمُقِيتُ", l:"Al-Muqit", m:"Maha Pemberi Kecukupan"},
+            {n:40, a:"ٱلْحَسِيبُ", l:"Al-Hasib", m:"Maha Pembuat Perhitungan"},
+            {n:41, a:"ٱلْجَلِيلُ", l:"Al-Jalil", m:"Maha Luhur"},
+            {n:42, a:"ٱلْكَرِيمُ", l:"Al-Karim", m:"Maha Pemurah"},
+            {n:43, a:"ٱلرَّقِيبُ", l:"Ar-Raqib", m:"Maha Mengawasi"},
+            {n:44, a:"ٱلْمُجِيبُ", l:"Al-Mujib", m:"Maha Mengabulkan"},
+            {n:45, a:"ٱلْوَاسِعُ", l:"Al-Wasi'", m:"Maha Luas"},
+            {n:46, a:"ٱلْحَكِيمُ", l:"Al-Hakim", m:"Maha Bijaksana"},
+            {n:47, a:"ٱلْوَدُودُ", l:"Al-Wadud", m:"Maha Mengasihi"},
+            {n:48, a:"ٱلْمَجِيدُ", l:"Al-Majid", m:"Maha Mulia"},
+            {n:49, a:"ٱلْبَاعِثُ", l:"Al-Ba'ith", m:"Maha Membangkitkan"},
+            {n:50, a:"ٱلشَّهِيدُ", l:"Ash-Shahid", m:"Maha Menyaksikan"},
+            {n:51, a:"ٱلْحَقُّ", l:"Al-Haqq", m:"Maha Benar"},
+            {n:52, a:"ٱلْوَكِيلُ", l:"Al-Wakil", m:"Maha Memelihara"},
+            {n:53, a:"ٱلْقَوِىُّ", l:"Al-Qawiyy", m:"Maha Kuat"},
+            {n:54, a:"ٱلْمَتِينُ", l:"Al-Matin", m:"Maha Kokoh"},
+            {n:55, a:"ٱلْوَلِىُّ", l:"Al-Waliyy", m:"Maha Melindungi"},
+            {n:56, a:"ٱلْحَمِيدُ", l:"Al-Hamid", m:"Maha Terpuji"},
+            {n:57, a:"ٱلْمُحْصِى", l:"Al-Muhsi", m:"Maha Menghitung"},
+            {n:58, a:"ٱلْمُبْدِئُ", l:"Al-Mubdi'", m:"Maha Memulai"},
+            {n:59, a:"ٱلْمُعِيدُ", l:"Al-Mu'id", m:"Maha Mengembalikan"},
+            {n:60, a:"ٱلْمُحْيِى", l:"Al-Muhyi", m:"Maha Menghidupkan"},
+            {n:61, a:"ٱلْمُمِيتُ", l:"Al-Mumit", m:"Maha Mematikan"},
+            {n:62, a:"ٱلْحَىُّ", l:"Al-Hayy", m:"Maha Hidup"},
+            {n:63, a:"ٱلْقَيُّومُ", l:"Al-Qayyum", m:"Maha Mandiri"},
+            {n:64, a:"ٱلْوَاجِدُ", l:"Al-Wajid", m:"Maha Penemu"},
+            {n:65, a:"ٱلْمَاجِدُ", l:"Al-Majid", m:"Maha Mulia"},
+            {n:66, a:"ٱلْوَاحِدُ", l:"Al-Wahid", m:"Maha Esa"},
+            {n:67, a:"ٱلْأَحَدُ", l:"Al-Ahad", m:"Maha Tunggal"},
+            {n:68, a:"ٱلصَّمَدُ", l:"As-Samad", m:"Maha Diperlukan"},
+            {n:69, a:"ٱلْقَادِرُ", l:"Al-Qadir", m:"Maha Menentukan"},
+            {n:70, a:"ٱلْمُقْتَدِرُ", l:"Al-Muqtadir", m:"Maha Berkuasa"},
+            {n:71, a:"ٱلْمُقَدِّمُ", l:"Al-Muqaddim", m:"Maha Mendahulukan"},
+            {n:72, a:"ٱلْمُؤَخِّرُ", l:"Al-Mu'akhkhir", m:"Maha Mengakhirkan"},
+            {n:73, a:"ٱلْأَوَّلُ", l:"Al-Awwal", m:"Maha Awal"},
+            {n:74, a:"ٱلْآخِرُ", l:"Al-Akhir", m:"Maha Akhir"},
+            {n:75, a:"ٱلظَّاهِرُ", l:"Az-Zahir", m:"Maha Nyata"},
+            {n:76, a:"ٱلْبَاطِنُ", l:"Al-Batin", m:"Maha Ghaib"},
+            {n:77, a:"ٱلْوَالِى", l:"Al-Wali", m:"Maha Memerintah"},
+            {n:78, a:"ٱلْمُتَعَالِى", l:"Al-Muta'ali", m:"Maha Tinggi"},
+            {n:79, a:"ٱلْبَرُّ", l:"Al-Barr", m:"Maha Penderma"},
+            {n:80, a:"ٱلتَّوَّابُ", l:"At-Tawwab", m:"Maha Penerima Taubat"},
+            {n:81, a:"ٱلْمُنتَقِمُ", l:"Al-Muntaqim", m:"Maha Penyiksa"},
+            {n:82, a:"ٱلْعَفُوُّ", l:"Al-'Afuww", m:"Maha Pemaaf"},
+            {n:83, a:"ٱلرَّءُوفُ", l:"Ar-Ra'uf", m:"Maha Pengasuh"},
+            {n:84, a:"مَالِكُ ٱلْمُلْكِ", l:"Malikul-Mulk", m:"Penguasa Kerajaan"},
+            {n:85, a:"ذُو ٱلْجَلَـٰلِ وَٱلْإِكْرَامِ", l:"Dzul-Jalali Wal-Ikram", m:"Pemilik Kebesaran"},
+            {n:86, a:"ٱلْمُقْسِطُ", l:"Al-Muqsit", m:"Maha Adil"},
+            {n:87, a:"ٱلْمُقْسِطُ", l:"Al-Jami'", m:"Maha Mengumpulkan"},
+            {n:88, a:"ٱلْغَنِىُّ", l:"Al-Ghaniyy", m:"Maha Kaya"},
+            {n:89, a:"ٱلْمُغْنِى", l:"Al-Mughni", m:"Maha Pemberi Kekayaan"},
+            {n:90, a:"ٱلْمَانِعُ", l:"Al-Mani'", m:"Maha Mencegah"},
+            {n:91, a:"ٱلضَّارُّ", l:"Ad-Darr", m:"Maha Pemberi Derita"},
+            {n:92, a:"ٱلنَّافِعُ", l:"An-Nafi'", m:"Maha Pemberi Manfaat"},
+            {n:93, a:"ٱلنُّورُ", l:"An-Nur", m:"Maha Bercahaya"},
+            {n:94, a:"ٱلْهَادِى", l:"Al-Hadi", m:"Maha Pemberi Petunjuk"},
+            {n:95, a:"ٱلْبَدِيعُ", l:"Al-Badi'", m:"Maha Pencipta"},
+            {n:96, a:"ٱلْبَاقِى", l:"Al-Baqi", m:"Maha Kekal"},
+            {n:97, a:"ٱلْوَارِثُ", l:"Al-Warith", m:"Maha Pewaris"},
+            {n:98, a:"ٱلرَّشِيدُ", l:"Ar-Rashid", m:"Maha Pandai"},
+            {n:99, a:"ٱلصَّبُورُ", l:"As-Sabur", m:"Maha Sabar"}
+        ];
+
+        const container = document.getElementById('container');
+        
+        NAMES.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'name-card';
+            el.innerHTML = `
+                <div class="num-badge">${item.n}</div>
+                <div class="arabic">${item.a}</div>
+                <div class="latin">${item.l}</div>
+                <div class="meaning">${item.m}</div>
+            `;
+            container.appendChild(el);
+        });
+    </script>
+</body>
+</html>
