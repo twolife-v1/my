@@ -388,6 +388,54 @@
         { en: "Do not get angry, and Paradise is yours.", ms: "Janganlah kamu marah, maka bagimu Syurga.", src: "Tabrani" },
         { en: "Fear Allah wherever you are.", ms: "Bertakwalah kepada Allah di mana sahaja kamu berada.", src: "Tirmidhi" }
     ];
+        
+    function openHadithModal() { 
+        document.getElementById('hadithModal').style.display = 'flex'; 
+        nextHadith(); 
+    }
+
+    function closeHadithModal() { 
+        document.getElementById('hadithModal').style.display = 'none'; 
+    }
+
+    function nextHadith() {
+        const h = HADITH_DB[Math.floor(Math.random() * HADITH_DB.length)];
+        const text = window.STATE.lang === 'ms' ? h.ms : h.en;
+        document.getElementById('hadithTextContent').textContent = `"${text}"`;
+        document.getElementById('hadithSourceContent').textContent = h.src;
+        checkHadithBookmark();
+    }
+
+    function toggleHadithBookmark(btn) {
+        const t = document.getElementById('hadithTextContent').textContent;
+        const src = document.getElementById('hadithSourceContent').textContent;
+        const id = `hadith_${t.substring(0,10)}`;
+        const idx = window.STATE.bookmarks.findIndex(x => x.id === id);
+        
+        if(idx > -1) { 
+            window.STATE.bookmarks.splice(idx, 1); 
+            btn.classList.remove('saved'); 
+        } else { 
+            window.STATE.bookmarks.push({id, type:'hadith', text:t, src:src}); 
+            btn.classList.add('saved'); 
+        }
+        localStorage.setItem('wsl_bookmarks', JSON.stringify(window.STATE.bookmarks));
+        renderBookmarksList();
+    }
+
+    function checkHadithBookmark() {
+        const t = document.getElementById('hadithTextContent').textContent;
+        const btn = document.getElementById('hadithBookmark');
+        if(!btn) return;
+        
+        const id = `hadith_${t.substring(0,10)}`;
+        if(window.STATE.bookmarks.some(x => x.id === id)) {
+            btn.classList.add('saved');
+        } else {
+            btn.classList.remove('saved');
+        }
+    }
+    
 
     /* PRAYER CALCULATION ENGINE */
     const PrayerCalc = {
