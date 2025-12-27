@@ -1061,5 +1061,53 @@
         heroInterval = setInterval(tick, 1000);
     }
 </script>
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    // Same configuration as your Admin Panel
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
+        authDomain: "waktusolatlite.firebaseapp.com",
+        databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "waktusolatlite",
+        storageBucket: "waktusolatlite.firebasestorage.app",
+        messagingSenderId: "86910439082",
+        appId: "1:86910439082:web:e482d01e1451e58179cad3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 1. Function to send data to Firebase
+    async function logEvent(eventName, featureName = null) {
+        try {
+            await addDoc(collection(db, "analytics"), {
+                type: eventName,          // 'page_view', 'install', 'feature_click'
+                feature: featureName,     // 'qibla', 'quran', etc.
+                timestamp: serverTimestamp(),
+                userAgent: navigator.userAgent // Optional: tracks device type
+            });
+            console.log("Logged:", eventName);
+        } catch (e) {
+            console.error("Tracking Error:", e);
+        }
+    }
+
+    // 2. Track "Page View" (When app opens)
+    logEvent('page_view');
+
+    // 3. Track "Install" (When user installs PWA)
+    window.addEventListener('appinstalled', () => {
+        logEvent('install');
+    });
+
+    // 4. Track Feature Clicks (Connect this to your existing buttons)
+    // You can make a global function so your buttons can call it
+    window.trackClick = (featureName) => {
+        logEvent('feature_click', featureName);
+    }
+    </script>
+    
 </body>
 </html>
