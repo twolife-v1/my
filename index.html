@@ -461,15 +461,42 @@
         </div>
     </div>
 
-    <div id="view-quran" class="view" style="padding: 20px; padding-top: 85px;">
-        <h1 id="txt-quran-title" style="font-size:24px; font-weight:800; margin-bottom:20px;">Al Quran</h1>
-        <select id="quranLangSelect" style="width:100%; padding:12px; border-radius:12px; margin-bottom:15px; background:var(--surface); color:var(--text); border:1px solid var(--border);">
-            <option value="en.sahih">English</option>
-            <option value="ms.basmeih">Malay</option>
-            <option value="id.indonesian">Indonesian</option>
-        </select>
-        <div id="surahList"></div>
+<div id="view-quran" class="view" style="padding: 20px; padding-top: 85px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 id="txt-quran-title" style="font-size:24px; font-weight:800; margin:0;">Al Quran</h1>
+        <div id="offlineIndicator" style="display:none;">
+            <span style="font-size:10px; background:#dcfce7; color:#14532d; padding:4px 8px; border-radius:10px; font-weight:700;">OFFLINE READY</span>
+        </div>
     </div>
+    
+    <div style="background:var(--surface); padding:15px; border-radius:16px; border:1px solid var(--border); margin-bottom:20px; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+        <input type="text" id="surahSearch" onkeyup="filterSurahList()" placeholder="🔍 Search Surah (e.g. Yasin)..." 
+            style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); margin-bottom:10px; font-weight:600;">
+        
+        <select id="quranLangSelect" onchange="resetQuranData()" style="width:100%; padding:10px; border-radius:10px; background:var(--bg); color:var(--text); border:1px solid var(--border);">
+            <option value="en.sahih">English (Sahih Intl)</option>
+            <option value="ms.basmeih">Bahasa Melayu</option>
+            <option value="id.indonesian">Bahasa Indonesia</option>
+        </select>
+    </div>
+
+    <div id="downloadArea" style="margin-bottom:20px;">
+        <button onclick="downloadQuranOffline()" id="btnDownload" style="width:100%; padding:14px; background:var(--primary); color:var(--primary-light); border:none; border-radius:14px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(166,119,52,0.2);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download for Offline</span>
+        </button>
+        <div id="downloadProgress" style="display:none; margin-top:10px; font-size:11px; font-weight:600; text-align:center; color:var(--primary);">Initializing...</div>
+    </div>
+
+    <div id="manageDataArea" style="display:none; margin-bottom:20px;">
+        <button onclick="clearOfflineData()" style="width:100%; padding:10px; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.2); border-radius:12px; font-size:12px; font-weight:700;">
+          Can use offline mode 
+        </button>
+    </div>
+
+    <div id="surahList"></div>
+</div>
+
 
     <div id="view-saved" class="view" style="padding: 20px; padding-top: 85px;">
         <h1 id="txt-saved-title" style="font-size:24px; font-weight:800; margin-bottom:20px;">Saved</h1>
@@ -614,7 +641,6 @@
         const id = `hadith_${t.substring(0,10)}`;
         if(window.STATE.bookmarks.some(x => x.id === id)) btn.classList.add('saved'); else btn.classList.remove('saved');
     }
-    
 
     /* PRAYER CALCULATION ENGINE */
     const PrayerCalc = {
@@ -788,25 +814,20 @@
     
     function updateLanguageUI() {
         const t = TRANSLATIONS[window.STATE.lang];
-        document.getElementById('langBtn').textContent = window.STATE.lang.toUpperCase();
-        document.getElementById('cat-tools').textContent = t.catTools;
-        document.getElementById('cat-knowledge').textContent = t.catKnowledge;
-        document.getElementById('cat-lifestyle').textContent = t.catLifestyle;
-        document.getElementById('txt-tool-qibla').textContent = t.qibla;
-        document.getElementById('txt-tool-duas').textContent = t.duas;
-        document.getElementById('txt-tool-guide').textContent = t.guide;
-        document.getElementById('txt-tool-vibes').textContent = t.vibes;
-        // Add an ID to the span in Step 3 if you haven't already, e.g., id="txt-tool-kisah"
-document.getElementById('txt-tool-kisah').textContent = t.kisah; 
-        document.getElementById('txt-tool-quiz').textContent = t.quiz;
-        document.getElementById('txt-tool-hadith').textContent = t.dailyHadith;
-        document.getElementById('txt-menu-title').textContent = t.menu;
-        document.getElementById('txt-legacy').textContent = t.legacy;
-        document.getElementById('txt-contact').textContent = t.contact;
-        document.getElementById('txt-nav-home').textContent = t.navHome;
-        document.getElementById('txt-saved-title').textContent = t.savedTitle;
-        document.getElementById('txt-quran-title').textContent = t.quranTitle;
-        document.getElementById('lbl-hadith-title').textContent = t.dailyHadith;
+        const langBtn = document.getElementById('langBtn');
+        if(langBtn) langBtn.textContent = window.STATE.lang.toUpperCase();
+        
+        const ids = ['cat-tools', 'cat-knowledge', 'cat-lifestyle', 'txt-tool-qibla', 'txt-tool-duas', 'txt-tool-guide', 'txt-tool-vibes', 'txt-tool-kisah', 'txt-tool-quiz', 'txt-tool-hadith', 'txt-menu-title', 'txt-legacy', 'txt-contact', 'txt-nav-home', 'txt-saved-title', 'txt-quran-title', 'lbl-hadith-title'];
+        
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                if(id.includes('cat')) el.textContent = t[id.replace('cat-', 'cat')];
+                else if(id.includes('txt-tool')) el.textContent = t[id.replace('txt-tool-', '')];
+                else if(id.includes('txt-nav')) el.textContent = t[id.replace('txt-nav-', 'nav')];
+                else el.textContent = t[id.replace('txt-', '').replace('-title', 'Title').replace('lbl-', '')];
+            }
+        });
     }
 
     function switchTab(id, btn) {
@@ -821,85 +842,234 @@ document.getElementById('txt-tool-kisah').textContent = t.kisah;
         const h = new Date().getHours();
         const t = TRANSLATIONS[window.STATE.lang];
         let g = t.greetingEvening; if(h < 12) g = t.greetingMorning; else if(h < 18) g = t.greetingAfternoon;
-        document.getElementById('greetings').textContent = `Assalamualaikum, ${g}`;
+        const greetEl = document.getElementById('greetings');
+        if(greetEl) greetEl.textContent = `Assalamualaikum, ${g}`;
     }
 
-    /* QURAN LOGIC */
+    /* --- ROBUST OFFLINE QURAN ENGINE (IndexedDB) --- */
+    const dbName = "MukminQuranDB";
+    const dbVersion = 1;
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, dbVersion);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains("quranData")) {
+                    db.createObjectStore("quranData", { keyPath: "id" });
+                }
+            };
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onerror = (event) => reject(event.target.error);
+        });
+    }
+
+    async function saveToDB(key, data) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("quranData", "readwrite");
+            const store = tx.objectStore("quranData");
+            store.put({ id: key, content: data });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    async function getFromDB(key) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("quranData", "readonly");
+            const store = tx.objectStore("quranData");
+            const request = store.get(key);
+            request.onsuccess = () => resolve(request.result ? request.result.content : null);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async function deleteFromDB(key) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("quranData", "readwrite");
+            const store = tx.objectStore("quranData");
+            store.delete(key);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
     async function loadQuran() {
-        const list = document.getElementById('surahList');
-        if(list.children.length > 5) return; 
-        const cachedList = localStorage.getItem('wsl_surah_list');
-        if (cachedList) { renderSurahList(JSON.parse(cachedList)); return; }
-        list.innerHTML = "<div style='text-align:center; padding:20px;'>Loading Quran...</div>";
+        const listContainer = document.getElementById('surahList');
+        const lang = document.getElementById('quranLangSelect').value;
+        
+        if(window.SURAH_LIST_CACHE) {
+            renderSurahList(window.SURAH_LIST_CACHE);
+            updateOfflineUI(true);
+            return;
+        }
+
         try {
-            const r = await fetch('https://api.alquran.cloud/v1/surah');
-            const d = await r.json();
-            if(d.code === 200) { localStorage.setItem('wsl_surah_list', JSON.stringify(d.data)); renderSurahList(d.data); }
-        } catch(e) { list.innerHTML = "Internet required for first load."; }
+            const offlineData = await getFromDB(`full_quran_${lang}`);
+            if (offlineData && offlineData.surahs) {
+                window.SURAH_LIST_CACHE = offlineData.surahs;
+                renderSurahList(offlineData.surahs);
+                updateOfflineUI(true);
+                return;
+            }
+        } catch(e) { console.warn("DB access error", e); }
+
+        updateOfflineUI(false); 
+        if(listContainer.children.length === 0) {
+            listContainer.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><div class="spinner"></div><div>Fetching Surah List...</div></div>`;
+            try {
+                const res = await fetch('https://api.alquran.cloud/v1/surah');
+                const data = await res.json();
+                if(data.code === 200) {
+                    window.SURAH_LIST_CACHE = data.data;
+                    renderSurahList(data.data);
+                }
+            } catch(e) {
+                listContainer.innerHTML = `<div style="text-align:center; padding:30px; color:red;"><b>Connection Failed</b></div>`;
+            }
+        }
     }
 
     function renderSurahList(data) {
         const list = document.getElementById('surahList');
-        list.innerHTML = '';
+        let html = '';
         data.forEach(s => {
             const safeName = s.englishName.replace(/'/g, "\\'");
-            list.innerHTML += `<div class="surah-item" onclick="openSurah(${s.number}, '${safeName}')">
+            html += `<div class="surah-item searchable-item" data-search="${s.englishName.toLowerCase()} ${s.name} ${s.number}" onclick="openSurah(${s.number}, '${safeName}')">
                 <div class="surah-num">${s.number}</div>
-                <div style="flex:1"><b>${s.englishName}</b><br><small>${s.name}</small></div>
+                <div style="flex:1">
+                    <div style="font-weight:700; font-size:15px;">${s.englishName}</div>
+                    <div style="font-size:12px; opacity:0.6;">${s.name} • ${s.numberOfAyahs} Ayat</div>
+                </div>
             </div>`;
+        });
+        list.innerHTML = html;
+        filterSurahList();
+    }
+
+    window.filterSurahList = function() {
+        const input = document.getElementById('surahSearch').value.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const items = document.getElementsByClassName('searchable-item');
+        Array.from(items).forEach(item => {
+            const term = item.getAttribute('data-search').toLowerCase().replace(/[^a-z0-9]/g, '');
+            item.style.display = term.includes(input) ? 'flex' : 'none';
         });
     }
 
-    const SURAH_CACHE = {};
+    window.downloadQuranOffline = async function() {
+        const btn = document.getElementById('btnDownload');
+        const progress = document.getElementById('downloadProgress');
+        const lang = document.getElementById('quranLangSelect').value;
+        btn.disabled = true;
+        progress.style.display = "block";
+        
+        try {
+            const [listRes, arRes, trRes] = await Promise.all([
+                fetch('https://api.alquran.cloud/v1/surah'),
+                fetch('https://api.alquran.cloud/v1/quran/quran-uthmani'),
+                fetch(`https://api.alquran.cloud/v1/quran/${lang}`)
+            ]);
+            const listData = await listRes.json();
+            const arData = await arRes.json();
+            const trData = await trRes.json();
+
+            if (listData.code === 200 && arData.code === 200 && trData.code === 200) {
+                const offlinePack = { surahs: listData.data, arabic: arData.data.surahs, translation: trData.data.surahs, lang: lang };
+                await saveToDB(`full_quran_${lang}`, offlinePack);
+                progress.textContent = "✅ Completed!";
+                setTimeout(() => { progress.style.display = 'none'; btn.disabled = false; updateOfflineUI(true); loadQuran(); }, 1500);
+            }
+        } catch (e) { alert("Download failed."); btn.disabled = false; }
+    }
+
+    function updateOfflineUI(isOffline) {
+        const dlArea = document.getElementById('downloadArea');
+        const manageArea = document.getElementById('manageDataArea');
+        const indicator = document.getElementById('offlineIndicator');
+        if(dlArea) dlArea.style.display = isOffline ? 'none' : 'block';
+        if(manageArea) manageArea.style.display = isOffline ? 'block' : 'none';
+        if(indicator) indicator.style.display = isOffline ? 'block' : 'none';
+    }
+
+    window.clearOfflineData = async function() {
+        const lang = document.getElementById('quranLangSelect').value;
+        if(confirm("Delete offline Quran data?")) {
+            await deleteFromDB(`full_quran_${lang}`);
+            window.SURAH_LIST_CACHE = null;
+            updateOfflineUI(false);
+            loadQuran();
+        }
+    }
+
+    const SURAH_CACHE = {}; 
+
     async function openSurah(num, name) {
+        const lang = document.getElementById('quranLangSelect').value; 
         const m = document.getElementById('readerModal');
         const c = document.getElementById('readerContent');
         m.classList.add('open');
         document.getElementById('readerTitle').textContent = name;
         document.getElementById('readerSubtitle').textContent = `Surah ${num}`;
-        c.innerHTML = '<div style="text-align:center; padding:20px;">Loading...</div>';
-        
-        const lang = document.getElementById('quranLangSelect').value;
-        const cacheKey = `${num}_${lang}`;
-        try {
-            let d1, d2;
-            if(SURAH_CACHE[cacheKey]) { d1 = SURAH_CACHE[cacheKey].d1; d2 = SURAH_CACHE[cacheKey].d2; } 
-            else {
-                const [r1, r2] = await Promise.all([fetch(`https://api.alquran.cloud/v1/surah/${num}`), fetch(`https://api.alquran.cloud/v1/surah/${num}/${lang}`)]);
-                d1 = await r1.json(); d2 = await r2.json();
-                SURAH_CACHE[cacheKey] = { d1, d2 };
-            }
+        c.innerHTML = '<div style="text-align:center; padding:40px;">Loading...</div>';
 
-            const hasTranslation = (d2 && d2.code === 200 && d2.data && d2.data.ayahs);
-            let html = (num!==1 && num!==9) ? '<div style="text-align:center;font-family:Amiri;font-size:24px;margin-bottom:20px;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '';
+        try {
+            const offlineData = await getFromDB(`full_quran_${lang}`);
+            if (offlineData && offlineData.arabic && offlineData.arabic[num-1]) {
+                renderAyahs(num, name, offlineData.arabic[num-1].ayahs, offlineData.translation[num-1].ayahs);
+                return;
+            }
+        } catch(e) {}
+
+        const cacheKey = `${num}_${lang}`;
+        if(SURAH_CACHE[cacheKey]) {
+            renderAyahs(num, name, SURAH_CACHE[cacheKey].ar, SURAH_CACHE[cacheKey].tr);
+            return;
+        }
+
+        try {
+            const [r1, r2] = await Promise.all([
+                fetch(`https://api.alquran.cloud/v1/surah/${num}`), 
+                fetch(`https://api.alquran.cloud/v1/surah/${num}/${lang}`)
+            ]);
+            const d1 = await r1.json(); 
+            const d2 = await r2.json();
+            SURAH_CACHE[cacheKey] = { ar: d1.data.ayahs, tr: d2.data.ayahs };
+            renderAyahs(num, name, d1.data.ayahs, d2.data.ayahs);
+        } catch(e) { c.innerHTML = `<div style="text-align:center; padding:50px;"><b>No Internet & No Offline Data</b></div>`; }
+    }
+
+    function renderAyahs(num, name, arAyahs, trAyahs) {
+        const c = document.getElementById('readerContent');
+        let html = (num!==1 && num!==9) ? '<div style="text-align:center;font-family:Amiri;font-size:26px;margin:20px 0;color:var(--primary);">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '';
             
-            d1.data.ayahs.forEach((a, i) => {
-                const trans = (hasTranslation && d2.data.ayahs[i]) ? d2.data.ayahs[i].text : '';
-                const saved = window.STATE.bookmarks.some(b => b.id === `ayah_${num}_${a.numberInSurah}`);
-                const safeAr = encodeURIComponent(a.text).replace(/'/g, "%27");
-                const safeTr = encodeURIComponent(trans).replace(/'/g, "%27");
-                const safeNameParam = name.replace(/'/g, "\\'");
-                const audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${a.number}.mp3`;
-                
-                html += `<div class="ayah-block" id="ayah-${num}-${a.numberInSurah}">
-                    <div class="ayah-tools">
-                        <div style="display:flex; gap:12px; align-items:center;">
-                            <span style="font-size:12px;color:var(--text-muted)">${num}:${a.numberInSurah}</span>
-                            <button class="icon-btn-glass" style="width:28px; height:28px; background:var(--primary-light); color:var(--primary); border:none;" onclick="playAyah('${audioUrl}', this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
-                        </div>
+        arAyahs.forEach((a, i) => {
+            const trans = (trAyahs && trAyahs[i]) ? trAyahs[i].text : '';
+            const saved = window.STATE.bookmarks.some(b => b.id === `ayah_${num}_${a.numberInSurah}`);
+            const audioUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${a.number}.mp3`;
+            const safeAr = encodeURIComponent(a.text).replace(/'/g, "%27");
+            const safeTr = encodeURIComponent(trans).replace(/'/g, "%27");
+            const safeNameParam = name.replace(/'/g, "&#39;");
+
+            html += `<div class="ayah-block" id="ayah-${num}-${a.numberInSurah}">
+                <div class="ayah-tools">
+                    <span style="font-size:12px; font-weight:800;">${num}:${a.numberInSurah}</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="icon-btn-glass" style="width:28px; height:28px; background:var(--bg); color:var(--text);" onclick="playAyah('${audioUrl}', this)">▶</button>
                         <button class="bookmark-btn ${saved?'saved':''}" onclick="togAyah(this,${num},${a.numberInSurah},'${safeAr}','${safeTr}','${safeNameParam}')">
                             <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
                         </button>
                     </div>
-                    <div class="ayah-arabic">${a.text}</div>
-                    <div class="ayah-trans">${trans || '<em style="opacity:0.5; font-size:12px;">(No Translation)</em>'}</div>
-                </div>`;
-            });
-            c.innerHTML = html;
-        } catch(e) { c.innerHTML = "<div style='text-align:center; padding:20px; color:red;'>Error loading Surah.</div>"; }
+                </div>
+                <div class="ayah-arabic">${a.text}</div>
+                <div class="ayah-trans">${trans}</div>
+            </div>`;
+        });
+        c.innerHTML = html;
     }
 
-    /* AUDIO PLAYBACK */
     const audioPlayer = new Audio();
     let currentPlayBtn = null;
     function playAyah(url, btn) {
@@ -909,13 +1079,10 @@ document.getElementById('txt-tool-kisah').textContent = t.kisah;
             else { audioPlayer.pause(); btn.innerHTML = '▶'; ayahBlock.classList.remove('playing'); }
             return;
         }
-        if (currentPlayBtn) { 
-            currentPlayBtn.innerHTML = '▶'; 
-            const oldBlock = currentPlayBtn.closest('.ayah-block'); if(oldBlock) oldBlock.classList.remove('playing'); 
-        }
-        currentPlayBtn = btn; audioPlayer.src = url; audioPlayer.load();
+        if (currentPlayBtn) { currentPlayBtn.innerHTML = '▶'; const oldBlock = currentPlayBtn.closest('.ayah-block'); if(oldBlock) oldBlock.classList.remove('playing'); }
+        currentPlayBtn = btn; audioPlayer.src = url;
         btn.innerHTML = '||'; ayahBlock.classList.add('playing');
-        audioPlayer.play().catch(e => { alert("Error: Internet required for audio."); btn.innerHTML = '▶'; ayahBlock.classList.remove('playing'); });
+        audioPlayer.play().catch(e => { alert("Internet required for audio."); btn.innerHTML = '▶'; ayahBlock.classList.remove('playing'); });
         audioPlayer.onended = () => {
             btn.innerHTML = '▶'; ayahBlock.classList.remove('playing');
             const next = ayahBlock.nextElementSibling;
@@ -923,7 +1090,6 @@ document.getElementById('txt-tool-kisah').textContent = t.kisah;
         };
     }
 
-    /* CORE UTILS */
     function toggleSidePanel() { document.getElementById('sidePanel').classList.toggle('open'); document.getElementById('sidePanelOverlay').classList.toggle('open'); }
     function closeReader() { document.getElementById('readerModal').classList.remove('open'); }
     function openReader(t, s, f) {
@@ -943,7 +1109,11 @@ document.getElementById('txt-tool-kisah').textContent = t.kisah;
     window.openKutub = () => openReader("Kitab Sahih", "Bukhari & Muslim", "kutub.html");
     window.openAsbab = () => openReader("Asbabun Nuzul", "Kisah Di Sebalik Ayat", "asbab.html");
 
-    window.openQibla = () => { document.getElementById('qiblaFloatOverlay').style.display = 'flex'; };
+    window.openQibla = () => { 
+        const iframe = document.querySelector('#qiblaFloatModal iframe');
+        if(!iframe.src) iframe.src = "qiblat.html";
+        document.getElementById('qiblaFloatOverlay').style.display = 'flex'; 
+    };
     window.closeQibla = () => { document.getElementById('qiblaFloatOverlay').style.display = 'none'; };
 
     window.togAyah = function(btn, s, a, ar, tr, name) {
@@ -961,7 +1131,7 @@ document.getElementById('txt-tool-kisah').textContent = t.kisah;
     function updateLastReadUI() {
         const lr = JSON.parse(localStorage.getItem('wsl_last_read'));
         const container = document.getElementById('last-read-container');
-        if (lr) {
+        if (lr && container) {
             container.style.display = 'block';
             document.getElementById('lr-num').textContent = lr.surahNum;
             document.getElementById('lr-name').textContent = lr.surahName;
@@ -977,14 +1147,22 @@ document.getElementById('txt-tool-kisah').textContent = t.kisah;
     async function jumpToAyah(surahNum, surahName, ayahNum) {
         switchTab('quran', document.querySelectorAll('.nav-item')[1]);
         await openSurah(surahNum, surahName);
-        setTimeout(() => {
+        let attempts = 0;
+        const checkScroll = setInterval(() => {
             const block = document.getElementById(`ayah-${surahNum}-${ayahNum}`);
-            if (block) block.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 500);
+            if (block) {
+                block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                block.classList.add('playing');
+                setTimeout(() => block.classList.remove('playing'), 1000);
+                clearInterval(checkScroll);
+            }
+            if(attempts++ > 20) clearInterval(checkScroll);
+        }, 150);
     }
 
     function renderBookmarksList() {
         const l = document.getElementById('bookmarksList');
+        if (!l) return;
         if (window.STATE.bookmarks.length === 0) { l.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:20px;">No saved items.</div>`; return; }
         l.innerHTML = '';
         window.STATE.bookmarks.forEach(b => {
@@ -996,213 +1174,103 @@ document.getElementById('txt-tool-kisah').textContent = t.kisah;
             }
         });
     }
-    
 
-    /* PWA */
-let dp = null; 
-window.addEventListener('beforeinstallprompt', e => { 
-    e.preventDefault(); 
-    dp = e; 
-    document.getElementById('pwaInstall').style.display = 'flex'; 
-    document.getElementById('pwa-android').style.display = 'flex'; 
-}); window.installPWA = () => { if(dp) dp.prompt(); };
-    window.closePWA = () => { document.getElementById('pwaInstall').style.display = 'none'; };
-
-    /* --- REALISTIC HERO ENGINE --- */
+    /* HERO VISUALS */
     const cvs = document.getElementById('cosmosCanvas');
-    const ctx = cvs.getContext('2d');
+    const ctx = cvs ? cvs.getContext('2d') : null;
     let stars = [], shootingStars = [], width, height;
 
     function resizeCanvas() {
+        if(!cvs) return;
         width = cvs.width = cvs.offsetWidth;
         height = cvs.height = cvs.offsetHeight;
-        initStars();
-    }
-    window.addEventListener('resize', resizeCanvas);
-
-    class Star {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            this.size = Math.random() * 1.2; 
-            this.blinkSpeed = 0.005 + Math.random() * 0.01;
-            this.alpha = Math.random() * 0.8;
-            this.blinkDir = 1;
-        }
-        update() {
-            this.alpha += this.blinkSpeed * this.blinkDir;
-            if(this.alpha >= 0.8 || this.alpha <= 0.2) this.blinkDir *= -1;
-        }
-        draw() {
-            ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-        }
-    }
-
-    class ShootingStar {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * width; this.y = 0;
-            this.len = Math.random() * 80 + 20;
-            this.speed = Math.random() * 15 + 10;
-            this.active = false;
-        }
-        trigger() { this.active = true; this.x = Math.random() * width; this.y = Math.random() * (height/4); }
-        update() {
-            if(!this.active) return;
-            this.x -= this.speed; this.y += this.speed;
-            if(this.x < 0 || this.y > height) this.active = false;
-        }
-        draw() {
-            if(!this.active) return;
-            const grad = ctx.createLinearGradient(this.x, this.y, this.x + this.len, this.y - this.len);
-            grad.addColorStop(0, "rgba(255,255,255,1)");
-            grad.addColorStop(1, "rgba(255,255,255,0)");
-            ctx.strokeStyle = grad; ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x + this.len, this.y - this.len); ctx.stroke();
-        }
-    }
-
-    function initStars() {
-        stars = []; for(let i=0; i<100; i++) stars.push(new Star());
-        shootingStars = [new ShootingStar()];
+        stars = []; for(let i=0; i<80; i++) stars.push({x:Math.random()*width, y:Math.random()*height, size:Math.random()*1.2, a:Math.random()});
     }
 
     function animateCosmos() {
+        if(!ctx) return;
         ctx.clearRect(0,0,width,height);
-        stars.forEach(s => { s.update(); s.draw(); });
-        if(Math.random() < 0.003) {
-            const ss = shootingStars.find(s => !s.active);
-            if(ss) ss.trigger();
-        }
-        shootingStars.forEach(s => { s.update(); s.draw(); });
+        ctx.fillStyle = "white";
+        stars.forEach(s => { ctx.globalAlpha = Math.abs(Math.sin(Date.now()*0.001 + s.x)); ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill(); });
         requestAnimationFrame(animateCosmos);
     }
-    setTimeout(() => { resizeCanvas(); animateCosmos(); }, 100);
+    window.addEventListener('resize', resizeCanvas);
+    setTimeout(() => { resizeCanvas(); animateCosmos(); }, 200);
 
-    /* --- UPDATE HERO STATE (FIXED: With Azan Trigger) --- */
-function updateHero() {
-    if(heroInterval) clearInterval(heroInterval);
-    
-    const tick = () => {
-        const now = new Date();
-        // Calculate total minutes for current time (used for both Animation and Azan check)
-        const totalMins = (now.getHours() * 60) + now.getMinutes();
-        
-        // --- 1. Basic Text Updates ---
-        document.getElementById('heroTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
-        document.getElementById('heroDate').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
-        const hObj = PrayerCalc.getHijriDate(now);
-        const mList = HIJRI_MONTHS[window.STATE.lang];
-        document.getElementById('hijriDate').textContent = `${hObj.day} ${mList[hObj.month]} ${hObj.year}`;
+    /* --- UPDATE HERO STATE (CLEAN VERSION) --- */
+    function updateHero() {
+        if(heroInterval) clearInterval(heroInterval);
+        const tick = () => {
+            const now = new Date();
+            const totalMins = (now.getHours() * 60) + now.getMinutes();
+            
+            const timeEl = document.getElementById('heroTime');
+            const dateEl = document.getElementById('heroDate');
+            const hijriEl = document.getElementById('hijriDate');
+            if(timeEl) timeEl.textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
+            if(dateEl) dateEl.textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
+            
+            const hObj = PrayerCalc.getHijriDate(now);
+            const mList = HIJRI_MONTHS[window.STATE.lang];
+            if(hijriEl) hijriEl.textContent = `${hObj.day} ${mList[hObj.month]} ${hObj.year}`;
 
-        // --- 2. Countdown Logic & Azan Trigger (FIXED) ---
-        let minDiff = Infinity; let nextKey = 'Fajr';
-        const timings = window.STATE.prayerTimes;
-        
-        ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
-            const [h,m] = timings[k].split(':').map(Number);
+            let minDiff = Infinity; let nextKey = 'Fajr';
+            const timings = window.STATE.prayerTimes;
             
-            // --- NEW: AZAN TRIGGER LOGIC ---
-            const pMins = (h * 60) + m;
-            const notifKey = `${k}_${now.toDateString()}`;
-            
-            // Check if current minute matches prayer time AND hasn't been notified today
-            if (totalMins === pMins && !window.STATE.notified[notifKey]) {
-                window.STATE.notified[notifKey] = true;
-                // Save to storage so it doesn't ring again if user refreshes page in the same minute
-                localStorage.setItem('wsl_notified', JSON.stringify(window.STATE.notified)); 
-                
-                // Play Audio
-                azanAudio.play().catch(e => console.log("Audio play failed (user interaction needed first):", e));
-                
-                // Send System Notification
-                if (Notification.permission === 'granted') {
-                    new Notification(`Time for ${prayerDisplayMap[k]}`, {
-                        body: `It is now ${window.STATE.prayerTimes[k]}`,
-                        icon: 'icon-192.png' // Ensure you have an icon, or remove this line
-                    });
+            ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
+                if(!timings[k]) return;
+                const [h,m] = timings[k].split(':').map(Number);
+                const pMins = (h * 60) + m;
+                const notifKey = `${k}_${now.toDateString()}`; 
+
+                if (totalMins === pMins && !window.STATE.notified[notifKey]) {
+                    window.STATE.notified[notifKey] = true;
+                    localStorage.setItem('wsl_notified', JSON.stringify(window.STATE.notified)); 
+                    if(!audioPlayer.paused) audioPlayer.pause();
+                    azanAudio.play().catch(e => {});
+                    if (Notification.permission === 'granted') new Notification(`Time for ${prayerDisplayMap[k]}`);
+                }
+
+                let tDate = new Date(); tDate.setHours(h,m,0,0);
+                if(tDate < now) tDate.setDate(tDate.getDate()+1);
+                const diff = tDate - now;
+                if(diff < minDiff) { minDiff = diff; nextKey = k; }
+            });
+
+            const countEl = document.getElementById('countdown');
+            const nextEl = document.getElementById('nextPrayer');
+            if(countEl) {
+                const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0');
+                const mm = Math.floor((minDiff%3600000)/60000).toString().padStart(2,'0');
+                const ss = Math.floor((minDiff%60000)/1000).toString().padStart(2,'0');
+                countEl.textContent = `- ${hh}:${mm}:${ss}`;
+            }
+            if(nextEl) nextEl.textContent = `${TRANSLATIONS[window.STATE.lang].next}: ${prayerDisplayMap[nextKey]}`;
+
+            const skyBg = document.getElementById('skyBg');
+            const anchor = document.getElementById('celestialAnchor');
+            if(skyBg && anchor) {
+                const sunriseMin = 420; const sunsetMin = 1140;
+                let isDay = (totalMins >= sunriseMin && totalMins < sunsetMin);
+                if (isDay) {
+                    const percent = (totalMins - sunriseMin) / (sunsetMin - sunriseMin);
+                    anchor.style.transform = `rotate(${-90 + (percent * 180)}deg)`;
+                    skyBg.className = 'sky-container is-sun ' + (percent < 0.15 ? 'state-fajr' : percent > 0.85 ? 'state-maghrib' : percent > 0.6 ? 'state-asr' : 'state-dhuhr');
+                } else {
+                    let elapsed = (totalMins >= sunsetMin) ? (totalMins - sunsetMin) : ((totalMins + 1440) - sunsetMin);
+                    anchor.style.transform = `rotate(${90 - (elapsed / 720 * 180)}deg)`;
+                    skyBg.className = 'sky-container state-isha is-moon';
                 }
             }
-            // -------------------------------
-
-            let tDate = new Date(); tDate.setHours(h,m,0,0);
-            if(tDate < now) tDate.setDate(tDate.getDate()+1);
-            const diff = tDate - now;
-            if(diff < minDiff) { minDiff = diff; nextKey = k; }
-        });
-
-        const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0');
-        const mm = Math.floor((minDiff%3600000)/60000).toString().padStart(2,'0');
-        const ss = Math.floor((minDiff%60000)/1000).toString().padStart(2,'0');
-        document.getElementById('countdown').textContent = `- ${hh}:${mm}:${ss}`;
-        document.getElementById('nextPrayer').textContent = `${TRANSLATIONS[window.STATE.lang].next}: ${prayerDisplayMap[nextKey]}`;
-
-        // --- 3. SUN/MOON & BIRDS LOGIC (Kept from index.html) ---
-        const skyBg = document.getElementById('skyBg');
-        const anchor = document.getElementById('celestialAnchor');
-        const cvsElem = document.getElementById('cosmosCanvas');
-        const birdLayer = document.getElementById('birdLayer');
-
-        // Day is 7:00 AM to 7:00 PM (19:00)
-        const sunriseMin = 7 * 60; 
-        const sunsetMin = 19 * 60;
-        
-        let rotation = 0;
-        let isDay = (totalMins >= sunriseMin && totalMins < sunsetMin);
-
-        if (isDay) {
-            // DAY Calculation (Smooth Orbit)
-            const dayLength = sunsetMin - sunriseMin;
-            const elapsed = totalMins - sunriseMin;
-            const percent = elapsed / dayLength; 
-            
-            // 90 (Right) -> 0 (Top) -> -90 (Left)
-            rotation = -90 + (percent * 180);
-
-            skyBg.className = 'sky-container is-sun';
-            if(percent < 0.15) skyBg.classList.add('state-fajr'); 
-            else if(percent > 0.85) skyBg.classList.add('state-maghrib'); 
-            else if(percent > 0.60) skyBg.classList.add('state-asr'); 
-            else skyBg.classList.add('state-dhuhr');
-
-            birdLayer.style.opacity = '1';
-            cvsElem.style.opacity = '0';
-
-        } else {
-            // NIGHT Calculation (Smooth Orbit)
-            let elapsed = 0;
-            const nightLength = (24 * 60) - sunsetMin + sunriseMin; // 720 mins
-            
-            if(totalMins >= sunsetMin) elapsed = totalMins - sunsetMin; // Before Midnight
-            else elapsed = (totalMins + (24*60)) - sunsetMin; // After Midnight
-            
-            const percent = elapsed / nightLength;
-            
-            // Moon: 90 (Right) -> 0 (Top) -> -90 (Left)
-            rotation = 90 - (percent * 180);
-
-            skyBg.className = 'sky-container state-isha is-moon';
-            birdLayer.style.opacity = '0';
-            cvsElem.style.opacity = '0.9'; // Stars visible
-        }
-
-        anchor.style.transform = `rotate(${rotation}deg)`;
-    };
-    
-    tick(); 
-    heroInterval = setInterval(tick, 1000);
-}
-
-
-
+        };
+        tick(); heroInterval = setInterval(tick, 1000);
+    }
 </script>
-    <script type="module">
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    // Same configuration as your Admin Panel
     const firebaseConfig = {
         apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
         authDomain: "waktusolatlite.firebaseapp.com",
@@ -1216,34 +1284,39 @@ function updateHero() {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 1. Function to send data to Firebase
     async function logEvent(eventName, featureName = null) {
         try {
             await addDoc(collection(db, "analytics"), {
-                type: eventName,          // 'page_view', 'install', 'feature_click'
-                feature: featureName,     // 'qibla', 'quran', etc.
+                type: eventName,
+                feature: featureName,
                 timestamp: serverTimestamp(),
-                userAgent: navigator.userAgent // Optional: tracks device type
+                userAgent: navigator.userAgent
             });
-            console.log("Logged:", eventName);
-        } catch (e) {
-            console.error("Tracking Error:", e);
+        } catch (e) {}
+    }
+
+    logEvent('page_view');
+    window.addEventListener('appinstalled', () => logEvent('install'));
+    window.trackClick = (featureName) => logEvent('feature_click', featureName);
+
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone || (window.matchMedia('(display-mode: standalone)').matches);
+    if (isIOS && !isStandalone) {
+        const pwaEl = document.getElementById('pwaInstall');
+        if(pwaEl) {
+            pwaEl.style.display = 'flex';
+            document.getElementById('pwa-android').style.display = 'none';
+            document.getElementById('pwa-ios').style.display = 'flex';
         }
     }
+</script>
 
-    // 2. Track "Page View" (When app opens)
-    logEvent('page_view');
-
-    // 3. Track "Install" (When user installs PWA)
-    window.addEventListener('appinstalled', () => {
-        logEvent('install');
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Failed', err));
     });
-
-    // 4. Track Feature Clicks (Connect this to your existing buttons)
-    // You can make a global function so your buttons can call it
-    window.trackClick = (featureName) => {
-        logEvent('feature_click', featureName);
-    }
+  }
 </script>
 
 </body>
