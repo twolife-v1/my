@@ -193,41 +193,72 @@
         {im:1,id:1,n:'Maal Hijrah'}, {im:9,id:1,n:'Ramadan Starts'}, {im:10,id:1,n:'Aidilfitri'}, {im:12,id:10,n:'Aidiladha'}
     ];
 
-    /* --- MATH --- */
-    function jdFromDate(y,m,d){ var a=Math.floor((14-m)/12), y2=y+4800-a, m2=m+12*a-3; return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045; }
-    function islamicToJd(y,m,d){ return d+Math.ceil(29.5*(m-1))+(y-1)*354+Math.floor((3+11*y)/30)+1948440-1; }
-    function jdToIslamic(jd){ jd=Math.floor(jd)+0.5; var days=jd-1948439.5, y=Math.floor((30*days+10646)/10631), m=Math.min(12,Math.ceil((jd-islamicToJd(y,1,1)+1)/29.5)), d=jd-islamicToJd(y,m,1)+1; return {iy:y,im:m,id:Math.floor(d)}; }
-
+    /* --- MATH: UPDATED TO MATCH INDEX.HTML --- */
     const PrayerCalc = {
-        calc(date, lat, lng) {
-            // Simplified Offline Algo (Matches Index.html logic)
-            const D2R = Math.PI/180, R2D = 180/Math.PI;
-            const jd = jdFromDate(date.getFullYear(), date.getMonth()+1, date.getDate()) - 2451545.0;
-            const g = (357.529 + 0.98560028 * jd) % 360;
-            const q = (280.459 + 0.98564736 * jd) % 360;
-            const L = (q + 1.915 * Math.sin(g*D2R) + 0.02 * Math.sin(2*g*D2R)) % 360;
-            const e = 23.439 - 0.00000036 * jd;
-            const RA = R2D * Math.atan2(Math.cos(e*D2R) * Math.sin(L*D2R), Math.cos(L*D2R)) / 15;
-            const decl = R2D * Math.asin(Math.sin(e*D2R) * Math.sin(L*D2R));
-            const eqt = q/15 - RA;
-            const noon = 12 - eqt - (lng/15) + 8; // UTC+8
-            
-            const hourAngle = (angle) => {
-                const term = (Math.sin(angle*D2R) - Math.sin(lat*D2R)*Math.sin(decl*D2R)) / (Math.cos(lat*D2R)*Math.cos(decl*D2R));
-                return Math.abs(term) <= 1 ? R2D * Math.acos(term) / 15 : 0;
+        calc: function(lat, lng, timezone, date) {
+            let julianDate = this.julian(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            return {
+                Imsak: this.computeTime(19.5, julianDate, lat, lng, timezone, 'fajr') - (10/60), 
+                Fajr: this.computeTime(20, julianDate, lat, lng, timezone, 'fajr'),
+                Dhuhr: this.computeTime(0, julianDate, lat, lng, timezone, 'dhuhr'),
+                Asr: this.computeTime(0, julianDate, lat, lng, timezone, 'asr'),
+                Maghrib: this.computeTime(0.833, julianDate, lat, lng, timezone, 'maghrib'),
+                Isha: this.computeTime(18, julianDate, lat, lng, timezone, 'isha')
+            };
+        },
+        julian: function(year, month, day) {
+            if (month <= 2) { year -= 1; month += 12; }
+            let A = Math.floor(year / 100);
+            let B = 2 - A + Math.floor(A / 4);
+            return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + B - 1524.5;
+        },
+        computeTime: function(angle, jd, lat, lng, tz, type) {
+            let n = jd - 2451545.0;
+            let g = 357.529 + 0.98560028 * n;
+            let q = 280.459 + 0.98564736 * n;
+            let L = q + 1.915 * Math.sin(g * Math.PI/180) + 0.020 * Math.sin(2 * g * Math.PI/180);
+            let e = 23.439 - 0.00000036 * n;
+            let RA = Math.atan2(Math.cos(e * Math.PI/180) * Math.sin(L * Math.PI/180), Math.cos(L * Math.PI/180)) * 180/Math.PI;
+            RA = RA / 15; if(RA < 0) RA += 24;
+            let D = Math.asin(Math.sin(e * Math.PI/180) * Math.sin(L * Math.PI/180)) * 180/Math.PI;
+            let EqT = q/15 - RA;
+            let HA = 0;
+            let latRad = lat * Math.PI/180;
+            let dRad = D * Math.PI/180;
+            if(type === 'dhuhr') { HA = 0; } 
+            else if (type === 'asr') {
+                let alt = Math.atan(1 / (1 + Math.tan(Math.abs(lat - D) * Math.PI/180)));
+                HA = Math.acos((Math.sin(alt) - Math.sin(latRad)*Math.sin(dRad)) / (Math.cos(latRad)*Math.cos(dRad))) * 180/Math.PI;
+            } else {
+                let factor = (type === 'maghrib' || type === 'fajr' && angle < 1) ? 0.833 : angle;
+                let alt = -factor * Math.PI/180; 
+                let cosHA = (Math.sin(alt) - Math.sin(latRad)*Math.sin(dRad)) / (Math.cos(latRad)*Math.cos(dRad));
+                HA = (cosHA < -1 || cosHA > 1) ? 0 : Math.acos(cosHA) * 180/Math.PI;
             }
-
-            const imsak = noon - hourAngle(-19.5) - (10/60); 
-            const fajr = noon - hourAngle(-20);
-            const asr = noon + (Math.abs((Math.sin(Math.atan(1/(1+Math.tan(Math.abs(lat-decl)*D2R))))) - Math.sin(lat*D2R)*Math.sin(decl*D2R)) <= 1 ? R2D*Math.acos((Math.sin(Math.atan(1/(1+Math.tan(Math.abs(lat-decl)*D2R))))) - Math.sin(lat*D2R)*Math.sin(decl*D2R))/(Math.cos(lat*D2R)*Math.cos(decl*D2R)) : 0)/15;
-            const maghrib = noon + hourAngle(0.833);
-            const isha = noon + hourAngle(-18);
-
-            const fmt = (t) => { t=(t+24)%24; let h=Math.floor(t), m=Math.floor((t-h)*60); return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; };
-            
-            return { Imsak: fmt(imsak), Subuh: fmt(fajr), Zohor: fmt(noon), Asar: fmt(asr), Maghrib: fmt(maghrib), Isyak: fmt(isha) };
+            let time = 12 + EqT;
+            if (type === 'fajr') time = time - HA/15;
+            else if (type !== 'dhuhr') time = time + HA/15;
+            time = time + tz - lng/15;
+            return (time + 24) % 24; 
+        },
+        getHijriDate: function(date) {
+            let jd = this.julian(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            let l = jd - 1948440 + 10632;
+            let n = Math.floor((l - 1) / 10631);
+            let l1 = l - 10631 * n + 354;
+            let j = (Math.floor((10985 - l1) / 5316)) * (Math.floor((50 * l1) / 17719)) + (Math.floor(l1 / 5670)) * (Math.floor((43 * l1) / 15238));
+            let l2 = l1 - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) - (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
+            let m = Math.floor((24 * l2) / 709);
+            let d = l2 - Math.floor((709 * m) / 24);
+            let y = 30 * n + j - 30;
+            return { day: d, month: m - 1, year: y };
         }
     };
+
+    // Helper to get Hijri only (using the same engine)
+    function getHijriForGrid(y, m, d) {
+        return PrayerCalc.getHijriDate(new Date(y, m, d));
+    }
 
     /* --- UI LOGIC --- */
     function render() {
@@ -238,9 +269,9 @@
         // Titles
         document.getElementById('mTitle').textContent = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         
-        const startH = jdToIslamic(jdFromDate(y, m+1, 1));
-        const endH = jdToIslamic(jdFromDate(y, m+1, lastDay.getDate()));
-        document.getElementById('hTitle').textContent = `${startH.id} ${HIJRI_M[startH.im-1]} - ${endH.id} ${HIJRI_M[endH.im-1]}`;
+        const startH = getHijriForGrid(y, m, 1);
+        const endH = getHijriForGrid(y, m, lastDay.getDate());
+        document.getElementById('hTitle').textContent = `${startH.day} ${HIJRI_M[startH.month]} - ${endH.day} ${HIJRI_M[endH.month]}`;
 
         // Grid
         const grid = document.getElementById('grid');
@@ -253,17 +284,18 @@
         for(let d=1; d<=lastDay.getDate(); d++) {
             const date = new Date(y, m, d);
             const isToday = (date.toDateString() === currDate.toDateString());
-            const jd = jdFromDate(y, m+1, d);
-            const h = jdToIslamic(jd);
+            const h = getHijriForGrid(y, m, d);
             
+            // Note: Our Hijri engine is 0-indexed for month (0=Muharram), Array is 0-indexed
+            // Holidays array is 1-indexed for month. Adjusted below:
             const pub = HOLIDAYS.find(x => x.m === m+1 && x.d === d);
-            const isl = ISLAMIC.find(x => x.im === h.im && x.id === h.id);
+            const isl = ISLAMIC.find(x => x.im === h.month+1 && x.id === h.day);
 
             const el = document.createElement('div');
             el.className = `day-cell ${isToday ? 'today' : ''}`;
             el.innerHTML = `
                 <div class="num-g">${d}</div>
-                <div class="num-h">${h.id}</div>
+                <div class="num-h">${h.day}</div>
                 ${isl ? '<div class="dot islam"></div>' : ''}
                 ${pub ? '<div class="dot public" style="right:${isl?7:3}px"></div>' : ''}
             `;
@@ -274,7 +306,7 @@
 
     function openDetail(date, h, pub, isl) {
         document.getElementById('dDate').textContent = date.toLocaleDateString('en-US', { weekday:'short', day:'numeric', month:'short' });
-        document.getElementById('dHijri').textContent = `${h.id} ${HIJRI_M[h.im-1]} ${h.iy}`;
+        document.getElementById('dHijri').textContent = `${h.day} ${HIJRI_M[h.month]} ${h.year}`;
         document.getElementById('dLoc').textContent = `Lat: ${userLoc.lat.toFixed(2)}`;
 
         // Events
@@ -283,8 +315,21 @@
         if(pub) evBox.innerHTML += `<span class="tag red">${pub.n}</span>`;
         if(isl) evBox.innerHTML += `<span class="tag green">${isl.n}</span>`;
 
-        // Prayers
-        const times = PrayerCalc.calc(date, userLoc.lat, userLoc.lon);
+        // Prayers (Using New Engine)
+        const tz = date.getTimezoneOffset() / -60;
+        const raw = PrayerCalc.calc(userLoc.lat, userLoc.lon, tz, date);
+        const fmt = (t) => { let h=Math.floor(t), m=Math.floor((t-h)*60); return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; };
+        
+        // Format the Raw Output
+        const times = {
+            Imsak: fmt(raw.Imsak), 
+            Subuh: fmt(raw.Fajr), 
+            Zohor: fmt(raw.Dhuhr), 
+            Asar: fmt(raw.Asr), 
+            Maghrib: fmt(raw.Maghrib), 
+            Isyak: fmt(raw.Isha)
+        };
+
         const pBox = document.getElementById('dPrayers');
         pBox.innerHTML = '';
         Object.entries(times).forEach(([k,v]) => {
