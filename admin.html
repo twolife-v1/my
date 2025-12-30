@@ -4,96 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mukmin Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg:#0f172a; --surface:#1e293b; --primary:#A67734; --text:#f8fafc; --text-muted:#94a3b8; --danger:#ef4444; }
-        body { margin:0; font-family:'Inter', sans-serif; background:var(--bg); color:var(--text); }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; margin: 0; padding: 20px; color: #1f2937; }
         
-        /* LOGIN MODAL */
-        #loginOverlay { position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; display:flex; align-items:center; justify-content:center; }
-        .login-box { background:var(--surface); padding:30px; border-radius:16px; width:90%; max-width:320px; text-align:center; border:1px solid #334155; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .login-input { width:100%; padding:14px; margin-bottom:12px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:white; box-sizing:border-box; font-size: 16px; }
-        .login-btn { width:100%; padding:14px; border-radius:8px; border:none; background:var(--primary); color:white; font-weight:700; cursor:pointer; font-size: 16px; transition: transform 0.1s; }
-        .login-btn:active { transform: scale(0.98); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { margin: 0; color: #A67734; }
         
-        /* DASHBOARD LAYOUT */
-        .header { padding:20px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px; background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-        .header-title { font-weight:800; color:var(--primary); font-size: 18px; }
-        .header-actions { display: flex; gap: 10px; align-items: center; }
-
-        .container { padding:20px; max-width:800px; margin:0 auto; padding-bottom: 50px; }
-        .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:30px; }
-        .card { background:var(--surface); padding:20px; border-radius:16px; border:1px solid #334155; }
-        .stat-val { font-size:32px; font-weight:800; margin-top:5px; }
-        .stat-label { color:var(--text-muted); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+        /* CARDS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .stat-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; font-weight: 700; }
+        .stat-value { font-size: 32px; font-weight: 800; color: #1f2937; margin-top: 5px; }
         
-        h2 { font-size:18px; margin-bottom:15px; color:var(--text-muted); }
-        .list-item { padding:12px 0; border-bottom:1px solid #334155; display:flex; justify-content:space-between; font-size:14px; }
+        /* TABLE */
+        .table-container { background: white; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #f9fafb; padding: 15px 20px; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 700; border-bottom: 1px solid #e5e7eb; }
+        td { padding: 15px 20px; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
         
-        /* BUTTONS */
-        .lock-btn { background:var(--danger); border:none; color:white; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:8px; transition: opacity 0.2s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
-        .lock-btn:hover { opacity: 0.9; }
+        .badge { padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-install { background: #dcfce7; color: #166534; }
+        .badge-web { background: #f3f4f6; color: #6b7280; }
         
-        .logout-btn { background:none; border:1px solid #334155; color:var(--text-muted); padding:8px 12px; border-radius:8px; cursor:pointer; font-size:12px; transition: all 0.2s; }
-        .logout-btn:hover { background: rgba(255,255,255,0.05); color: white; }
+        .refresh-btn { background: #A67734; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .refresh-btn:hover { background: #92662a; }
     </style>
 </head>
 <body>
 
-    <div id="loginOverlay">
-        <div class="login-box">
-            <h2 style="color:white; margin-top:0;">Admin Login</h2>
-            <input type="email" id="email" class="login-input" placeholder="Email" required>
-            <input type="password" id="pass" class="login-input" placeholder="Password" required>
-            <button onclick="login()" class="login-btn">Unlock Dashboard</button>
-            <div id="loginError" style="color:#ef4444; font-size:13px; margin-top:15px; line-height: 1.4;"></div>
-        </div>
-    </div>
-
     <div class="header">
-        <div class="header-title">MUKMIN ADMIN</div>
-        <div class="header-actions">
-            <a href="https://wayoflifev1.github.io/ctl/" class="lock-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                Lock System
-            </a>
-            <button onclick="logout()" class="logout-btn">Logout</button>
+        <h1>Mukmin Analytics</h1>
+        <button onclick="location.reload()" class="refresh-btn">Refresh Data</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Unique Users</div>
+            <div class="stat-value" id="totalUsers">...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Installed (PWA)</div>
+            <div class="stat-value" id="totalInstalls" style="color:#166534">...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Sessions</div>
+            <div class="stat-value" id="totalSessions">...</div>
         </div>
     </div>
 
-    <div class="container">
-        <div class="stat-grid">
-            <div class="card">
-                <div class="stat-label">Total Views</div>
-                <div class="stat-val" id="totalViews">--</div>
-            </div>
-            <div class="card">
-                <div class="stat-label">Installs</div>
-                <div class="stat-val" id="totalInstalls">--</div>
-            </div>
-        </div>
-
-        <div class="card" style="margin-bottom:20px;">
-            <div class="stat-label" style="margin-bottom:15px;">Popular Features</div>
-            <div style="height: 250px; display:flex; align-items:center; justify-content:center;">
-                <canvas id="featureChart"></canvas>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="stat-label">Recent Activity</div>
-            <div id="activityList">Loading...</div>
-        </div>
+    <div class="table-container">
+        <table id="logsTable">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Status</th>
+                    <th>Visits</th>
+                    <th>Last Active</th>
+                    <th>Device</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="5" style="text-align:center;">Loading data...</td></tr>
+            </tbody>
+        </table>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-        // --- CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
             authDomain: "waktusolatlite.firebaseapp.com",
@@ -106,131 +87,62 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
 
-        // --- AUTH LOGIC ---
-        window.login = () => {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            const errDiv = document.getElementById('loginError');
-            errDiv.textContent = "Authenticating...";
-
-            signInWithEmailAndPassword(auth, e, p)
-                .then(() => {
-                    document.getElementById('loginOverlay').style.display = 'none';
-                    // loadData will be called by onAuthStateChanged
-                })
-                .catch((error) => {
-                    errDiv.textContent = "Login Failed: " + error.code;
-                    console.error(error);
-                });
-        };
-
-        window.logout = () => {
-            signOut(auth).then(() => location.reload());
-        };
-
-        // Check if already logged in
-        let dataLoaded = false; // Prevent double loading
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('loginOverlay').style.display = 'none';
-                if(!dataLoaded) {
-                    loadData();
-                    dataLoaded = true;
-                }
-            } else {
-                document.getElementById('loginOverlay').style.display = 'flex';
-                dataLoaded = false;
-            }
-        });
-
-        // --- DATA LOADING ---
         async function loadData() {
+            const tableBody = document.getElementById('tableBody');
+            const q = query(collection(db, "user_stats"), orderBy("lastActive", "desc"));
+            
             try {
-                // 1. Fetch Analytics Data
-                const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(100));
-                const snap = await getDocs(q);
+                const querySnapshot = await getDocs(q);
                 
-                let views = 0;
-                let installs = 0;
-                const features = {};
-                const recentList = document.getElementById('activityList');
-                recentList.innerHTML = '';
+                let userCount = 0;
+                let installCount = 0;
+                let sessionSum = 0;
+                let html = '';
 
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    
-                    // Count Stats
-                    if(d.type === 'page_view') views++;
-                    if(d.type === 'install') installs++;
-                    if(d.type === 'feature_click') {
-                        features[d.feature] = (features[d.feature] || 0) + 1;
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    userCount++;
+                    if(data.isInstalled) installCount++;
+                    sessionSum += (data.sessionCount || 0);
+
+                    // Format Time
+                    let timeStr = 'N/A';
+                    if(data.lastActive) {
+                        timeStr = new Date(data.lastActive.seconds * 1000).toLocaleString();
                     }
 
-                    // Populate List (First 10)
-                    if(recentList.children.length < 10) {
-                        const time = d.timestamp ? new Date(d.timestamp.seconds*1000).toLocaleTimeString() : 'Just now';
-                        recentList.innerHTML += `
-                            <div class="list-item">
-                                <span>${d.type}: <strong>${d.feature || '-'}</strong></span>
-                                <span style="color:#64748b">${time}</span>
-                            </div>`;
-                    }
+                    // Status Badge
+                    const statusBadge = data.isInstalled 
+                        ? `<span class="badge badge-install">INSTALLED</span>` 
+                        : `<span class="badge badge-web">WEB USER</span>`;
+
+                    html += `
+                        <tr>
+                            <td style="font-family:monospace; font-size:12px;">${doc.id}</td>
+                            <td>${statusBadge}</td>
+                            <td><b>${data.sessionCount || 1}</b></td>
+                            <td style="color:#6b7280;">${timeStr}</td>
+                            <td style="font-size:12px; color:#6b7280;">${data.platform || 'Unknown'}</td>
+                        </tr>
+                    `;
                 });
 
-                // Update UI Numbers
-                document.getElementById('totalViews').innerText = views;
-                document.getElementById('totalInstalls').innerText = installs;
+                // Update KPI Cards
+                document.getElementById('totalUsers').textContent = userCount;
+                document.getElementById('totalInstalls').textContent = installCount;
+                document.getElementById('totalSessions').textContent = sessionSum;
 
-                // Render Chart
-                renderChart(features);
+                // Update Table
+                tableBody.innerHTML = html;
 
-            } catch (e) {
-                console.error(e);
-                if (e.code === 'permission-denied') {
-                    alert("Permission Denied: Please Login again.");
-                    signOut(auth);
-                } else {
-                    alert("Error loading data: " + e.message);
-                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                tableBody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">Error loading data. Check console.</td></tr>`;
             }
         }
 
-        // --- CHART RENDERING (FIXED) ---
-        // Variable to hold the chart instance globally
-        let myChartInstance = null;
-
-        function renderChart(data) {
-            const ctx = document.getElementById('featureChart').getContext('2d');
-            
-            // FIX: Destroy the old chart if it exists
-            if (myChartInstance) {
-                myChartInstance.destroy();
-            }
-
-            myChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label: 'Clicks',
-                        data: Object.values(data),
-                        backgroundColor: '#A67734',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: {display:false} },
-                    scales: {
-                        y: { beginAtZero: true, grid: {color:'#334155'} },
-                        x: { grid: {display:false} }
-                    }
-                }
-            });
-        }
+        loadData();
     </script>
 </body>
 </html>
