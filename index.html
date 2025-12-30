@@ -1738,7 +1738,21 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
         if (lastDismiss && (Date.now() - parseInt(lastDismiss)) / 36e5 < 24) return false;
         return true;
     }
-
+    // --- 6. BROADCAST LISTENER (Remote Messages) ---
+    const broadcastRef = ref(db, 'broadcast');
+    onValue(broadcastRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.active) {
+            // Check if we already saw this specific message ID/Timestamp
+            const lastMsg = localStorage.getItem('last_broadcast_time');
+            // If it's a new message (newer than what we saw), show it
+            if (!lastMsg || data.timestamp > parseInt(lastMsg)) {
+                alert("📢 PENGUMUMAN / ANNOUNCEMENT:\n\n" + data.message);
+                localStorage.setItem('last_broadcast_time', data.timestamp);
+            }
+        }
+    });
+    
     // Android Trigger
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
