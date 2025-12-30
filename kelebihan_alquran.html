@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ms" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ensiklopedia Al-Quran: Cover Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- VARIABLES --- */
+        :root[data-theme="light"] { 
+            --primary:#D4AF37; /* Gold for cover feel */
+            --primary-light:#FFF8F0; 
+            --surface:#FFFFFF; 
+            --text:#1F2937; 
+            --text-muted:#6B7280; 
+            --border:#E5E7EB; 
+            --accent:#1E4D2B; /* Dark Green Accent */
+            --accent-light:#E8F5E9; 
+            --rare:#6A1B9A; 
+            --rare-light:#F3E5F5; 
+            --card-bg: rgba(255, 255, 255, 0.96); /* Slightly transparent cards */
+        }
+        :root[data-theme="dark"] { 
+            --primary:#D4AF37; 
+            --primary-light:#2A2012; 
+            --surface:#1E1E1E; 
+            --text:#F3F4F6; 
+            --text-muted:#9CA3AF; 
+            --border:#374151; 
+            --accent:#4CAF50; 
+            --accent-light:#1B3320; 
+            --rare:#E1BEE7; 
+            --rare-light:#4A148C; 
+            --card-bg: rgba(30, 30, 30, 0.96);
+        }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        /* --- NEW BACKGROUND: QURAN COVER PATTERN --- */
+        body { 
+            margin: 0; padding: 0; font-family: 'Inter', sans-serif; 
+            color: var(--text); padding-bottom: 50px;
+            
+            /* Deep Green Base */
+            background-color: #071a12; 
+            
+            /* Islamic Geometric Pattern (SVG Data URI) */
+            background-image: 
+                linear-gradient(rgba(7, 26, 18, 0.92), rgba(7, 26, 18, 0.92)), /* Dark overlay for readability */
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            
+            background-attachment: fixed; /* Parallax effect */
+        }
+
+        /* --- HERO HEADER --- */
+        .hero-banner {
+            background: linear-gradient(135deg, #0f2e1e 0%, #143d29 100%); /* Green Gradient */
+            padding: 30px 20px 25px 20px; color: #D4AF37; /* Gold Text */
+            border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            position: relative; overflow: hidden; margin-bottom: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-top: none;
+        }
+        .hero-pattern {
+            position: absolute; inset: 0; opacity: 0.1;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='2' fill='%23D4AF37'/%3E%3C/svg%3E");
+        }
+        .hero-content { position: relative; z-index: 2; text-align: center; }
+        .hero-title { font-size: 26px; font-weight: 800; margin-bottom: 5px; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); color: #fff; }
+        .hero-sub { opacity: 0.9; font-size: 13px; font-weight: 500; color: #D4AF37; letter-spacing: 1px; text-transform: uppercase; }
+
+        /* --- TABS NAVIGATION --- */
+        .tabs-scroll { 
+            display: flex; gap: 10px; overflow-x: auto; padding: 0 20px; 
+            margin-bottom: 20px; scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .tabs-scroll::-webkit-scrollbar { display: none; }
+        
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); 
+            color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(5px);
+            padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 700;
+            white-space: nowrap; cursor: pointer; transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--primary); color: #000; border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* --- CONTENT VIEWS --- */
+        .view-section { display: none; padding: 0 20px; animation: fadeIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- CARDS & GRID --- */
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-box { 
+            background: var(--card-bg); padding: 15px; border-radius: 16px; 
+            border: 1px solid var(--border); text-align: center;
+            backdrop-filter: blur(10px); /* Glass effect */
+        }
+        .stat-num { font-size: 20px; font-weight: 800; color: var(--primary); display: block; margin-bottom: 4px; }
+        .stat-lbl { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .feature-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
+            padding: 18px; margin-bottom: 12px; position: relative; overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .feature-card.highlight { border-left: 4px solid var(--primary); }
+        .feature-card.rare { border-left: 4px solid var(--rare); }
+        
+        .card-title { font-weight: 800; font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        .pill { 
+            font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; 
+            background: var(--accent-light); color: var(--accent); display: inline-block; margin-top: 10px;
+        }
+        .pill.rare { background: var(--rare-light); color: var(--rare); }
+
+        /* --- ACCORDION (Miracles) --- */
+        details { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; transition: 0.2s; backdrop-filter: blur(10px); }
+        summary { padding: 16px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; outline: none; align-items: center; }
+        summary::after { content: '+'; font-size: 20px; color: var(--primary); font-weight: 300; }
+        details[open] { border-color: var(--primary); }
+        details[open] summary { border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.02); color: var(--primary); }
+        details[open] summary::after { content: '-'; }
+        .details-body { padding: 16px; font-size: 13px; line-height: 1.7; color: var(--text-muted); }
+
+        /* --- TIMELINE (History) --- */
+        .timeline-box { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); padding: 25px 20px; backdrop-filter: blur(10px); }
+        .timeline-item { position: relative; padding-left: 35px; margin-bottom: 25px; }
+        .timeline-item::before { 
+            content: ''; position: absolute; left: 0; top: 4px; width: 14px; height: 14px; 
+            border-radius: 50%; background: var(--primary); border: 3px solid var(--surface); 
+            box-shadow: 0 0 0 1px var(--border); z-index: 2;
+        }
+        .timeline-item::after {
+            content: ''; position: absolute; left: 6px; top: 18px; bottom: -30px; width: 2px; background: var(--border);
+        }
+        .timeline-item:last-child::after { display: none; }
+        .time-date { font-size: 11px; font-weight: 800; color: var(--primary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .time-content { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* --- QUOTE BLOCK --- */
+        .quran-quote {
+            font-family: 'Amiri', serif; font-size: 22px; text-align: center; 
+            margin: 15px 0; color: var(--text); line-height: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-banner">
+        <div class="hero-pattern"></div>
+        <div class="hero-content">
+            <div class="hero-title">Khazanah Al-Quran</div>
+            <div class="hero-sub">Ensiklopedia Mukjizat & Rahsia</div>
+        </div>
+    </div>
+
+    <div class="tabs-scroll">
+        <button class="tab-btn active" onclick="switchTab('utama', this)">Utama</button>
+        <button class="tab-btn" onclick="switchTab('fakta', this)">Fakta Unik</button>
+        <button class="tab-btn" onclick="switchTab('mukjizat', this)">Sains</button>
+        <button class="tab-btn" onclick="switchTab('fadhilat', this)">Fadhilat</button>
+        <button class="tab-btn" onclick="switchTab('sejarah', this)">Sejarah</button>
+    </div>
+
+    <div id="view-utama" class="view-section active">
+        <div class="info-grid">
+            <div class="stat-box">
+                <span class="stat-num">114</span>
+                <span class="stat-lbl">Surah</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-num">30</span>
+                <span class="stat-lbl">Juzuk</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-num">6,236</span>
+                <span class="stat-lbl">Ayat</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-num">86/28</span>
+                <span class="stat-lbl">Makki / Madani</span>
+            </div>
+        </div>
+
+        <div class="feature-card highlight">
+            <div class="card-title">Definisi</div>
+            <div class="card-desc">
+                Kalam Allah yang bermukjizat, diturunkan kepada Nabi Muhammad SAW melalui perantaraan Jibril AS, ditulis dalam mashaf, diriwayatkan secara mutawatir, dan membacanya adalah ibadah.
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">Beza Makki & Madani</div>
+            <div class="card-desc">
+                <ul style="padding-left:15px; margin-top:5px;">
+                    <li><b>Makki (Mekah):</b> Ayat pendek, banyak cerita Nabi, fokus kepada Tauhid dan Akidah.</li>
+                    <li><b>Madani (Madinah):</b> Ayat panjang, fokus kepada Hukum Syariah (Hukum jenayah, warisan, perkahwinan) dan kemasyarakatan.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">Nama-Nama Masyhur</div>
+            <div class="card-desc" style="margin-top:10px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>🔹 <b>Al-Kitab</b><br><small>Buku/Tulisan</small></div>
+                <div>🔹 <b>Al-Furqan</b><br><small>Pemisah Hak/Batil</small></div>
+                <div>🔹 <b>As-Syifa'</b><br><small>Penyembuh</small></div>
+                <div>🔹 <b>Az-Zikr</b><br><small>Peringatan</small></div>
+                <div>🔹 <b>Al-Huda</b><br><small>Petunjuk</small></div>
+                <div>🔹 <b>An-Nur</b><br><small>Cahaya</small></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-fakta" class="view-section">
+        
+        <div class="feature-card rare">
+            <div class="card-title" style="color:var(--rare);">Kod Matematik Ajaib</div>
+            <div class="card-desc">
+                Keseimbangan perkataan dalam Al-Quran yang mustahil disusun manusia tanpa komputer:
+                <ul style="padding-left:15px; margin-top:5px;">
+                    <li>Perkataan <b>"Hari"</b> (Yaum) diulang <b>365</b> kali.</li>
+                    <li>Perkataan <b>"Bulan"</b> (Syahr) diulang <b>12</b> kali.</li>
+                    <li>Perkataan <b>"Dunia"</b> dan <b>"Akhirat"</b> masing-masing diulang <b>115</b> kali (seimbang).</li>
+                    <li>Perkataan <b>"Lelaki"</b> dan <b>"Wanita"</b> masing-masing diulang <b>23</b> kali.</li>
+                    <li>Perkataan <b>"Malaikat"</b> dan <b>"Syaitan"</b> masing-masing diulang <b>88</b> kali.</li>
+                </ul>
+            </div>
+            <div class="pill rare">I'jaz Adadi</div>
+        </div>
+
+        <div class="feature-card rare">
+            <div class="card-title" style="color:var(--rare);">Nisbah Daratan & Lautan</div>
+            <div class="card-desc">
+                Perkataan "Bahr" (Laut) disebut 32 kali, dan "Barr" (Darat) disebut 13 kali.
+                <br>Jumlah = 45.
+                <br><b>Laut:</b> 32/45 = <b>71.1%</b>
+                <br><b>Darat:</b> 13/45 = <b>28.8%</b>
+                <br>Ini adalah nisbah sebenar permukaan bumi yang disahkan sains moden!
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">Titik Tengah Al-Quran</div>
+            <div class="card-desc">
+                Perkataan yang berada betul-betul di tengah Al-Quran (Juzuk 15) adalah <b>"Walyatallatof"</b> (Surah Al-Kahfi: 19) yang bermaksud <b>"Dan hendaklah dia berlemah-lembut"</b>. 
+                <br>Seolah-olah Allah memberi isyarat bahawa "Kelembutan" adalah inti pati agama Islam.
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">Ayat & Perkataan Unik</div>
+            <div class="card-desc">
+                <ul>
+                    <li><b>Perkataan Terpanjang:</b> "Fa'asqaynakumuhu" (Dan Kami beri minum kamu dengannya). Surah Al-Hijr: 22.</li>
+                    <li><b>Surah Tanpa Huruf 'Mim':</b> Surah Al-Kauthar.</li>
+                    <li><b>Surah Tiada Basmalah:</b> At-Taubah.</li>
+                    <li><b>Surah Dua Basmalah:</b> An-Naml.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">Kepelbagaian Qira'at</div>
+            <div class="card-desc">
+                Al-Quran boleh dibaca dengan <b>10 Qira'at</b> (gaya bacaan) yang sah dan mutawatir dari Nabi SAW. 
+                <br>Contoh: Di Malaysia kita baca "Maliki yaumiddin" (Hafs), di Maghribi mereka baca "Maliki yaumiddin" (Warsh) dengan sebutan berbeza sedikit namun makna tetap terpelihara.
+            </div>
+        </div>
+    </div>
+
+    <div id="view-mukjizat" class="view-section">
+        <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:15px; font-style:italic;">
+            Fakta sains moden yang disebut Al-Quran 1400 tahun dahulu.
+        </div>
+        
+        <details>
+            <summary>Ubun-ubun Penipu (Frontal Lobe)</summary>
+            <div class="details-body">
+                <div class="quran-quote">نَاصِيَةٍ كَاذِبَةٍ خَاطِئَةٍ</div>
+                "Ubun-ubun yang berdusta dan bersalah." (Al-Alaq: 16). 
+                <br>Sains otak mendapati bahagian depan otak (Prefrontal Cortex) adalah pusat yang mengawal keputusan untuk menipu atau berkata benar. Al-Quran tepat mengaitkan "dusta" dengan bahagian ubun-ubun.
+            </div>
+        </details>
+
+        <details>
+            <summary>Reseptor Sakit di Kulit</summary>
+            <div class="details-body">
+                "Setiap kali kulit mereka hangus, Kami gantikan dengan kulit baru supaya mereka merasai azab." (An-Nisa: 56).
+                <br>Al-Quran menyatakan rasa sakit berpusat di kulit. Sains mengesahkan jika kulit terbakar sepenuhnya (third-degree burn), saraf musnah dan mangsa tidak lagi rasa sakit.
+            </div>
+        </details>
+
+        <details>
+            <summary>Alam Semesta Mengembang</summary>
+            <div class="details-body">
+                "Dan langit itu Kami bina dengan kekuasaan Kami, dan sesungguhnya Kami benar-benar meluaskannya." (Adh-Dhariyat: 47).
+                <br>Sehingga abad ke-20, saintis percaya alam ini statik. Hanya baru-baru ini teori "Expanding Universe" disahkan oleh Edwin Hubble.
+            </div>
+        </details>
+
+        <details>
+            <summary>Besi Dari Angkasa</summary>
+            <div class="details-body">
+                "Dan Kami menurunkan besi..." (Al-Hadid: 25).
+                <br>Sains mengesahkan tenaga di sistem suria kita tidak cukup panas untuk menghasilkan besi. Besi hanya boleh terbentuk dalam bintang gergasi (supernova) di luar angkasa dan jatuh ke bumi melalui meteor.
+            </div>
+        </details>
+
+        <details>
+            <summary>Kegelapan Lautan Dalam</summary>
+            <div class="details-body">
+                "Seperti gelap gelita di lautan dalam... jika dia mengeluarkan tangannya, dia hampir tidak dapat melihatnya." (An-Nur: 40).
+                <br>Manusia tidak boleh menyelam lebih 200m tanpa peralatan. Di kedalaman 1000m, kegelapan adalah mutlak. Al-Quran menjelaskan fenomena ini dengan tepat walaupun Nabi tidak pernah ke laut.
+            </div>
+        </details>
+    </div>
+
+    <div id="view-fadhilat" class="view-section">
+        
+        <div class="feature-card highlight">
+            <div class="card-title">Surah Al-Waqiah <span class="pill">Rezeki</span></div>
+            <div class="card-desc">Dianjurkan membaca setiap malam. Fadhilatnya dikaitkan dengan perlindungan daripada kefakiran dan kepayahan hidup.</div>
+        </div>
+
+        <div class="feature-card highlight">
+            <div class="card-title">Surah Al-Mulk <span class="pill">Kubur</span></div>
+            <div class="card-desc">Rasulullah SAW bersabda: "Ia adalah penghalang dan penyelamat yang menyelamatkan tuannya daripada azab kubur." (HR Tirmidzi)</div>
+        </div>
+
+        <div class="feature-card highlight">
+            <div class="card-title">Surah Yasin <span class="pill">Hati Quran</span></div>
+            <div class="card-desc">"Jantung Al-Quran adalah Yasin." Sering dibaca untuk mempermudahkan urusan sukar dan untuk orang yang sedang nazak.</div>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">Surah Al-Kahfi <span class="pill">Jumaat</span></div>
+            <div class="card-desc">Pelindung daripada fitnah Dajjal jika menghafal 10 ayat awal/akhir. Memberi cahaya di antara dua Jumaat.</div>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">Surah As-Sajdah</div>
+            <div class="card-desc">Nabi SAW tidak akan tidur sehingga Baginda membaca Surah As-Sajdah dan Al-Mulk.</div>
+        </div>
+        
+        <div class="feature-card">
+            <div class="card-title">Dua Ayat Terakhir Al-Baqarah</div>
+            <div class="card-desc">"Siapa membaca dua ayat terakhir Surah Al-Baqarah pada waktu malam, maka cukuplah baginya (sebagai pelindung)." (HR Bukhari)</div>
+        </div>
+    </div>
+
+    <div id="view-sejarah" class="view-section">
+        <div class="timeline-box">
+            <div class="timeline-item">
+                <div class="time-date">Fasa 1: Lauh Mahfuz</div>
+                <div class="time-content">Al-Quran berada di Lauh Mahfuz secara lengkap dan terpelihara sebelum penciptaan alam semesta.</div>
+            </div>
+            <div class="timeline-item">
+                <div class="time-date">Fasa 2: Baitul Izzah</div>
+                <div class="time-content">Diturunkan secara "Jumlah Wahidah" (sekaligus) dari Lauh Mahfuz ke langit dunia pada malam Lailatul Qadar.</div>
+            </div>
+            <div class="timeline-item">
+                <div class="time-date">Fasa 3: Wahyu Pertama</div>
+                <div class="time-content">5 ayat pertama Surah Al-Alaq diturunkan di Gua Hira' melalui Jibril AS. Bermulanya kenabian Muhammad SAW.</div>
+            </div>
+            <div class="timeline-item">
+                <div class="time-date">Fasa 4: Beransur-ansur (23 Tahun)</div>
+                <div class="time-content">Diturunkan mengikut peristiwa (Asbabun Nuzul). 13 tahun di Mekah (Makki) dan 10 tahun di Madinah (Madani).</div>
+            </div>
+            <div class="timeline-item">
+                <div class="time-date">Fasa 5: Wahyu Terakhir</div>
+                <div class="time-content">Ayat terakhir diturunkan adalah Ayat 281 Surah Al-Baqarah (menurut pendapat paling kuat), seminggu sebelum wafatnya Nabi SAW.</div>
+            </div>
+            <div class="timeline-item">
+                <div class="time-date">Zaman Uthman RA</div>
+                <div class="time-content">Penyeragaman tulisan (Rasm Uthmani) dan pembukuan rasmi untuk menyatukan umat Islam yang mula bertelingkah tentang dialek bacaan.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(viewId, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            
+            btn.classList.add('active');
+            document.getElementById('view-' + viewId).classList.add('active');
+            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        // Auto-detect theme from parent
+        if (window.parent && window.parent.STATE) {
+            document.documentElement.setAttribute('data-theme', window.parent.STATE.theme || 'light');
+        }
+    </script>
+</body>
+</html>

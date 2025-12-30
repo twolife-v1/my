@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #A67734;
+            --bg: #F8F9FA;
+            --surface: #FFFFFF;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+            --highlight: #FEF3C7;
+            --highlight-text: #92400E;
+            --success-bg: #D1FAE5;
+            --success-border: #10B981;
+            --success-text: #065F46;
+        }
+
+        [data-theme="dark"] {
+            --primary: #D4AF37;
+            --bg: #121212;
+            --surface: #1E1E1E;
+            --text: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --border: #374151;
+            --highlight: #3D2E10;
+            --highlight-text: #FCD34D;
+            --success-bg: #064E3B;
+            --success-border: #10B981;
+            --success-text: #A7F3D0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* --- DASHBOARD STYLES --- */
+        #menu-view { display: block; animation: fadeIn 0.3s ease; }
+        
+        .hub-header { text-align: center; margin-bottom: 25px; }
+        .hub-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; letter-spacing: -0.5px; }
+        .hub-date { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        .tracker-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+
+        .tracker-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .tracker-card:active { transform: scale(0.98); background: var(--bg); }
+
+        .card-icon-box {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--bg); display: flex; align-items: center; justify-content: center;
+            margin-right: 15px; color: var(--primary);
+        }
+
+        .card-info { flex: 1; }
+        .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; color: var(--text); }
+        .card-sub { font-size: 11px; color: var(--text-muted); }
+        
+        .mini-progress {
+            width: 45px; height: 45px; border-radius: 50%;
+            background: conic-gradient(var(--primary) var(--pct), var(--border) 0deg);
+            display: flex; align-items: center; justify-content: center;
+            margin-left: 10px;
+        }
+        .mini-inner {
+            width: 37px; height: 37px;
+            background: var(--surface); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700;
+        }
+
+        /* --- TASK LIST STYLES --- */
+        #task-view { display: none; animation: slideUp 0.3s ease; }
+
+        .task-view-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 25px; position: sticky; top: 0; z-index: 50;
+            background: var(--bg); padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .back-btn {
+            background: var(--surface); border: 1px solid var(--border);
+            width: 38px; height: 38px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text); box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header-center { text-align: center; }
+        .view-title { font-weight: 800; font-size: 16px; }
+        .view-sub { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+
+        .section-title {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--primary); font-weight: 800; margin: 25px 0 10px 5px;
+            border-bottom: 2px solid var(--border); display: inline-block; padding-bottom: 4px;
+        }
+
+        .task-wrapper {
+            background: var(--surface); border-radius: 16px; margin-bottom: 10px;
+            border: 1px solid var(--border); overflow: hidden; position: relative;
+            transition: transform 0.1s;
+        }
+        .task-wrapper.checked { background: var(--success-bg); border-color: var(--success-border); }
+        
+        .task-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; cursor: pointer; }
+        
+        .task-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+        .task-wrapper.checked .task-name { color: var(--success-text); }
+        
+        .task-sub { font-size: 11px; color: var(--text-muted); }
+        .task-wrapper.checked .task-sub { color: var(--success-text); opacity: 0.8; }
+
+        .check-circle { 
+            width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); 
+            display: flex; align-items: center; justify-content: center; background: var(--surface);
+            transition: all 0.2s;
+        }
+        .task-wrapper.checked .check-circle { background: var(--success-border); border-color: var(--success-border); }
+        .check-circle svg { width: 14px; height: 14px; color: white; opacity: 0; transform: scale(0); transition: all 0.2s; }
+        .task-wrapper.checked .check-circle svg { opacity: 1; transform: scale(1); }
+        
+        .task-details { 
+            max-height: 0; overflow: hidden; background: var(--highlight); 
+            color: var(--highlight-text); transition: max-height 0.3s ease; 
+            font-size: 13px; line-height: 1.5;
+        }
+        .task-wrapper.open .task-details { max-height: 500px; padding: 20px; border-top: 1px solid var(--border); }
+        .source-tag { font-size: 10px; font-weight: 700; opacity: 0.8; margin-top: 10px; text-transform: uppercase; display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <div id="menu-view">
+        <div class="hub-header">
+            <div class="hub-title">Tracker Hub</div>
+            <div class="hub-date" id="mainDate">...</div>
+        </div>
+        <div class="tracker-grid" id="menuGrid">
+            </div>
+    </div>
+
+    <div id="task-view">
+        <div class="task-view-header">
+            <button class="back-btn" onclick="closeTracker()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="header-center">
+                <div class="view-title" id="activeTitle">Tracker Name</div>
+                <div class="view-sub" id="activeProgress">0% Completed</div>
+            </div>
+            <div style="width:40px;"></div> </div>
+        
+        <div id="taskList"></div>
+        
+        <div style="text-align:center; margin-top:40px; margin-bottom: 20px;">
+            <button onclick="resetCurrentTracker()" style="background:transparent; border:1px solid var(--border); padding:10px 20px; border-radius:30px; font-size:12px; color:var(--text-muted); font-weight:600; cursor:pointer;">
+                Restore / Reset List
+            </button>
+        </div>
+    </div>
+
+<script>
+    // 1. SETUP
+    const savedTheme = localStorage.getItem('wsl_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const today = new Date().toDateString();
+    document.getElementById('mainDate').innerText = today;
+
+    // 2. EXPANDED TRACKER DATABASE
+    const TRACKER_DB = {
+        'daily_mukmin': {
+            title: "Daily Mukmin",
+            subtitle: "Wajib & Sunnah Harian",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>`,
+            tasks: [
+                { id: "f_subuh", name: "Solat Subuh", sub: "Start the day with Allah", cat: "Fardhu", desc: "Two Raka'ah before Fajr are better than the world.", src: "Muslim" },
+                { id: "f_zohor", name: "Solat Zohor", sub: "Mid-day connection", cat: "Fardhu", desc: "Guard strictly your prayers.", src: "Al-Baqarah" },
+                { id: "f_asar", name: "Solat Asar", sub: "Afternoon prayer", cat: "Fardhu", desc: "He who misses Asr, his deeds are nullified.", src: "Bukhari" },
+                { id: "f_maghrib", name: "Solat Maghrib", sub: "Sunset prayer", cat: "Fardhu", desc: "Perform prayer at the approach of night.", src: "Hud" },
+                { id: "f_isyak", name: "Solat Isyak", sub: "Night prayer", cat: "Fardhu", desc: "Heaviest prayers for hypocrites are Isha & Fajr.", src: "Bukhari" },
+                { id: "q_read", name: "Read Al-Quran", sub: "Min 1 Page", cat: "Zikir", desc: "It will be an intercessor on Judgment Day.", src: "Muslim" },
+                { id: "a_sedekah", name: "Daily Sedekah", sub: "Charity", cat: "Adab", desc: "Charity extinguishes sin.", src: "Tirmidhi" },
+                { id: "a_istighfar", name: "Istighfar 70x", sub: "Repentance", cat: "Adab", desc: "I seek forgiveness 70 times a day.", src: "Bukhari" }
+            ]
+        },
+        'sunnah_tidur': {
+            title: "Sunnah Tidur",
+            subtitle: "Preparation for Sleep",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
+            tasks: [
+                { id: "sl_wudu", name: "Ambil Wuduk", sub: "Sleep in purity", cat: "Penyucian", desc: "When you go to bed, perform ablution as for prayer.", src: "Bukhari" },
+                { id: "sl_dust", name: "Kibas Tempat Tidur", sub: "Dusting the bed", cat: "Adab", desc: "Dust the bed three times with the hem of your garment.", src: "Bukhari" },
+                { id: "sl_3qul", name: "Baca 3 Qul", sub: "Ikhlas, Falaq, Nas", cat: "Zikir", desc: "Recite into palms and wipe over the body.", src: "Bukhari" },
+                { id: "sl_kursi", name: "Ayatul Kursi", sub: "Protection", cat: "Zikir", desc: "Allah will appoint a guard for you till morning.", src: "Bukhari" },
+                { id: "sl_maaf", name: "Maafkan Semua", sub: "Forgive everyone", cat: "Hati", desc: "Cleanse your heart before sleeping to enter Jannah.", src: "Sunnah" },
+                { id: "sl_doa", name: "Doa Tidur", sub: "Bismika Allahumma...", cat: "Adab", desc: "In Your Name, O Allah, I live and I die.", src: "Bukhari" }
+            ]
+        },
+        'rezeki_booster': {
+            title: "Rezeki Booster",
+            subtitle: "Amalan Murah Rezeki",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`,
+            tasks: [
+                { id: "rz_dhuha", name: "Solat Dhuha", sub: "2-4 Rakaat", cat: "Solat", desc: "It suffices as charity for every joint in your body.", src: "Muslim" },
+                { id: "rz_sedekah_subuh", name: "Sedekah Subuh", sub: "Early Charity", cat: "Sedekah", desc: "Angels pray: 'O Allah, give compensation to the one who spends'.", src: "Bukhari" },
+                { id: "rz_waqiah", name: "Surah Al-Waqiah", sub: "Optional / Sunnah", cat: "Quran", desc: "Whoever recites Waqiah at night will never face poverty.", src: "Baihaqi" },
+                { id: "rz_parents", name: "Call Parents", sub: "Silaturrahim", cat: "Adab", desc: "Whoever loves that his sustenance be expanded, let him unite his bond of kinship.", src: "Bukhari" },
+                { id: "rz_syukur", name: "Ucap Alhamdulillah", sub: "Gratitude", cat: "Zikir", desc: "If you are grateful, I will surely increase you.", src: "Ibrahim: 7" }
+            ]
+        },
+        'friday_special': {
+            title: "Friday Sunnah",
+            subtitle: "Amalan Hari Jumaat",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
+            tasks: [
+                { id: "j_ghusl", name: "Mandi Sunat", sub: "Ghusl", cat: "Pagi", desc: "Taking a bath on Friday is compulsory for every male Muslim.", src: "Bukhari" },
+                { id: "j_kahf", name: "Surah Al-Kahf", sub: "Read full / first 10", cat: "Quran", desc: "Illuminated with light between two Fridays.", src: "Al-Hakim" },
+                { id: "j_nails", name: "Potong Kuku", sub: "Hygiene", cat: "Kebersihan", desc: "Cutting nails is part of Fitrah.", src: "Muslim" },
+                { id: "j_perfume", name: "Wangian", sub: "Perfume", cat: "Kebersihan", desc: "Touch some perfume if available.", src: "Bukhari" },
+                { id: "j_selawat", name: "Selawat Nabi", sub: "Increase Selawat", cat: "Zikir", desc: "Increase supplications for me on Friday.", src: "Abu Dawud" }
+            ]
+        },
+        'puasa_sunnah': {
+            title: "Puasa Sunnah",
+            subtitle: "Isnin/Khamis/Putih",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 0 0 12 21a9.003 9.003 0 0 0 8.354-5.646z"></path></svg>`,
+            tasks: [
+                { id: "ps_sahur", name: "Sahur", sub: "Pre-dawn meal", cat: "Sunnah", desc: "Take Sahur, for there is blessing in it.", src: "Bukhari" },
+                { id: "ps_niat", name: "Niat Puasa", sub: "Intention", cat: "Wajib", desc: "Actions are judged by intentions.", src: "Bukhari" },
+                { id: "ps_lisan", name: "Jaga Lisan", sub: "Guard tongue", cat: "Adab", desc: "If one does not leave false speech, Allah does not need him to leave food.", src: "Bukhari" },
+                { id: "ps_berbuka", name: "Segera Berbuka", sub: "Break fast on time", cat: "Sunnah", desc: "People will remain on good as long as they hasten to break fast.", src: "Bukhari" },
+                { id: "ps_doa", name: "Doa Berbuka", sub: "Dhahaba az-Zama...", cat: "Adab", desc: "Thirst is gone, veins are moistened, and reward is confirmed.", src: "Abu Dawud" }
+            ]
+        },
+        'jiwa_tenang': {
+            title: "Jiwa Tenang",
+            subtitle: "Mental Health & Peace",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
+            tasks: [
+                { id: "jt_nafas", name: "Deep Breathing", sub: "Tafakkur 5 min", cat: "Mind", desc: "Verily, in the remembrance of Allah do hearts find rest.", src: "Ar-Rad: 28" },
+                { id: "jt_luah", name: "Luah pada Allah", sub: "Dua & Sujud", cat: "Soul", desc: "I only complain of my suffering and my grief to Allah.", src: "Yusuf: 86" },
+                { id: "jt_husnuzon", name: "Husnuzon", sub: "Positive thinking", cat: "Mind", desc: "I (Allah) am as My servant thinks I am.", src: "Hadith Qudsi" },
+                { id: "jt_social_detox", name: "Social Detox", sub: "Limit scrolling", cat: "Health", desc: "Part of the perfection of one's Islam is leaving what does not concern him.", src: "Tirmidhi" }
+            ]
+        },
+        'self_dev': {
+            title: "Self Improvement",
+            subtitle: "Pembangunan Diri",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`,
+            tasks: [
+                { id: "dev_read", name: "Read a Book", sub: "15 Minutes", cat: "Intellect", desc: "Seek knowledge from the cradle to the grave.", src: "Hikmah" },
+                { id: "dev_exercise", name: "Riadah / Exercise", sub: "20 Minutes", cat: "Health", desc: "A strong believer is better and more beloved to Allah.", src: "Muslim" },
+                { id: "dev_journal", name: "Syukur Journal", sub: "Write 3 blessings", cat: "Mind", desc: "If you are grateful, I will surely increase you.", src: "Ibrahim: 7" }
+            ]
+        }
+    };
+
+    let currentPackId = null;
+
+    // 3. CORE FUNCTIONS
+
+    function init() {
+        // Simple daily check for the main menu date display
+        const storedDate = localStorage.getItem('tracker_hub_date');
+        if (storedDate !== today) {
+            localStorage.setItem('tracker_hub_date', today);
+        }
+        renderMenu();
+    }
+
+    // --- RENDER DASHBOARD (MENU) ---
+    function renderMenu() {
+        const grid = document.getElementById('menuGrid');
+        grid.innerHTML = '';
+
+        for (const [key, pack] of Object.entries(TRACKER_DB)) {
+            const savedData = JSON.parse(localStorage.getItem(`tracker_${key}`) || '[]');
+            
+            // Calculate Progress
+            const total = pack.tasks.length;
+            const done = savedData.length;
+            const pct = Math.round((done / total) * 100);
+
+            const card = document.createElement('div');
+            card.className = 'tracker-card';
+            card.onclick = () => openPack(key);
+            
+            card.innerHTML = `
+                <div style="display:flex; align-items:center; flex:1;">
+                    <div class="card-icon-box">${pack.icon}</div>
+                    <div class="card-info">
+                        <div class="card-title">${pack.title}</div>
+                        <div class="card-sub">${pack.subtitle}</div>
+                        <div style="font-size:10px; margin-top:5px; opacity:0.6; font-weight:600;">${done}/${total} Done</div>
+                    </div>
+                </div>
+                <div class="mini-progress" style="--pct: ${pct * 3.6}deg">
+                    <div class="mini-inner">${pct}%</div>
+                </div>
+            `;
+            grid.appendChild(card);
+        }
+    }
+
+    // --- RENDER ACTIVE TRACKER ---
+    window.openPack = (packId) => {
+        currentPackId = packId;
+        const pack = TRACKER_DB[packId];
+
+        // Daily Reset Logic for specific pack
+        const packDateKey = `date_${packId}`;
+        const lastDate = localStorage.getItem(packDateKey);
+        
+        if (lastDate !== today) {
+            localStorage.setItem(`tracker_${packId}`, JSON.stringify([])); 
+            localStorage.setItem(packDateKey, today);
+        }
+
+        // Switch View
+        document.getElementById('menu-view').style.display = 'none';
+        document.getElementById('task-view').style.display = 'block';
+        document.getElementById('activeTitle').innerText = pack.title;
+
+        renderTaskList();
+        window.scrollTo(0,0);
+    };
+
+    window.closeTracker = () => {
+        document.getElementById('task-view').style.display = 'none';
+        document.getElementById('menu-view').style.display = 'block';
+        currentPackId = null;
+        renderMenu(); 
+    };
+
+    function renderTaskList() {
+        if (!currentPackId) return;
+        const pack = TRACKER_DB[currentPackId];
+        const container = document.getElementById('taskList');
+        container.innerHTML = '';
+        
+        const savedData = JSON.parse(localStorage.getItem(`tracker_${currentPackId}`) || '[]');
+
+        let currentCat = '';
+        
+        pack.tasks.forEach(task => {
+            if (task.cat !== currentCat) {
+                const h = document.createElement('div');
+                h.className = 'section-title';
+                h.innerText = task.cat;
+                container.appendChild(h);
+                currentCat = task.cat;
+            }
+
+            const isChecked = savedData.includes(task.id);
+            
+            const div = document.createElement('div');
+            div.className = `task-wrapper ${isChecked ? 'checked' : ''}`;
+            div.id = `wrap-${task.id}`;
+            div.innerHTML = `
+                <div class="task-header">
+                    <div style="flex:1" onclick="toggleDetail('${task.id}')">
+                        <div class="task-name">${task.name}</div>
+                        <div class="task-sub">${task.sub}</div>
+                    </div>
+                    <div onclick="toggleTask('${task.id}')" style="padding-left:15px; cursor:pointer;">
+                        <div class="check-circle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-details" id="det-${task.id}">
+                    ${task.desc}
+                    <div class="source-tag">Source: ${task.src}</div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        const pct = Math.round((savedData.length / pack.tasks.length) * 100);
+        document.getElementById('activeProgress').innerText = `${pct}% Completed`;
+    }
+
+    window.toggleTask = (id) => {
+        let data = JSON.parse(localStorage.getItem(`tracker_${currentPackId}`) || '[]');
+        if (data.includes(id)) data = data.filter(x => x !== id);
+        else data.push(id);
+        
+        localStorage.setItem(`tracker_${currentPackId}`, JSON.stringify(data));
+        
+        const wrap = document.getElementById(`wrap-${id}`);
+        wrap.classList.toggle('checked');
+        
+        const pack = TRACKER_DB[currentPackId];
+        const pct = Math.round((data.length / pack.tasks.length) * 100);
+        document.getElementById('activeProgress').innerText = `${pct}% Completed`;
+        
+        // Sync with Home Widget ONLY if it's the Daily Mukmin pack
+        if(currentPackId === 'daily_mukmin') {
+             localStorage.setItem('tracker_data', JSON.stringify(data)); 
+             localStorage.setItem('tracker_date', today);
+        }
+    };
+
+    window.toggleDetail = (id) => {
+        const wrap = document.getElementById(`wrap-${id}`);
+        if (wrap.classList.contains('open')) wrap.classList.remove('open');
+        else wrap.classList.add('open');
+    };
+
+    window.resetCurrentTracker = () => {
+        if(confirm('Reset this checklist?')) {
+            localStorage.setItem(`tracker_${currentPackId}`, JSON.stringify([]));
+            renderTaskList();
+        }
+    };
+
+    init();
+
+</script>
+</body>
+</html>
