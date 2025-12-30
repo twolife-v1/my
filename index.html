@@ -1670,7 +1670,7 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { getDatabase, ref, update, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
@@ -1683,63 +1683,63 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = getDatabase(app);
 
-    // ==========================================
-    // 1. USER TRACKING ENGINE
-    // ==========================================
+    // --- 1. IDENTIFY USER ---
     function getUserId() {
         let id = localStorage.getItem('mukmin_uuid');
         if (!id) {
-            id = 'user_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+            id = 'user_' + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('mukmin_uuid', id);
         }
         return id;
     }
-
     const userId = getUserId();
-    const userRef = doc(db, "user_stats", userId);
+    const userRef = ref(db, 'users/' + userId);
 
-    async function trackSession() {
-        try {
-            await setDoc(userRef, {
-                lastActive: serverTimestamp(),
-                sessionCount: increment(1),
-                userAgent: navigator.userAgent,
+    // --- 2. TRACK VISITS (Transaction) ---
+    // Safely increments session count by 1
+    runTransaction(userRef, (currentUserData) => {
+        if (currentUserData) {
+            currentUserData.sessionCount = (currentUserData.sessionCount || 0) + 1;
+            currentUserData.lastActive = Date.now();
+        } else {
+            return {
+                sessionCount: 1,
+                lastActive: Date.now(),
+                firstSeen: Date.now(),
+                isInstalled: false,
                 platform: navigator.platform || 'unknown'
-            }, { merge: true });
-            
-            if (!localStorage.getItem('mukmin_initialized')) {
-                await setDoc(userRef, { firstSeen: serverTimestamp(), isInstalled: false }, { merge: true });
-                localStorage.setItem('mukmin_initialized', 'true');
-            }
-        } catch (e) { console.error("Tracking Error:", e); }
-    }
-    
-    // Track clicks on features
-    window.trackClick = async (featureName) => {
-        try { await setDoc(userRef, { lastAction: featureName }, { merge: true }); } catch(e) {}
+            };
+        }
+        return currentUserData;
+    });
+
+    // --- 3. TRACK INSTALLS ---
+    window.addEventListener('appinstalled', () => {
+        update(userRef, {
+            isInstalled: true,
+            installDate: Date.now()
+        });
+    });
+
+    // --- 4. CLICK TRACKING ---
+    window.trackClick = (featureName) => {
+        update(userRef, { lastAction: featureName });
     };
 
-    trackSession();
-
-    // ==========================================
-    // 2. SMART PWA INSTALLATION LOGIC
-    // ==========================================
+    // --- 5. PWA PROMPT LOGIC (Android/iOS) ---
+    // (This part remains exactly the same as before, handling the UI)
     let deferredPrompt;
     const pwaEl = document.getElementById('pwaInstall');
     
-    // Helper: Check if we should show the prompt (Not dismissed recently)
     function shouldShowPWA() {
         const lastDismiss = localStorage.getItem('pwa_dismissed_time');
-        if (lastDismiss) {
-            const hours = (Date.now() - parseInt(lastDismiss)) / 36e5;
-            if (hours < 24) return false; // Don't show if dismissed less than 24h ago
-        }
+        if (lastDismiss && (Date.now() - parseInt(lastDismiss)) / 36e5 < 24) return false;
         return true;
     }
 
-    // A. ANDROID LOGIC
+    // Android Trigger
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -1750,10 +1750,9 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
         }
     });
 
-    // B. IOS LOGIC
+    // iOS Trigger
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.navigator.standalone || (window.matchMedia('(display-mode: standalone)').matches);
-    
     if (isIOS && !isStandalone && shouldShowPWA()) {
         if(pwaEl) {
             pwaEl.style.display = 'flex';
@@ -1762,12 +1761,9 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
         }
     }
 
-    // C. INSTALL ACTIONS (Exposed to HTML)
     window.installPWA = async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`User response: ${outcome}`);
             deferredPrompt = null;
         }
         closePWA();
@@ -1775,24 +1771,9 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
 
     window.closePWA = () => {
         if(pwaEl) pwaEl.style.display = 'none';
-        // Remember dismissal for 24 hours
         localStorage.setItem('pwa_dismissed_time', Date.now().toString());
     };
-
-    // D. TRACK SUCCESSFUL INSTALL
-    window.addEventListener('appinstalled', async () => {
-        closePWA();
-        try {
-            await updateDoc(userRef, {
-                isInstalled: true,
-                installDate: serverTimestamp()
-            });
-            console.log("App Install Logged to Database!");
-        } catch (e) { console.error("Log Error", e); }
-    });
-
 </script>
-
 <script>
     // REGISTER SERVICE WORKER FOR OFFLINE CACHE
     if ('serviceWorker' in navigator) {
