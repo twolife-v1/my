@@ -3,45 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mukmin Admin (Realtime)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <title>Mukmin Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f3f4f6; margin: 0; padding: 20px; color: #1f2937; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h1 { margin: 0; color: #A67734; }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .stat-val { font-size: 24px; font-weight: 800; }
-        .stat-lbl { font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 700; }
+        :root { --bg: #0f172a; --surface: #1e293b; --primary: #A67734; --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        th { background: #f9fafb; padding: 12px; font-size: 11px; text-transform: uppercase; text-align: left; color: #6b7280; }
-        td { padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
-        .badge { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
-        .badge-app { background: #dcfce7; color: #166534; }
+        /* LAYOUT */
+        .grid-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; max-width: 1400px; margin: 0 auto; }
+        @media (max-width: 900px) { .grid-container { grid-template-columns: 1fr; } }
+
+        /* CARDS */
+        .card { background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        .card-header { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* KPI STATS */
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; text-align: center; }
+        .stat-val { font-size: 28px; font-weight: 800; color: var(--primary); }
+        .stat-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-top: 5px; }
+
+        /* TABLES & LISTS */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
+        td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+        .badge-app { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-web { background: rgba(255, 255, 255, 0.1); color: #94a3b8; }
+        .status-dot { height: 8px; width: 8px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .status-dot.online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
+
+        /* BROADCAST BOX */
+        .broadcast-controls { display: flex; gap: 10px; margin-top: 10px; }
+        input[type="text"] { flex: 1; padding: 10px; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px; }
+        button.btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        button.btn-primary:hover { opacity: 0.9; transform: scale(0.98); }
+        button.btn-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px; border-radius: 8px; cursor: pointer; }
+
+        /* LIVE FEED */
+        .feed-list { max-height: 400px; overflow-y: auto; }
+        .feed-item { padding: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-size: 13px; animation: fadeIn 0.3s ease; }
+        .feed-time { color: var(--text-muted); font-size: 11px; min-width: 50px; }
+        @keyframes fadeIn { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Admin Dashboard</h1>
-        <button onclick="location.reload()" style="padding:8px 16px; background:#A67734; color:white; border:none; border-radius:8px; cursor:pointer;">Refresh</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 style="margin:0; font-size:24px;">Mukmin <span style="color:var(--primary)">Admin</span></h1>
+        <div style="font-size:12px; color:var(--text-muted);">Realtime Database Connected 🟢</div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card"><div class="stat-lbl">Users</div><div class="stat-val" id="countUsers">0</div></div>
-        <div class="stat-card"><div class="stat-lbl">Installs</div><div class="stat-val" id="countInstalls">0</div></div>
-        <div class="stat-card"><div class="stat-lbl">Sessions</div><div class="stat-val" id="countSessions">0</div></div>
-    </div>
+    <div class="grid-container">
+        
+        <div class="col-main">
+            <div class="card">
+                <div class="card-header">Global Overview</div>
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-val" id="kpiUsers">0</div>
+                        <div class="stat-lbl">Unique Users</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val" id="kpiInstalls">0</div>
+                        <div class="stat-lbl">App Installs</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val" id="kpiSessions">0</div>
+                        <div class="stat-lbl">Total Sessions</div>
+                    </div>
+                </div>
+                <div style="height:250px;"><canvas id="growthChart"></canvas></div>
+            </div>
 
-    <table>
-        <thead><tr><th>User ID</th><th>Status</th><th>Visits</th><th>Last Seen</th><th>Device</th></tr></thead>
-        <tbody id="tableBody"><tr><td colspan="5" style="text-align:center; padding:20px;">Loading...</td></tr></tbody>
-    </table>
+            <div class="card">
+                <div class="card-header">All Users Directory</div>
+                <table>
+                    <thead><tr><th>Status</th><th>ID</th><th>Platform</th><th>Visits</th><th>Last Seen</th></tr></thead>
+                    <tbody id="userTableBody"><tr><td colspan="5" style="text-align:center; padding:20px;">Scanning database...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-side">
+            
+            <div class="card" style="border-color:var(--primary);">
+                <div class="card-header" style="color:var(--primary);">📢 Global Broadcast</div>
+                <div style="font-size:12px; margin-bottom:10px; opacity:0.8;">Send a message to all active apps immediately.</div>
+                <input type="text" id="msgInput" placeholder="Type message (e.g. Salam Ramadhan!)">
+                <div class="broadcast-controls">
+                    <button class="btn-primary" onclick="sendBroadcast()">SEND</button>
+                    <button class="btn-danger" onclick="clearBroadcast()">CLEAR</button>
+                </div>
+                <div id="currentMsg" style="margin-top:15px; font-size:11px; color:#22c55e;"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Platforms</div>
+                <div style="height:200px;"><canvas id="deviceChart"></canvas></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Live Feed 🔴</div>
+                <div class="feed-list" id="activityFeed">
+                    <div style="padding:10px; text-align:center; opacity:0.5; font-size:12px;">Waiting for activity...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
@@ -54,45 +129,160 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const dbRef = ref(getDatabase(app));
+        const db = getDatabase(app);
 
-        get(child(dbRef, `users`)).then((snapshot) => {
-            if (snapshot.exists()) {
-                const users = snapshot.val();
-                let uCount = 0, iCount = 0, sCount = 0;
-                let rows = '';
+        // --- CHART INSTANCES ---
+        let growthChart, deviceChart;
 
-                // Convert object to array and sort by lastActive (newest first)
-                const userList = Object.entries(users).sort((a,b) => b[1].lastActive - a[1].lastActive);
+        // --- 1. REALTIME LISTENER ---
+        const usersRef = ref(db, 'users');
+        onValue(usersRef, (snapshot) => {
+            if (!snapshot.exists()) return;
+            const data = snapshot.val();
+            const users = Object.entries(data).map(([k, v]) => ({ id: k, ...v }));
 
-                userList.forEach(([key, u]) => {
-                    uCount++;
-                    if(u.isInstalled) iCount++;
-                    sCount += (u.sessionCount || 0);
-                    
-                    const time = u.lastActive ? new Date(u.lastActive).toLocaleString() : '-';
-                    const badge = u.isInstalled ? '<span class="badge badge-app">APP</span>' : '<span style="opacity:0.5">WEB</span>';
-                    
-                    rows += `<tr>
-                        <td style="font-family:monospace">${key.substring(0,8)}...</td>
-                        <td>${badge}</td>
-                        <td><b>${u.sessionCount||1}</b></td>
-                        <td style="color:#666">${time}</td>
-                        <td style="color:#666; font-size:11px;">${u.platform}</td>
-                    </tr>`;
-                });
-
-                document.getElementById('countUsers').textContent = uCount;
-                document.getElementById('countInstalls').textContent = iCount;
-                document.getElementById('countSessions').textContent = sCount;
-                document.getElementById('tableBody').innerHTML = rows;
-            } else {
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" style="text-align:center">No data found</td></tr>';
-            }
-        }).catch((error) => {
-            console.error(error);
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center">Error loading data</td></tr>';
+            updateKPIs(users);
+            updateTable(users);
+            updateCharts(users);
+            updateFeed(users);
         });
+
+        // --- 2. UPDATE FUNCTIONS ---
+        function updateKPIs(users) {
+            document.getElementById('kpiUsers').textContent = users.length;
+            document.getElementById('kpiInstalls').textContent = users.filter(u => u.isInstalled).length;
+            document.getElementById('kpiSessions').textContent = users.reduce((acc, u) => acc + (u.sessionCount || 0), 0);
+        }
+
+        function updateTable(users) {
+            // Sort by Last Active (Newest First)
+            const sorted = users.sort((a,b) => b.lastActive - a.lastActive).slice(0, 15); // Show top 15
+            
+            let html = '';
+            sorted.forEach(u => {
+                const isOnline = (Date.now() - u.lastActive) < (5 * 60 * 1000); // Online if active in last 5 mins
+                const badge = u.isInstalled ? '<span class="badge badge-app">APP</span>' : '<span class="badge badge-web">WEB</span>';
+                const time = new Date(u.lastActive).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                
+                html += `<tr>
+                    <td><div class="status-dot ${isOnline?'online':''}"></div> ${badge}</td>
+                    <td style="font-family:monospace; opacity:0.8;">${u.id.substring(5, 13)}...</td>
+                    <td>${formatPlatform(u.platform)}</td>
+                    <td><b>${u.sessionCount||1}</b></td>
+                    <td style="color:var(--text-muted);">${time}</td>
+                </tr>`;
+            });
+            document.getElementById('userTableBody').innerHTML = html;
+        }
+
+        function updateFeed(users) {
+            // Find users active in last 30 seconds to populate feed
+            const recent = users.filter(u => (Date.now() - u.lastActive) < 30000).sort((a,b) => b.lastActive - a.lastActive);
+            const feed = document.getElementById('activityFeed');
+            
+            // Only add if we have new data points (simplified logic)
+            if(recent.length > 0) {
+                feed.innerHTML = ''; // Clear for now to avoid duplicates, real app would append
+                recent.forEach(u => {
+                    feed.innerHTML += `
+                        <div class="feed-item">
+                            <div class="feed-time">Just now</div>
+                            <div>
+                                <span style="color:var(--primary); font-weight:700;">User ${u.id.substring(5,9)}</span>
+                                opened the app on ${formatPlatform(u.platform)}.
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function updateCharts(users) {
+            // Platform Data
+            const android = users.filter(u => (u.platform||'').toLowerCase().includes('android') || (u.userAgent||'').toLowerCase().includes('android')).length;
+            const ios = users.filter(u => (u.platform||'').toLowerCase().includes('iphone') || (u.platform||'').toLowerCase().includes('ipad') || (u.userAgent||'').toLowerCase().includes('iphone')).length;
+            const pc = users.length - android - ios;
+
+            // Update Device Chart
+            if(deviceChart) deviceChart.destroy();
+            const ctxDevice = document.getElementById('deviceChart').getContext('2d');
+            deviceChart = new Chart(ctxDevice, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Android', 'iOS', 'Desktop/Other'],
+                    datasets: [{
+                        data: [android, ios, pc],
+                        backgroundColor: ['#34d399', '#3b82f6', '#94a3b8'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 10 } } } }
+            });
+
+            // Growth Chart (Mock data logic based on firstSeen would be complex, using simple Session dist here)
+            // For real growth, we'd bucket 'firstSeen' dates. Here we visualize activity distribution.
+            if(growthChart) growthChart.destroy();
+            const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+            growthChart = new Chart(ctxGrowth, {
+                type: 'bar',
+                data: {
+                    labels: ['High Users (>50 visits)', 'Regular (10-50)', 'New (<10)'],
+                    datasets: [{
+                        label: 'User Engagement',
+                        data: [
+                            users.filter(u => u.sessionCount > 50).length,
+                            users.filter(u => u.sessionCount >= 10 && u.sessionCount <= 50).length,
+                            users.filter(u => u.sessionCount < 10).length
+                        ],
+                        backgroundColor: '#A67734',
+                        borderRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function formatPlatform(p) {
+            if(!p) return 'Unknown';
+            if(p.includes('Linux arm')) return 'Android';
+            if(p.includes('iPhone')) return 'iPhone';
+            if(p.includes('Win')) return 'Windows';
+            return 'Web';
+        }
+
+        // --- 3. BROADCAST LOGIC ---
+        window.sendBroadcast = () => {
+            const msg = document.getElementById('msgInput').value;
+            if(!msg) return alert("Type a message!");
+            set(ref(db, 'broadcast'), {
+                message: msg,
+                timestamp: Date.now(),
+                active: true
+            }).then(() => {
+                alert("Broadcast Sent!");
+                document.getElementById('currentMsg').textContent = "Active: " + msg;
+            });
+        };
+
+        window.clearBroadcast = () => {
+            set(ref(db, 'broadcast'), { active: false });
+            document.getElementById('msgInput').value = '';
+            document.getElementById('currentMsg').textContent = "No active broadcast.";
+        };
+        
+        // Listen for current broadcast status
+        onValue(ref(db, 'broadcast'), (snap) => {
+            if(snap.exists() && snap.val().active) {
+                document.getElementById('currentMsg').textContent = "Active: " + snap.val().message;
+            } else {
+                document.getElementById('currentMsg').textContent = "No active broadcast.";
+            }
+        });
+
     </script>
 </body>
 </html>
