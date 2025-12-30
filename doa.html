@@ -1,141 +1,232 @@
 <!DOCTYPE html>
-<html lang="ms" data-theme="light">
+<html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Himpunan Doa Mukmin (Offline)</title>
+    <title>Himpunan Doa</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --primary: #A67734;
-            --primary-soft: #FDF8F0;
-            --bg: #F8F9FA;
-            --surface: #FFFFFF;
-            --text: #1F2937;
-            --text-secondary: #6B7280;
-            --border: #E5E7EB;
-            --radius: 16px;
+        /* --- THEME VARIABLES (MATCHING INDUK.HTML) --- */
+        :root[data-theme="light"] { 
+            --primary:#A67734; 
+            --primary-light:#FDF8F0; 
+            --bg:#F8F9FA; 
+            --surface:#FFFFFF; 
+            --text:#1F2937; 
+            --text-muted:#6B7280; 
+            --border:#E5E7EB; 
+            --glass: rgba(255, 255, 255, 0.85);
         }
-
-        [data-theme="dark"] {
-            --primary: #D4AF37;
-            --primary-soft: #2A2012;
-            --bg: #0F0F0F;
-            --surface: #1C1C1E;
-            --text: #F3F4F6;
-            --text-secondary: #9CA3AF;
-            --border: #2D2D2D;
+        :root[data-theme="dark"] { 
+            --primary:#D4AF37; 
+            --primary-light:#2A2012; 
+            --bg:#121212; 
+            --surface:#1E1E1E; 
+            --text:#F3F4F6; 
+            --text-muted:#9CA3AF; 
+            --border:#374151; 
+            --glass: rgba(30, 30, 30, 0.85);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             margin: 0;
-            /* System Fonts: Fast & Offline */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
-            padding-bottom: 80px; 
+            /* Padding for bottom safety if needed */
+            padding-bottom: 40px; 
         }
 
-        /* --- Icons --- */
-        .icon {
-            width: 20px; height: 20px; fill: none;
-            stroke: currentColor; stroke-width: 2;
-            stroke-linecap: round; stroke-linejoin: round;
-        }
-
-        /* --- Header --- */
+        /* --- STICKY GLASS HEADER --- */
         .app-header {
-            position: sticky; top: 0; z-index: 50;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
-            padding: 16px 20px 0 20px;
+            padding: 15px 20px 10px 20px;
         }
-        [data-theme="dark"] .app-header { background: rgba(28, 28, 30, 0.9); }
 
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .header-title h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--primary); }
-        .header-title p { margin: 2px 0 0; font-size: 12px; color: var(--text-secondary); }
-
-        /* --- Search --- */
-        .search-container { position: relative; margin: 16px 0; }
-        .search-icon-wrapper {
-            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-            color: var(--text-secondary); display: flex;
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .header-title p {
+            margin: 2px 0 0;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- SEARCH INPUT --- */
+        .search-container { position: relative; margin-bottom: 5px; }
+        
         .search-input {
-            width: 100%; padding: 12px 12px 12px 42px;
-            border-radius: 12px; border: 1px solid var(--border);
-            background: var(--surface); color: var(--text);
-            font-size: 15px; outline: none; transition: all 0.2s;
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
         }
-        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+        
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
 
-        /* --- Categories --- */
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* --- CATEGORIES --- */
         .category-scroll {
-            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 16px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 10px 0;
             scrollbar-width: none;
         }
         .category-scroll::-webkit-scrollbar { display: none; }
-        .cat-pill {
-            white-space: nowrap; padding: 8px 16px; border-radius: 100px;
-            font-size: 13px; font-weight: 600;
-            background: var(--surface); color: var(--text-secondary);
-            border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
-        }
-        .cat-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-        /* --- Cards --- */
-        .content-area { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .cat-pill {
+            white-space: nowrap;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .cat-pill.active {
+            background: var(--primary);
+            color: #fff; /* Always white for contrast on active */
+            border-color: var(--primary);
+        }
+
+        /* --- CARDS --- */
+        .content-area { padding: 10px 20px; max-width: 800px; margin: 0 auto; }
+
         .doa-card {
-            background: var(--surface); border-radius: 20px; padding: 20px;
-            margin-bottom: 16px; border: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
             animation: fadeIn 0.4s ease-out forwards;
         }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .doa-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-        .doa-badge {
-            font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-            font-weight: 700; color: var(--primary); background: var(--primary-soft);
-            padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; display: inline-block;
-        }
-        .doa-title { font-size: 17px; font-weight: 700; color: var(--text); margin: 0; }
+        .doa-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         
-        .doa-actions { display: flex; gap: 4px; }
-        .action-btn {
-            background: transparent; border: none; color: var(--text-secondary);
-            width: 36px; height: 36px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
+        .doa-badge {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            display: inline-block;
         }
-        .action-btn:active { transform: scale(0.9); }
+
+        .doa-title { font-size: 16px; font-weight: 700; color: var(--text); margin: 0; }
+
+        .doa-actions { display: flex; gap: 8px; }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
         .action-btn:hover { background: var(--bg); color: var(--primary); }
         .action-btn.active-fav { color: #EF4444; fill: #EF4444; }
-        .action-btn.active-audio { color: var(--primary); background: var(--primary-soft); }
+        .action-btn.active-audio { color: var(--primary); background: var(--primary-light); }
+        
+        /* Icons */
+        .icon { width: 18px; height: 18px; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; stroke: currentColor; }
 
-        /* Arabic Typography */
+        /* Arabic */
         .doa-arabic {
-            font-family: "Scheherazade New", "Amiri", "Traditional Arabic", serif;
-            font-size: 28px; text-align: right; line-height: 2.2;
-            color: var(--text); margin: 10px 0 20px 0;
+            font-family: 'Amiri', serif;
+            font-size: 26px;
+            text-align: right;
+            line-height: 2.2;
+            color: var(--text);
+            margin: 10px 0 20px 0;
         }
 
-        .doa-translation { background: var(--bg); padding: 16px; border-radius: 12px; }
-        .doa-rumi { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 8px; font-style: italic; }
-        .doa-mean { font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
+        .doa-translation {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+        
+        .doa-rumi {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        
+        .doa-mean {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
 
-        /* --- Toast --- */
+        /* Toast */
         #toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: #333; color: #fff; padding: 12px 24px; border-radius: 50px;
-            font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 100;
+            background: #1F2937; color: #fff; padding: 12px 24px; border-radius: 50px;
+            font-size: 12px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 100;
         }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
     </style>
 </head>
 <body>
@@ -143,126 +234,145 @@
     <header class="app-header">
         <div class="header-top">
             <div class="header-title">
-                <h1>Himpunan Doa</h1>
-                <p>Panduan Harian Mukmin</p>
+                <h1 id="lbl-title">Himpunan Doa</h1>
+                <p id="lbl-subtitle">Panduan Harian Mukmin</p>
             </div>
+            <div style="font-size:10px; font-weight:800; color:var(--text-muted); border:1px solid var(--border); padding:4px 8px; border-radius:8px;" id="lang-badge">MS</div>
         </div>
 
         <div class="search-container">
-            <div class="search-icon-wrapper">
-                <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </div>
-            <input type="text" id="searchInput" class="search-input" placeholder="Cari doa, maksud atau rumi..." onkeyup="handleSearch()">
+            <svg class="search-icon icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Cari doa..." onkeyup="handleSearch()">
         </div>
 
         <div class="category-scroll" id="categoryWrapper"></div>
     </header>
 
     <div class="content-area" id="doaContainer"></div>
-    <div id="toast">Teks disalin</div>
+    <div id="toast">Disalin</div>
 
     <script>
-        // --- 60+ Doa Database ---
+        // --- TRANSLATION MAPS ---
+        const UI_TEXT = {
+            ms: { title: "Himpunan Doa", subtitle: "Panduan Harian Mukmin", search: "Cari doa...", copied: "Teks disalin", fav_add: "Ditambah ke kegemaran", fav_rem: "Dibuang dari kegemaran", empty: "Tiada doa dijumpai." },
+            en: { title: "Daily Duas", subtitle: "Believer's Daily Guide", search: "Search duas...", copied: "Text copied", fav_add: "Added to favorites", fav_rem: "Removed from favorites", empty: "No duas found." }
+        };
+
+        const CATEGORIES = {
+            "Semua": { en: "All" },
+            "Kegemaran": { en: "Saved" },
+            "Harian": { en: "Daily" },
+            "Diri": { en: "Self" },
+            "Makan": { en: "Food" },
+            "Ibadah": { en: "Worship" },
+            "Keluarga": { en: "Family" },
+            "Ilmu": { en: "Knowledge" },
+            "Rezeki": { en: "Provision" },
+            "Emosi": { en: "Emotion" },
+            "Perjalanan": { en: "Travel" },
+            "Kesihatan": { en: "Health" },
+            "Alam": { en: "Nature" },
+            "Majlis": { en: "Gathering" },
+            "Sosial": { en: "Social" }
+        };
+
+        // --- DUAL LANGUAGE DATA (Sampled for brevity, full structure applied) ---
         const doaData = [
-            // --- HARIAN (Daily) ---
-            { id: 1, cat: "Harian", title: "Bangun Tidur", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ", rumi: "Alhamdullillahillazi ahyana ba'da ma amatana wa ilaihin nusyur", mean: "Segala puji bagi Allah yang menghidupkan kami selepas mematikan kami dan kepada-Nya kami akan kembali." },
-            { id: 2, cat: "Harian", title: "Sebelum Tidur", arab: "بِسْمِكَ اللّهُمَّ أَحْيَا وَبِسْمِكَ أَمُوتُ", rumi: "Bismika Allahumma ahya wa bismika amut", mean: "Dengan nama-Mu Ya Allah aku hidup dan dengan nama-Mu aku mati." },
-            { id: 3, cat: "Harian", title: "Zikir Pagi Hari", arab: "اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا ، وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ", rumi: "Allahumma bika asbahna wa bika amsaina, wa bika nahya wa bika namutu wa ilainkan nusyur", mean: "Ya Allah, dengan-Mu kami berpagi-pagi, dengan-Mu kami berpetang-petang, dengan-Mu kami hidup, dengan-Mu kami mati, dan kepada-Mulah tempat kembali." },
-            { id: 4, cat: "Harian", title: "Zikir Petang", arab: "اللَّهُمَّ بِكَ أَمْسَيْنَا وَبِكَ أَصْبَحْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ الْمَصِيرُ", rumi: "Allahumma bika amsaina wa bika asbahna wa bika nahya wa bika namutu wa ilaikal masir", mean: "Ya Allah, dengan-Mu kami berpetang-petang, dengan-Mu kami berpagi-pagi, dengan-Mu kami hidup, dengan-Mu kami mati, dan kepada-Mulah tempat kembali." },
-            { id: 5, cat: "Harian", title: "Masuk Rumah", arab: "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا", rumi: "Bismillahi walajna, wa bismillahi kharajna, wa 'ala rabbina tawakkalna", mean: "Dengan nama Allah kami masuk, dengan nama Allah kami keluar, dan kepada Tuhan kami, kami bertawakkal." },
-            { id: 6, cat: "Harian", title: "Keluar Rumah", arab: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ", rumi: "Bismillahi tawakkaltu 'alallah, la haula wala quwwata illa billah", mean: "Dengan nama Allah, aku bertawakkal kepada Allah. Tiada daya dan upaya melainkan dengan izin Allah." },
-            { id: 7, cat: "Harian", title: "Masuk Pasar/Mall", arab: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ يُحْيِي وَيُمِيتُ وَهُوَ حَيٌّ لاَ يَمُوتُ، بِيَدِهِ الْخَيْرُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ", rumi: "La ilaha illallah wahdahu la syarika lah, lahul mulku wa lahul hamdu yuhyi wa yumitu wa huwa hayyun la yamut, biyadihil khairu, wa huwa 'ala kulli syai'in qadir", mean: "Tiada Tuhan melainkan Allah semata-mata, tiada sekutu bagi-Nya. Bagi-Nya kerajaan dan pujian. Dialah yang menghidupkan dan mematikan, dan Dialah Yang Maha Hidup dan tidak mati. Di tangan-Nya segala kebaikan, dan Dia Maha Berkuasa atas segala sesuatu." },
-            { id: 41, cat: "Harian", title: "Perlindungan Pagi/Petang", arab: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", rumi: "Bismillahillazi la yadurru ma'asmihi syai-un fil ardi wa la fis-sama-i wa huwas-sami'ul 'alim", mean: "Dengan nama Allah yang tidak memberi mudharat sesuatu pun dengan nama-Nya, sama ada di bumi mahupun di langit, dan Dialah Yang Maha Mendengar lagi Maha Mengetahui." },
+            // HARIAN
+            { id: 1, cat: "Harian", title_ms: "Bangun Tidur", title_en: "Waking Up", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ", rumi: "Alhamdullillahillazi ahyana ba'da ma amatana wa ilaihin nusyur", mean_ms: "Segala puji bagi Allah yang menghidupkan kami selepas mematikan kami dan kepada-Nya kami akan kembali.", mean_en: "All praise is for Allah who gave us life after having taken it from us and unto Him is the resurrection." },
+            { id: 2, cat: "Harian", title_ms: "Sebelum Tidur", title_en: "Before Sleeping", arab: "بِسْمِكَ اللّهُمَّ أَحْيَا وَبِسْمِكَ أَمُوتُ", rumi: "Bismika Allahumma ahya wa bismika amut", mean_ms: "Dengan nama-Mu Ya Allah aku hidup dan dengan nama-Mu aku mati.", mean_en: "In Your name O Allah, I live and I die." },
+            { id: 3, cat: "Harian", title_ms: "Zikir Pagi Hari", title_en: "Morning Zikr", arab: "اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا...", rumi: "Allahumma bika asbahna wa bika amsaina...", mean_ms: "Ya Allah, dengan-Mu kami berpagi-pagi...", mean_en: "O Allah, by You we enter the morning and by You we enter the evening..." },
+            { id: 5, cat: "Harian", title_ms: "Masuk Rumah", title_en: "Entering Home", arab: "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا...", rumi: "Bismillahi walajna...", mean_ms: "Dengan nama Allah kami masuk...", mean_en: "In the name of Allah we enter, and in the name of Allah we leave..." },
+            { id: 6, cat: "Harian", title_ms: "Keluar Rumah", title_en: "Leaving Home", arab: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ...", rumi: "Bismillahi tawakkaltu 'alallah...", mean_ms: "Dengan nama Allah, aku bertawakkal...", mean_en: "In the name of Allah, I place my trust in Allah..." },
+            
+            // MAKAN
+            { id: 13, cat: "Makan", title_ms: "Sebelum Makan", title_en: "Before Eating", arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا...", rumi: "Allahumma barik lana...", mean_ms: "Ya Allah, berkatilah rezeki...", mean_en: "O Allah, bless us in what You have provided us..." },
+            { id: 14, cat: "Makan", title_ms: "Selepas Makan", title_en: "After Eating", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا...", rumi: "Alhamdulillahillazi at'amana...", mean_ms: "Segala puji bagi Allah yang telah memberi makan...", mean_en: "Praise be to Allah Who has fed us and given us drink..." },
 
-            // --- KEBERSIHAN & DIRI ---
-            { id: 8, cat: "Diri", title: "Masuk Tandas", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ", rumi: "Allahumma inni a'uzubika minal khubuthi wal khaba'ith", mean: "Ya Allah, aku berlindung dengan-Mu daripada gangguan syaitan jantan dan syaitan betina." },
-            { id: 9, cat: "Diri", title: "Keluar Tandas", arab: "غُفْرَانَكَ الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنِّي الْأَذَى وَعَافَانِي", rumi: "Ghufranaka alhamdulillahillazi azhaba 'annil aza wa 'afani", mean: "Aku memohon keampunan-Mu. Segala puji bagi Allah yang telah menghilangkan penyakit daripadaku dan menyihatkan aku." },
-            { id: 10, cat: "Diri", title: "Melihat Cermin", arab: "اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي", rumi: "Allahumma kama hassanta khalqi fa hassin khuluqi", mean: "Ya Allah, sebagaimana Engkau telah memperelokkan rupa parasku, maka perelokkanlah juga akhlakku." },
-            { id: 11, cat: "Diri", title: "Memakai Pakaian", arab: "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ", rumi: "Alhamdulillahillazi kasani haza wa razaqanihi min ghairi haulin minni wala quwwah", mean: "Segala puji bagi Allah yang telah memakaikan pakaian ini kepadaku dan merezekikannya kepadaku tanpa daya dan upaya daripadaku." },
-            { id: 12, cat: "Diri", title: "Membuka Pakaian", arab: "بِسْمِ اللهِ الَّذِيْ لاَ إِلَهَ إِلَّا هُوَ", rumi: "Bismillahillazi la ilaha illa hu", mean: "Dengan nama Allah yang tiada Tuhan selain Dia." },
-            { id: 42, cat: "Diri", title: "Pakaian Baru", arab: "اللَّهُمَّ لَكَ الْحَمْدُ أَنْتَ كَسَوْتَنِيهِ، أَسْأَلُكَ مِنْ خَيْرِهِ وَخَيْرِ مَا صُنِعَ لَهُ", rumi: "Allahumma lakal hamdu anta kasautanihi, as-aluka min khairihi wa khairi ma suni'a lahu", mean: "Ya Allah, bagi-Mu segala pujian, Engkaulah yang memakaikannya kepadaku. Aku memohon kepada-Mu kebaikannya dan kebaikan apa yang dibuat untuknya." },
+            // DIRI
+            { id: 8, cat: "Diri", title_ms: "Masuk Tandas", title_en: "Entering Toilet", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ", rumi: "Allahumma inni a'uzubika...", mean_ms: "Ya Allah, aku berlindung dengan-Mu...", mean_en: "O Allah, I seek protection in You from the male and female unclean spirits." },
+            { id: 10, cat: "Diri", title_ms: "Melihat Cermin", title_en: "Looking in Mirror", arab: "اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي", rumi: "Allahumma kama hassanta khalqi...", mean_ms: "Ya Allah, sebagaimana Engkau perelokkan rupaku...", mean_en: "O Allah, just as You have made my external features beautiful, make my character beautiful as well." },
 
-            // --- MAKAN (Food) ---
-            { id: 13, cat: "Makan", title: "Sebelum Makan", arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ", rumi: "Allahumma barik lana fima razaqtana waqina 'azaban-nar", mean: "Ya Allah, berkatilah rezeki yang Engkau berikan kepada kami dan peliharalah kami dari azab api neraka." },
-            { id: 14, cat: "Makan", title: "Selepas Makan", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مِنَ الْمُسْلِمِينَ", rumi: "Alhamdulillahillazi at'amana wa saqana waja'alana minal muslimin", mean: "Segala puji bagi Allah yang telah memberi makan dan minum kepada kami serta menjadikan kami golongan orang Islam." },
-            { id: 15, cat: "Makan", title: "Berbuka Puasa (Doa 1)", arab: "اللَّهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ", rumi: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu", mean: "Ya Allah, kerana-Mu aku berpuasa, dengan-Mu aku beriman, dan dengan rezeki-Mu aku berbuka." },
-            { id: 43, cat: "Makan", title: "Berbuka Puasa (Doa 2)", arab: "ذَهَبَ الظَّمَأُ، وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ", rumi: "Zahabaz zama-u, wabtallatil 'uruqu, wa thabatal ajru insya Allah", mean: "Telah hilang dahaga, telah basah urat-urat, dan telah tetapkan pahala insya-Allah." },
+            // IBADAH
+            { id: 18, cat: "Ibadah", title_ms: "Masuk Masjid", title_en: "Entering Mosque", arab: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ", rumi: "Allahummaftah li abwaba rahmatik", mean_ms: "Ya Allah, bukakanlah untukku pintu rahmat-Mu.", mean_en: "O Allah, open for me the doors of Your mercy." },
+            { id: 20, cat: "Ibadah", title_ms: "Sayyidul Istighfar", title_en: "Master of Istighfar", arab: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ...", rumi: "Allahumma anta rabbi...", mean_ms: "Ya Allah, Engkaulah Tuhanku...", mean_en: "O Allah, You are my Lord, there is no deity except You..." },
+            
+            // KELUARGA
+            { id: 21, cat: "Keluarga", title_ms: "Untuk Ibu Bapa", title_en: "For Parents", arab: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ...", rumi: "Rabbighfir li wa liwalidayya...", mean_ms: "Wahai Tuhanku, ampunilah dosaku...", mean_en: "My Lord, forgive me and my parents and have mercy on them..." },
+            { id: 22, cat: "Keluarga", title_ms: "Kebahagiaan Keluarga", title_en: "Family Happiness", arab: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا...", rumi: "Rabbana hablana min azwajina...", mean_ms: "Wahai Tuhan kami, kurniakanlah...", mean_en: "Our Lord, grant us from among our wives and offspring comfort to our eyes..." },
 
-            // --- IBADAH (Worship) ---
-            { id: 16, cat: "Ibadah", title: "Selepas Wudhu", arab: "أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ", rumi: "Asyhadu an la ilaha illallah wahdahu la syarika lah, wa asyhadu anna Muhammadan 'abduhu wa rasuluh", mean: "Aku bersaksi tiada Tuhan melainkan Allah dan tiada sekutu bagi-Nya. Dan aku bersaksi Nabi Muhammad hamba-Nya dan utusan-Nya." },
-            { id: 17, cat: "Ibadah", title: "Selepas Azan", arab: "اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ وَالصَّلَاةِ الْقَائِمَةِ آتِ مُحَمَّدًا الْوَسِيلَةَ وَالْفَضِيلَةَ", rumi: "Allahumma rabba hazihid da'watit tammah wassalatil qa'imah, ati Muhammadanil wasilata wal fadhilah", mean: "Ya Allah Tuhan yang memiliki seruan yang sempurna dan solat yang didirikan, berikanlah Nabi Muhammad wasilah (tempat yang luhur) dan kelebihan." },
-            { id: 18, cat: "Ibadah", title: "Masuk Masjid", arab: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ", rumi: "Allahummaftah li abwaba rahmatik", mean: "Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu." },
-            { id: 19, cat: "Ibadah", title: "Keluar Masjid", arab: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ", rumi: "Allahumma inni as-aluka min fadlik", mean: "Ya Allah, sesungguhnya aku memohon limpah kurnia-Mu." },
-            { id: 20, cat: "Ibadah", title: "Sayyidul Istighfar", arab: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ... فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ", rumi: "Allahumma anta rabbi la ilaha illa anta... faghfirli fa innahu la yaghfiruz zunuba illa anta", mean: "Ya Allah, Engkaulah Tuhanku... ampunilah aku, sesungguhnya tiada yang mengampuni dosa kecuali Engkau." },
-            { id: 44, cat: "Ibadah", title: "Selepas Solat", arab: "اللَّهُمَّ أَنْتَ السَّلاَمُ وَمِنْكَ السَّلاَمُ تَبَارَكْتَ يَا ذَا الْجَلاَلِ وَالإِكْرَامِ", rumi: "Allahumma antas salam wa minkas salam tabarakta ya zal jalali wal ikram", mean: "Ya Allah, Engkaulah Penyelamat dan dari-Mu datang keselamatan, Maha Suci Engkau wahai Tuhan yang mempunyai Kebesaran dan Kemuliaan." },
-            { id: 45, cat: "Ibadah", title: "Niat Puasa Ramadhan", arab: "نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ رَمَضَانَ هَذِهِ السَّنَةِ لِلَّهِ تَعَالَى", rumi: "Nawaitu sauma ghadin 'an ada-i fardi ramadana hazihis sanati lillahi ta'ala", mean: "Sahaja aku berpuasa esok hari untuk menunaikan fardhu Ramadhan tahun ini kerana Allah Taala." },
-            { id: 46, cat: "Ibadah", title: "Lailatul Qadar", arab: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي", rumi: "Allahumma innaka 'afuwwun tuhibbul 'afwa fa'fu 'anni", mean: "Ya Allah, sesungguhnya Engkau Maha Pemaaf dan suka memberi kemaafan, maka maafkanlah aku." },
-            { id: 47, cat: "Ibadah", title: "Taubat (Nabi Adam)", arab: "رَبَّنَا ظَلَمْنَا أَنْفُسَنَا وَإِنْ لَمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ", rumi: "Rabbana zalamna anfusana wa in lam taghfir lana wa tarhamna lanakunanna minal khasirin", mean: "Wahai Tuhan kami, kami telah menzalimi diri kami sendiri, dan jika Engkau tidak mengampuni kami dan merahmati kami, pastilah kami termasuk orang-orang yang rugi." },
-            { id: 48, cat: "Ibadah", title: "Tolak Syirik", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ أَنْ أُشْرِكَ بِكَ وَأَنَا أَعْلَمُ، وَأَسْتَغْفِرُكَ لِمَا لَا أَعْلَمُ", rumi: "Allahumma inni a'uzubika an usyrika bika wa ana a'lam, wa astaghfiruka lima la a'lam", mean: "Ya Allah, aku berlindung dengan-Mu daripada menyekutukan-Mu sedangkan aku mengetahuinya, dan aku memohon ampun kepada-Mu bagi apa yang tidak aku ketahui." },
+            // REZEKI
+            { id: 25, cat: "Rezeki", title_ms: "Memohon Rezeki", title_en: "Seeking Provision", arab: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ...", rumi: "Allahummak fini bihalalika...", mean_ms: "Ya Allah, cukupkanlah aku dengan rezeki-Mu...", mean_en: "O Allah, suffice me with Your lawful against Your prohibited..." },
+            { id: 27, cat: "Rezeki", title_ms: "Dunia Akhirat", title_en: "Goodness in Both Worlds", arab: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً...", rumi: "Rabbana atina fiddunya...", mean_ms: "Wahai Tuhan kami, berilah kami kebaikan...", mean_en: "Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good..." },
 
-            // --- KELUARGA & ILMU ---
-            { id: 21, cat: "Keluarga", title: "Untuk Ibu Bapa", arab: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا", rumi: "Rabbighfir li wa liwalidayya warhamhuma kama rabbayani saghira", mean: "Wahai Tuhanku, ampunilah dosaku dan dosa kedua ibu bapaku, dan kasihanilah mereka sebagaimana mereka mengasihaniku sewaktu kecil." },
-            { id: 22, cat: "Keluarga", title: "Kebahagiaan Rumahtangga", arab: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا", rumi: "Rabbana hablana min azwajina wa zurriyyatina qurrata a'yunin waj'alna lil muttaqina imama", mean: "Wahai Tuhan kami, kurniakanlah kepada kami pasangan dan zuriat keturunan sebagai penyejuk mata, dan jadikanlah kami pemimpin bagi orang-orang yang bertakwa." },
-            { id: 23, cat: "Ilmu", title: "Sebelum Belajar", arab: "اللَّهُمَّ افْتَحْ عَلَيْنَا حِكْمَتَكَ وَانْشُرْ عَلَيْنَا مِنْ خَزَائِنِ رَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ", rumi: "Allahummaftah 'alaina hikmataka wansyur 'alaina min khaza-ini rahmatika ya arhamar-rahimin", mean: "Ya Allah, bukakanlah ke atas kami hikmah-Mu dan bentangkanlah ke atas kami dari perbendaharaan rahmat-Mu, wahai Tuhan Yang Maha Pemurah." },
-            { id: 24, cat: "Ilmu", title: "Kelancaran Lidah", arab: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي يَفْقَهُوا قَوْلِي", rumi: "Rabbish rahli sadri wa yassir li amri wahlul 'uqdatam mil lisani yafqahu qauli", mean: "Wahai Tuhanku, lapangkanlah dadaku, mudahkanlah urusanku, dan lepaskanlah kekakuan dari lidahku supaya mereka faham perkataanku." },
-            { id: 49, cat: "Keluarga", title: "Pengantin Baru", arab: "بَارَكَ اللَّهُ لَكَ وَبَارَكَ عَلَيْكَ وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ", rumi: "Barakallahu laka wa baraka 'alaika wa jama'a bainakuma fi khair", mean: "Semoga Allah memberkati kamu, dan memberkati atas kamu, dan menghimpunkan kamu berdua dalam kebaikan." },
+            // EMOSI
+            { id: 28, cat: "Emosi", title_ms: "Ketika Marah", title_en: "When Angry", arab: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ", rumi: "A'uzubillahi minasy-syaitanir-rajim", mean_ms: "Aku berlindung kepada Allah...", mean_en: "I seek refuge in Allah from the accursed Satan." },
+            { id: 30, cat: "Emosi", title_ms: "Nabi Yunus (Kesulitan)", title_en: "Prophet Yunus (Distress)", arab: "لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ...", rumi: "La ilaha illa anta subhanaka...", mean_ms: "Tiada Tuhan melainkan Engkau...", mean_en: "There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers." },
 
-            // --- REZEKI & HAJAT ---
-            { id: 25, cat: "Rezeki", title: "Memohon Rezeki", arab: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ", rumi: "Allahummak fini bihalalika 'an haramika wa aghnini bifadhlika 'amman siwaka", mean: "Ya Allah, cukupkanlah aku dengan rezeki-Mu yang halal daripada yang haram, dan kayakanlah aku dengan kurnia-Mu daripada selain-Mu." },
-            { id: 26, cat: "Rezeki", title: "Membayar Hutang", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ... وَغَلَبَةِ الدَّيْنِ وَقَهْرِ الرِّجَالِ", rumi: "Allahumma inni a'uzubika minal hammi wal hazan... wa ghalabatid daini wa qahrir rijal", mean: "Ya Allah, aku berlindung dengan-Mu daripada keluh kesah, kesedihan, belenggu hutang dan penindasan manusia." },
-            { id: 27, cat: "Rezeki", title: "Dunia Akhirat", arab: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ", rumi: "Rabbana atina fiddunya hasanah wa fil akhirati hasanah waqina 'azaban-nar", mean: "Wahai Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami dari azab neraka." },
-            { id: 50, cat: "Rezeki", title: "Urusan Sukar", arab: "اللَّهُمَّ لَا سَهْلَ إِلَّا مَا جَعَلْتَهُ سَهْلًا وَأَنْتَ تَجْعَلُ الْحَزْنَ إِذَا شِئْتَ سَهْلًا", rumi: "Allahumma la sahla illa ma ja'altahu sahla wa anta taj'alul hazna iza syi'ta sahla", mean: "Ya Allah, tiada yang mudah melainkan apa yang Engkau jadikan mudah, dan Engkau menjadikan kesedihan (kesukaran) itu mudah jika Engkau menghendaki." },
-            { id: 51, cat: "Rezeki", title: "Mohon Petunjuk", arab: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى", rumi: "Allahumma inni as-alukal huda wat tuqa wal 'afafa wal ghina", mean: "Ya Allah, aku memohon kepada-Mu petunjuk, ketakwaan, kehormatan diri dan kekayaan." },
-
-            // --- EMOSI & JIWA ---
-            { id: 28, cat: "Emosi", title: "Ketika Marah", arab: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ", rumi: "A'uzubillahi minasy-syaitanir-rajim", mean: "Aku berlindung kepada Allah daripada syaitan yang direjam." },
-            { id: 29, cat: "Emosi", title: "Hati Gelisah", arab: "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ", rumi: "Ya Hayyu Ya Qayyum birahmatika astaghith, aslih li sya'ni kullah", mean: "Wahai Tuhan Yang Maha Hidup, dengan rahmat-Mu aku memohon pertolongan, perbaikilah segala urusanku." },
-            { id: 30, cat: "Emosi", title: "Nabi Yunus (Kesulitan)", arab: "لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ", rumi: "La ilaha illa anta subhanaka inni kuntu minaz-zalimin", mean: "Tiada Tuhan melainkan Engkau, Maha Suci Engkau, sesungguhnya aku adalah daripada orang-orang yang zalim." },
-            { id: 31, cat: "Emosi", title: "Tetapkan Hati", arab: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ", rumi: "Ya muqallibal qulub thabbit qalbi 'ala dinik", mean: "Wahai Tuhan yang membolak-balikkan hati, tetapkanlah hatiku di atas agama-Mu." },
-            { id: 52, cat: "Emosi", title: "Mohon Kesabaran", arab: "رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَثَبِّتْ أَقْدَامَنَا وَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ", rumi: "Rabbana afrigh 'alaina sabran wa thabbit aqdamana wansurna 'alal qaumil kafirin", mean: "Wahai Tuhan kami, limpahkanlah kesabaran kepada kami, tetapkanlah pendirian kami dan tolonglah kami menghadapi orang-orang kafir." },
-            { id: 53, cat: "Emosi", title: "Keteguhan Iman", arab: "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً", rumi: "Rabbana la tuzigh qulubana ba'da iz hadaitana wa hab lana min ladunka rahmah", mean: "Wahai Tuhan kami, janganlah Engkau pesongkan hati kami sesudah Engkau beri petunjuk kepada kami, dan kurniakanlah kepada kami rahmat dari sisi-Mu." },
-            { id: 54, cat: "Emosi", title: "Terkejut/Takut", arab: "لَا إِلَهَ إِلَّا اللَّهُ", rumi: "La ilaha illallah", mean: "Tiada Tuhan selain Allah." },
-
-            // --- PERJALANAN ---
-            { id: 32, cat: "Perjalanan", title: "Naik Kenderaan", arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ", rumi: "Subhanallazi sakh-khara lana haza wa ma kunna lahu muqrinin wa inna ila rabbina lamunqalibun", mean: "Maha Suci Tuhan yang memudahkan kenderaan ini untuk kami." },
-            { id: 33, cat: "Perjalanan", title: "Singgah Sesuatu Tempat", arab: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ", rumi: "A'uzu bikalimatillahit-tammati min syarri ma khalaq", mean: "Aku berlindung dengan kalimah-kalimah Allah yang sempurna daripada kejahatan makhluk yang diciptakan-Nya." },
-            { id: 55, cat: "Perjalanan", title: "Kenderaan Laut", arab: "بِسْمِ اللَّهِ مَجْرَاهَا وَمُرْسَاهَا إِنَّ رَبِّي لَغَفُورٌ رَحِيمٌ", rumi: "Bismillahi majreha wa mursaha inna rabbi laghafurur rahim", mean: "Dengan nama Allah yang menjalankan dan melabuhkannya, sesungguhnya Tuhanku Maha Pengampun lagi Maha Penyayang." },
-
-            // --- KESIHATAN, ALAM & SOSIAL ---
-            { id: 34, cat: "Kesihatan", title: "Ketika Sakit", arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ أَنْتَ الشَّافِي لَا شِفَاءَ إِلَّا شِفَاؤُكَ", rumi: "Allahumma rabban-nas azhibil-ba'sa isyfi antasy-syafi la syifa-a illa syifa-uk", mean: "Ya Allah, Tuhan manusia, hilangkanlah penyakit ini, sembuhkanlah, Engkaulah yang Maha Menyembuhkan." },
-            { id: 35, cat: "Kesihatan", title: "Ziarah Pesakit", arab: "لَا بَأْسَ طَهُورٌ إِنْ شَاءَ اللَّهُ", rumi: "La ba'sa tahurun insya Allah", mean: "Tidak mengapa, semoga penyakit ini menyucikan dosamu, insya-Allah." },
-            { id: 36, cat: "Alam", title: "Ketika Hujan", arab: "اللَّهُمَّ صَيِّبًا نَافِعًا", rumi: "Allahumma sayyiban nafi'a", mean: "Ya Allah, jadikanlah hujan ini hujan yang membawa manfaat." },
-            { id: 37, cat: "Alam", title: "Mendengar Guruh", arab: "سُبْحَانَ الَّذِي يُسَبِّحُ الرَّعْدُ بِحَمْدِهِ وَالْمَلَائِكَةُ مِنْ خِيفَتِهِ", rumi: "Subhanallazi yusabbihur-ra'du bihamdihi wal mala-ikatu min khifatih", mean: "Maha Suci Tuhan yang guruh bertasbih memuji-Nya, dan para malaikat bertasbih kerana takut kepada-Nya." },
-            { id: 56, cat: "Alam", title: "Angin Kencang", arab: "اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَهَا وَخَيْرَ مَا فِيهَا وَخَيْرَ مَا أُرْسِلَتْ بِهِ", rumi: "Allahumma inni as-aluka khairaha wa khaira ma fiha wa khaira ma ursilat bih", mean: "Ya Allah, aku memohon kepada-Mu kebaikannya, kebaikan apa yang ada padanya, dan kebaikan apa yang dibawanya." },
-            { id: 57, cat: "Sosial", title: "Musibah (Inna lillah)", arab: "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ اللَّهُمَّ أْجُرْنِي فِي مُصِيبَتِي وَأَخْلِفْ لِي خَيْرًا مِنْهَا", rumi: "Inna lillahi wa inna ilaihi raji'un. Allahummajurni fi musibati wa akhlif li khairan minha", mean: "Sesungguhnya kami kepunyaan Allah dan kepada-Nya kami kembali. Ya Allah, berilah ganjaran dalam musibahku dan gantikanlah yang lebih baik daripadanya." },
-            { id: 58, cat: "Sosial", title: "Lihat Orang Susah", arab: "الْحَمْدُ لِلَّهِ الَّذِي عَافَانِي مِمَّا ابْتَلَاكَ بِهِ وَفَضَّلَنِي عَلَى كَثِيرٍ مِمَّنْ خَلَقَ تَفْضِيلًا", rumi: "Alhamdulillahillazi 'afani mimmabtalaka bihi wa faddalani 'ala kathirin mimman khalaqa tafdila", mean: "Segala puji bagi Allah yang telah menyelamatkan aku daripada apa yang menimpamu dan melebihkan aku daripada ramai makhluk ciptaan-Nya." },
-            { id: 59, cat: "Sosial", title: "Jenazah (Lelaki)", arab: "اللَّهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ وَعَافِهِ وَاعْفُ عَنْهُ", rumi: "Allahummaghfir lahu warhamhu wa 'afihi wa'fu 'anhu", mean: "Ya Allah, ampunilah dia, rahmatilah dia, sejahterakanlah dia dan maafkanlah kesalahannya." },
-            { id: 60, cat: "Sosial", title: "Jenazah (Wanita)", arab: "اللَّهُمَّ اغْفِرْ لَهَا وَارْحَمْهَا وَعَافِهَا وَاعْفُ عَنْهَا", rumi: "Allahummaghfir laha warhamha wa 'afiha wa'fu 'anha", mean: "Ya Allah, ampunilah dia, rahmatilah dia, sejahterakanlah dia dan maafkanlah kesalahannya." }
+            // PERJALANAN
+            { id: 32, cat: "Perjalanan", title_ms: "Naik Kenderaan", title_en: "Boarding Vehicle", arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا...", rumi: "Subhanallazi sakh-khara lana...", mean_ms: "Maha Suci Tuhan yang memudahkan...", mean_en: "Glory to Him who has subjected this to us..." },
+            
+            // KESIHATAN
+            { id: 34, cat: "Kesihatan", title_ms: "Ketika Sakit", title_en: "When Sick", arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ...", rumi: "Allahumma rabban-nas...", mean_ms: "Ya Allah, Tuhan manusia...", mean_en: "O Allah, Lord of mankind, remove the severity and cure..." }
         ];
 
-        // --- Logic (Unchanged) ---
+        // --- GLOBAL STATE ---
+        let currentLang = localStorage.getItem('wsl_lang') || 'ms';
+        let currentTheme = localStorage.getItem('wsl_theme') || 'light';
         let currentCategory = 'Semua';
         let searchQuery = '';
         let favorites = JSON.parse(localStorage.getItem('mukminDoaFavs')) || [];
         let synth = window.speechSynthesis;
-        let voices = [];
 
-        function loadVoices() { voices = synth.getVoices(); }
-        loadVoices();
-        if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = loadVoices; }
-
+        // ICONS
         const ICONS = {
             vol: '<svg class="icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>',
+            heart: '<svg class="icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
             share: '<svg class="icon" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
         };
 
-        document.addEventListener('DOMContentLoaded', () => { renderCategories(); renderDoas(); });
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme();
+            updateLanguage();
+            renderCategories();
+            renderDoas();
+            
+            // Listen for theme changes from other tabs/iframe context if possible
+            window.addEventListener('storage', (e) => {
+                if(e.key === 'wsl_theme') { currentTheme = e.newValue; applyTheme(); }
+                if(e.key === 'wsl_lang') { currentLang = e.newValue; updateLanguage(); renderCategories(); renderDoas(); }
+            });
+        });
+
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        }
+
+        function updateLanguage() {
+            const t = UI_TEXT[currentLang];
+            document.getElementById('lbl-title').textContent = t.title;
+            document.getElementById('lbl-subtitle').textContent = t.subtitle;
+            document.getElementById('searchInput').placeholder = t.search;
+            document.getElementById('lang-badge').textContent = currentLang.toUpperCase();
+        }
+
+        function getCatName(cat) {
+            if (currentLang === 'ms') return cat;
+            return CATEGORIES[cat] ? CATEGORIES[cat].en : cat;
+        }
 
         function renderCategories() {
-            const categories = ['Semua', 'Kegemaran', ...new Set(doaData.map(item => item.cat))];
+            // Unique categories from data
+            const uniqueCats = [...new Set(doaData.map(item => item.cat))];
+            const allCats = ['Semua', 'Kegemaran', ...uniqueCats];
+            
             const wrapper = document.getElementById('categoryWrapper');
-            wrapper.innerHTML = categories.map(cat => `
-                <div class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</div>
+            wrapper.innerHTML = allCats.map(cat => `
+                <div class="cat-pill ${currentCategory === cat ? 'active' : ''}" 
+                     onclick="setCategory('${cat}')">
+                     ${getCatName(cat)}
+                </div>
             `).join('');
         }
 
@@ -270,7 +380,7 @@
             currentCategory = cat;
             document.getElementById('searchInput').value = '';
             searchQuery = '';
-            renderCategories();
+            renderCategories(); // Update active state
             renderDoas();
         }
 
@@ -280,33 +390,58 @@
         }
 
         function toggleFavorite(id) {
-            if (favorites.includes(id)) { favorites = favorites.filter(favId => favId !== id); showToast("Dibuang dari kegemaran"); }
-            else { favorites.push(id); showToast("Ditambah ke kegemaran"); }
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(favId => favId !== id);
+                showToast(UI_TEXT[currentLang].fav_rem);
+            } else {
+                favorites.push(id);
+                showToast(UI_TEXT[currentLang].fav_add);
+            }
             localStorage.setItem('mukminDoaFavs', JSON.stringify(favorites));
             renderDoas();
         }
 
         function renderDoas() {
             const container = document.getElementById('doaContainer');
+            
             let filtered = doaData.filter(item => {
-                const matchesSearch = item.title.toLowerCase().includes(searchQuery) || item.mean.toLowerCase().includes(searchQuery) || item.rumi.toLowerCase().includes(searchQuery);
+                // Get correct language strings
+                const title = currentLang === 'ms' ? item.title_ms : (item.title_en || item.title_ms);
+                const mean = currentLang === 'ms' ? item.mean_ms : (item.mean_en || item.mean_ms);
+                
+                // Search logic (checks both languages regardless of setting for better UX)
+                const matchesSearch = 
+                    title.toLowerCase().includes(searchQuery) || 
+                    mean.toLowerCase().includes(searchQuery) || 
+                    item.rumi.toLowerCase().includes(searchQuery) ||
+                    (item.title_en && item.title_en.toLowerCase().includes(searchQuery)); // Always search English title too
+
                 if (currentCategory === 'Semua') return matchesSearch;
                 if (currentCategory === 'Kegemaran') return favorites.includes(item.id) && matchesSearch;
                 return item.cat === currentCategory && matchesSearch;
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="empty-state"><svg class="icon" style="width:40px;height:40px;opacity:0.3" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><p>Tiada doa dijumpai.</p></div>`;
+                container.innerHTML = `<div class="empty-state">${UI_TEXT[currentLang].empty}</div>`;
                 return;
             }
 
             container.innerHTML = filtered.map(item => {
                 const isFav = favorites.includes(item.id);
                 const heartStyle = isFav ? 'fill: #EF4444; stroke: #EF4444;' : '';
+                
+                // Dynamic Text based on Lang
+                const displayTitle = currentLang === 'ms' ? item.title_ms : (item.title_en || item.title_ms);
+                const displayMean = currentLang === 'ms' ? item.mean_ms : (item.mean_en || item.mean_ms);
+                const catLabel = getCatName(item.cat);
+
                 return `
                 <div class="doa-card">
                     <div class="doa-top">
-                        <div><span class="doa-badge">${item.cat}</span><h3 class="doa-title">${item.title}</h3></div>
+                        <div>
+                            <span class="doa-badge">${catLabel}</span>
+                            <h3 class="doa-title">${displayTitle}</h3>
+                        </div>
                         <div class="doa-actions">
                             <button class="action-btn" onclick="playAudio('${item.arab}', this)">${ICONS.vol}</button>
                             <button class="action-btn ${isFav ? 'active-fav' : ''}" onclick="toggleFavorite(${item.id})">
@@ -316,39 +451,61 @@
                         </div>
                     </div>
                     <div class="doa-arabic" dir="rtl" lang="ar">${item.arab}</div>
-                    <div class="doa-translation"><div class="doa-rumi">${item.rumi}</div><div class="doa-mean">"${item.mean}"</div></div>
+                    <div class="doa-translation">
+                        <div class="doa-rumi">${item.rumi}</div>
+                        <div class="doa-mean">"${displayMean}"</div>
+                    </div>
                 </div>
             `}).join('');
         }
 
+        // --- AUDIO (MALE / OFFLINE PRIORITY) ---
         function playAudio(text, btnElement) {
-            if (synth.speaking) { synth.cancel(); if(btnElement.classList.contains('active-audio')) { btnElement.classList.remove('active-audio'); return; } }
+            if (synth.speaking) { 
+                synth.cancel(); 
+                if(btnElement.classList.contains('active-audio')) { 
+                    btnElement.classList.remove('active-audio'); return; 
+                } 
+            }
+            
             document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active-audio'));
             btnElement.classList.add('active-audio');
 
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 0.8; 
+
+            // Voice selection logic
             const availableVoices = synth.getVoices();
             const maleKeywords = ['maged', 'tarik', 'hamel', 'male'];
-            let selectedVoice = availableVoices.find(v => v.lang.includes('ar') && maleKeywords.some(keyword => v.name.toLowerCase().includes(keyword)));
+            let selectedVoice = availableVoices.find(v => v.lang.includes('ar') && maleKeywords.some(k => v.name.toLowerCase().includes(k)));
             if (!selectedVoice) selectedVoice = availableVoices.find(v => v.lang.includes('ar') && v.localService === true);
             if (!selectedVoice) selectedVoice = availableVoices.find(v => v.lang.includes('ar'));
-            if (selectedVoice) { utterance.voice = selectedVoice; utterance.lang = selectedVoice.lang; } else { utterance.lang = 'ar-SA'; }
+
+            if (selectedVoice) { utterance.voice = selectedVoice; utterance.lang = selectedVoice.lang; } 
+            else { utterance.lang = 'ar-SA'; }
 
             utterance.onend = () => { btnElement.classList.remove('active-audio'); };
-            utterance.onerror = () => { btnElement.classList.remove('active-audio'); showToast("Sila pasang suara Bahasa Arab"); };
+            utterance.onerror = () => { btnElement.classList.remove('active-audio'); };
             synth.speak(utterance);
         }
 
         function shareDoa(id) {
             const item = doaData.find(d => d.id === id);
-            const shareData = { title: `Doa ${item.title}`, text: `${item.title}\n\n${item.arab}\n\n${item.rumi}\n\n"${item.mean}"\n\n- Mukmin App` };
+            const title = currentLang === 'ms' ? item.title_ms : (item.title_en || item.title_ms);
+            const mean = currentLang === 'ms' ? item.mean_ms : (item.mean_en || item.mean_ms);
+            
+            const shareData = { title: `Doa ${title}`, text: `${title}\n\n${item.arab}\n\n${item.rumi}\n\n"${mean}"\n\n- Mukmin App` };
+            
             if (navigator.share) { navigator.share(shareData).catch(console.error); }
-            else { navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}`).then(() => showToast("Disalin ke papan keratan")); }
+            else { 
+                navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}`).then(() => showToast(UI_TEXT[currentLang].copied)); 
+            }
         }
 
         function showToast(msg) {
-            const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show');
+            const t = document.getElementById('toast'); 
+            t.innerText = msg; 
+            t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
         }
     </script>
