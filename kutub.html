@@ -7,30 +7,45 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         /* Shared Variables & Theme */
-        :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --input-bg:#F3F4F6; }
-        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --input-bg:#2A2A2A; }
+        :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --input-bg:#F3F4F6; --success:#10b981; }
+        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --input-bg:#2A2A2A; --success:#34d399; }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
+        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; transition: background 0.3s, color 0.3s; }
 
         /* Header */
         .header { text-align: center; margin-bottom: 20px; }
         h1 { font-size: 22px; font-weight: 800; margin: 0; color: var(--primary); }
         .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
 
-        /* Book Selector (Dropdown) */
+        /* Book Selector */
         .selector-wrapper { margin-bottom: 15px; }
-        .book-select { width: 100%; padding: 14px; border-radius: 12px; background: var(--surface); color: var(--primary); border: 1px solid var(--border); font-size: 15px; font-weight: 700; outline: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; }
+        .book-select { width: 100%; padding: 14px; border-radius: 12px; background: var(--surface); color: var(--primary); border: 1px solid var(--border); font-size: 15px; font-weight: 700; outline: none; appearance: none; }
+
+        /* Offline UI */
+        .offline-status-bar { 
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px; 
+            padding: 10px 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .status-badge { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+        .status-online { background: #fef3c7; color: #d97706; }
+        .status-offline { background: #d1fae5; color: #059669; }
+        
+        .download-btn { background: var(--input-bg); color: var(--text); border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .delete-btn { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+        .progress-container { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 10px; display: none; }
+        .progress-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.2s; }
+        .progress-text { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 5px; display: none; }
 
         /* Controls */
         .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
         .search-input { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-family: inherit; font-weight: 600; font-size: 14px; outline: none; }
         .action-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 0 20px; height: 44px; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .action-btn:active { transform: scale(0.96); }
-        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Hadith Cards */
-        .hadith-card { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.02); animation: slideUp 0.3s ease; }
+        .hadith-card { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.02); animation: slideUp 0.3s ease; position: relative; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed var(--border); padding-bottom: 10px; }
@@ -38,6 +53,13 @@
         
         .arabic { font-family: 'Amiri', serif; font-size: 24px; line-height: 2.2; text-align: right; margin-bottom: 20px; color: var(--text); }
         .translation { font-size: 14px; line-height: 1.6; color: var(--text-muted); text-align: justify; }
+
+        /* Buttons */
+        .bookmark-btn { background: none; border: none; cursor: pointer; color: var(--border); transition: 0.2s; padding: 0; display: flex; align-items: center; }
+        .bookmark-btn.saved { color: var(--primary); }
+        .bookmark-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        .copy-btn { background:none; border:none; color:var(--text-muted); font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase; }
 
         /* Pagination Footer */
         .pagination { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 100; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
@@ -50,7 +72,7 @@
 
     <div class="header">
         <h1>Kutub Tis'ah</h1>
-        <div class="subtitle">9 Imam Besar Hadis</div>
+        <div class="subtitle" id="lbl-subtitle">9 Imam Besar Hadis</div>
     </div>
 
     <div class="selector-wrapper">
@@ -67,12 +89,25 @@
         </select>
     </div>
 
+    <div class="offline-status-bar">
+        <div id="statusIndicator">
+            <span class="status-badge status-online">ONLINE</span>
+        </div>
+        <div id="actionArea">
+            <button class="download-btn" id="btn-download" onclick="downloadCurrentBook()">Download Offline</button>
+        </div>
+    </div>
+    <div class="progress-container" id="dlProgressCont">
+        <div class="progress-bar" id="dlProgressBar"></div>
+    </div>
+    <div class="progress-text" id="dlProgressText">Downloading... 0%</div>
+
     <div class="controls">
-        <input type="number" id="jumpInput" class="search-input" placeholder="No. Hadis (e.g. 1)" inputmode="numeric">
+        <input type="number" id="jumpInput" class="search-input" placeholder="No. (e.g. 1)" inputmode="numeric">
         <button class="action-btn" onclick="jumpToHadith()">GO</button>
     </div>
 
-    <div id="loader" class="loader">Memuatkan Data...</div>
+    <div id="loader" class="loader">Loading...</div>
     <div id="error" class="error-msg"></div>
     <div id="content"></div>
 
@@ -85,12 +120,13 @@
     </div>
 
 <script>
-    // --- STATE ---
+    // --- 1. CONFIG & DB ---
     const STATE = {
         book: 'bukhari',
         start: 1,
         limit: 20,
-        // Max counts for validation (Approximate)
+        isOffline: false,
+        lang: 'ms', // Default
         maxCounts: {
             'bukhari': 7008, 'muslim': 5362, 'abu-dawud': 4590,
             'tirmidzi': 3891, 'nasai': 5662, 'ibnu-majah': 4331,
@@ -98,41 +134,126 @@
         }
     };
 
-    // Theme Sync
-    try {
-        if(window.parent && window.parent.STATE) {
-            document.documentElement.setAttribute('data-theme', window.parent.STATE.theme);
-        }
-    } catch(e) {}
+    const DB_NAME = "MukminHadithDB";
+    const DB_VERSION = 1;
 
-    // Init
-    fetchHadith();
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains("books")) {
+                    db.createObjectStore("books", { keyPath: "id" });
+                }
+            };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async function saveBookToDB(bookId, data) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("books", "readwrite");
+            tx.objectStore("books").put({ id: bookId, hadiths: data });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    async function getBookFromDB(bookId) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("books", "readonly");
+            const req = tx.objectStore("books").get(bookId);
+            req.onsuccess = () => resolve(req.result ? req.result.hadiths : null);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    async function deleteBookFromDB(bookId) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("books", "readwrite");
+            tx.objectStore("books").delete(bookId);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    // --- 2. SETUP & SYNC ---
+    window.addEventListener('DOMContentLoaded', () => {
+        syncWithParent();
+        checkOfflineAvailability();
+        
+        // Listen for Theme Changes from Parent (if stored in localStorage)
+        window.addEventListener('storage', () => syncWithParent());
+        // Also poll just in case
+        setInterval(syncWithParent, 1000); 
+    });
+
+    function syncWithParent() {
+        // Sync Theme & Language from localStorage (Shared with Parent)
+        const theme = localStorage.getItem('wsl_theme') || 'light';
+        const lang = localStorage.getItem('wsl_lang') || 'ms';
+        
+        if(document.documentElement.getAttribute('data-theme') !== theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+        
+        if(STATE.lang !== lang) {
+            STATE.lang = lang;
+            updateUIText();
+        }
+    }
+
+    function updateUIText() {
+        const isEn = STATE.lang === 'en';
+        document.getElementById('lbl-subtitle').textContent = isEn ? "The 9 Major Books of Hadith" : "9 Imam Besar Hadis";
+        document.getElementById('prevBtn').textContent = isEn ? "Prev" : "Terdahulu";
+        document.getElementById('nextBtn').textContent = isEn ? "Next" : "Seterusnya";
+        document.getElementById('jumpInput').placeholder = isEn ? "Hadith No." : "No. Hadis";
+        
+        // Update download button text if exists
+        const dlBtn = document.querySelector('.download-btn');
+        if(dlBtn) dlBtn.textContent = isEn ? "Download Offline" : "Muat Turun";
+        
+        const delBtn = document.querySelector('.delete-btn');
+        if(delBtn) delBtn.textContent = isEn ? "Delete Data" : "Padam Data";
+    }
 
     function switchBook(val) {
         STATE.book = val;
         STATE.start = 1;
-        fetchHadith();
+        checkOfflineAvailability();
     }
 
-    function changePage(dir) {
-        const nextStart = STATE.start + (dir * STATE.limit);
-        if(nextStart < 1) return;
-        if(nextStart > STATE.maxCounts[STATE.book]) return;
-        STATE.start = nextStart;
-        fetchHadith();
-        window.scrollTo(0,0);
-    }
-
-    function jumpToHadith() {
-        const val = parseInt(document.getElementById('jumpInput').value);
-        if(val && val > 0 && val <= STATE.maxCounts[STATE.book]) {
-            STATE.start = val;
+    // --- 3. CHECK OFFLINE STATUS ---
+    async function checkOfflineAvailability() {
+        try {
+            const data = await getBookFromDB(STATE.book);
+            const statusDiv = document.getElementById('statusIndicator');
+            const actionDiv = document.getElementById('actionArea');
+            const isEn = STATE.lang === 'en';
+            
+            if (data) {
+                STATE.isOffline = true;
+                STATE.offlineData = data;
+                statusDiv.innerHTML = `<span class="status-badge status-offline">${isEn ? 'OFFLINE READY' : 'MOD OFFLINE'}</span>`;
+                actionDiv.innerHTML = `<button class="delete-btn" onclick="removeOfflineData()">${isEn ? 'Delete Data' : 'Padam Data'}</button>`;
+            } else {
+                STATE.isOffline = false;
+                STATE.offlineData = null;
+                statusDiv.innerHTML = `<span class="status-badge status-online">${isEn ? 'ONLINE MODE' : 'MOD ONLINE'}</span>`;
+                actionDiv.innerHTML = `<button class="download-btn" onclick="downloadCurrentBook()">${isEn ? 'Download Offline' : 'Muat Turun'}</button>`;
+            }
             fetchHadith();
-        } else {
-            alert(`Sila masukkan nombor antara 1 - ${STATE.maxCounts[STATE.book]}`);
+        } catch (e) {
+            fetchHadith();
         }
     }
 
+    // --- 4. DATA LOADING ---
     async function fetchHadith() {
         const list = document.getElementById('content');
         const loader = document.getElementById('loader');
@@ -140,44 +261,57 @@
         const prevBtn = document.getElementById('prevBtn');
         const rangeText = document.getElementById('rangeText');
         
-        // UI Reset
         list.innerHTML = '';
         loader.style.display = 'block';
         err.style.display = 'none';
         prevBtn.disabled = STATE.start <= 1;
 
         const end = STATE.start + STATE.limit - 1;
-        rangeText.textContent = `${STATE.start} - ${end}`;
+        const max = STATE.isOffline ? STATE.offlineData.length : STATE.maxCounts[STATE.book];
+        const actualEnd = Math.min(end, max);
+        rangeText.textContent = `${STATE.start} - ${actualEnd}`;
 
-        // Using Gading API which supports all 9 books
-        const url = `https://api.hadith.gading.dev/books/${STATE.book}?range=${STATE.start}-${end}`;
+        // Get Bookmarks
+        const bookmarks = JSON.parse(localStorage.getItem('wsl_bookmarks') || '[]');
 
         try {
-            const req = await fetch(url);
-            const res = await req.json();
+            let hadiths = [];
+
+            if (STATE.isOffline && STATE.offlineData) {
+                hadiths = STATE.offlineData.slice(STATE.start - 1, actualEnd);
+                await new Promise(r => setTimeout(r, 50)); 
+            } else {
+                const url = `https://api.hadith.gading.dev/books/${STATE.book}?range=${STATE.start}-${actualEnd}`;
+                const req = await fetch(url);
+                const res = await req.json();
+                if(!res.data) throw new Error("API Error");
+                hadiths = res.data.hadiths;
+            }
 
             loader.style.display = 'none';
 
-            if(res.code !== 200 && res.code !== 0) { // Code 0 is sometimes returned on success by this API
-                 throw new Error("API Response Error");
-            }
-            
-            if(!res.data || !res.data.hadiths || res.data.hadiths.length === 0) {
-                 list.innerHTML = `<div style="text-align:center; padding:30px; opacity:0.6;">Tiada data untuk julat ini.</div>`;
+            if(hadiths.length === 0) {
+                 list.innerHTML = `<div style="text-align:center; padding:30px; opacity:0.6;">End of Book.</div>`;
                  return;
             }
 
-            res.data.hadiths.forEach(h => {
+            hadiths.forEach(h => {
                 const card = document.createElement('div');
                 card.className = 'hadith-card';
-                // Check if translation exists, fallback if empty
-                const translation = h.id || "Terjemahan tidak tersedia.";
                 
+                // Create unique ID for bookmarking: "bukhari_150"
+                const uniqueId = `hadith_${STATE.book}_${h.number}`;
+                const isSaved = bookmarks.some(b => b.id === uniqueId);
+                const translation = h.id || (STATE.lang === 'en' ? "Translation not available." : "Terjemahan tidak tersedia.");
+
                 card.innerHTML = `
                     <div class="card-header">
                         <span class="hadith-num">#${h.number}</span>
-                        <div style="display:flex; gap:10px;">
-                            <button onclick="copyHadith('${h.number}', this)" style="background:none; border:none; color:var(--primary); font-size:11px; font-weight:700; cursor:pointer;">COPY</button>
+                        <div style="display:flex; gap:15px; align-items:center;">
+                            <button class="copy-btn" onclick="copyHadith('${h.number}', this)">COPY</button>
+                            <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleBookmark(this, '${h.number}', '${escapeHtml(h.arab)}', '${escapeHtml(translation)}')">
+                                <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                            </button>
                         </div>
                     </div>
                     <div class="arabic">${h.arab}</div>
@@ -190,23 +324,135 @@
             console.error(e);
             loader.style.display = 'none';
             err.style.display = 'block';
-            err.innerHTML = `Gagal menyambung.<br><small>API mungkin sibuk atau sambungan terputus.</small><br><button onclick="fetchHadith()" class="action-btn" style="margin:10px auto; height:30px; font-size:11px;">Cuba Lagi</button>`;
+            err.innerHTML = `Connection Failed.<br><button onclick="fetchHadith()" class="action-btn" style="margin-top:10px;">Retry</button>`;
         }
     }
 
+    // --- 5. BOOKMARK LOGIC ---
+    function toggleBookmark(btn, num, arab, trans) {
+        const uniqueId = `hadith_${STATE.book}_${num}`;
+        let bookmarks = JSON.parse(localStorage.getItem('wsl_bookmarks') || '[]');
+        const idx = bookmarks.findIndex(b => b.id === uniqueId);
+        
+        // Use proper book name for display
+        const bookName = document.querySelector(`#bookSelect option[value="${STATE.book}"]`).text;
+
+        if (idx > -1) {
+            // Remove
+            bookmarks.splice(idx, 1);
+            btn.classList.remove('saved');
+        } else {
+            // Add (Unescape text for storage)
+            bookmarks.push({
+                id: uniqueId,
+                type: 'hadith',
+                src: `${bookName} #${num}`,
+                text: unescapeHtml(trans), // Store translation as main text
+                arab: unescapeHtml(arab)
+            });
+            btn.classList.add('saved');
+        }
+        
+        localStorage.setItem('wsl_bookmarks', JSON.stringify(bookmarks));
+        
+        // Try to notify parent to update "Saved" tab immediately
+        try { if(window.parent && window.parent.renderBookmarksList) window.parent.renderBookmarksList(); } catch(e){}
+    }
+
+    // --- 6. ACTIONS ---
+    function changePage(dir) {
+        const nextStart = STATE.start + (dir * STATE.limit);
+        const max = STATE.isOffline ? STATE.offlineData.length : STATE.maxCounts[STATE.book];
+        if(nextStart < 1 || nextStart > max) return;
+        STATE.start = nextStart;
+        fetchHadith();
+        window.scrollTo(0,0);
+    }
+
+    function jumpToHadith() {
+        const val = parseInt(document.getElementById('jumpInput').value);
+        const max = STATE.isOffline ? STATE.offlineData.length : STATE.maxCounts[STATE.book];
+        if(val && val > 0 && val <= max) {
+            STATE.start = val;
+            fetchHadith();
+        } else {
+            alert(`Range: 1 - ${max}`);
+        }
+    }
+
+    async function downloadCurrentBook() {
+        const btn = document.querySelector('.download-btn');
+        if(btn) btn.disabled = true;
+
+        const pCont = document.getElementById('dlProgressCont');
+        const pBar = document.getElementById('dlProgressBar');
+        const pText = document.getElementById('dlProgressText');
+        
+        pCont.style.display = 'block';
+        pText.style.display = 'block';
+        
+        const max = STATE.maxCounts[STATE.book];
+        const chunkSize = 300; 
+        let current = 1;
+        let allData = [];
+
+        try {
+            while(current <= max) {
+                const end = Math.min(current + chunkSize - 1, max);
+                const res = await fetch(`https://api.hadith.gading.dev/books/${STATE.book}?range=${current}-${end}`);
+                const json = await res.json();
+                if(json.data && json.data.hadiths) allData = allData.concat(json.data.hadiths);
+
+                const percent = Math.round((current / max) * 100);
+                pBar.style.width = percent + "%";
+                pText.innerText = `${percent}% (${allData.length})`;
+                current += chunkSize;
+                await new Promise(r => setTimeout(r, 200)); 
+            }
+
+            await saveBookToDB(STATE.book, allData);
+            pBar.style.width = "100%";
+            pText.innerText = "Done!";
+            
+            setTimeout(() => {
+                pCont.style.display = 'none';
+                pText.style.display = 'none';
+                checkOfflineAvailability();
+            }, 1000);
+
+        } catch (e) {
+            alert("Download failed.");
+            pCont.style.display = 'none';
+            if(btn) btn.disabled = false;
+        }
+    }
+
+    async function removeOfflineData() {
+        if(confirm("Delete this book from offline storage?")) {
+            await deleteBookFromDB(STATE.book);
+            checkOfflineAvailability();
+        }
+    }
+
+    // --- UTILS ---
     function copyHadith(num, btn) {
         const card = btn.closest('.hadith-card');
         const ar = card.querySelector('.arabic').innerText;
         const tr = card.querySelector('.translation').innerText;
         const bookName = document.querySelector(`#bookSelect option[value="${STATE.book}"]`).text;
-        
-        const txt = `[${bookName} #${num}]\n\n${ar}\n\n${tr}\n\n- WaktuSolat Ultimate`;
-        
+        const txt = `[${bookName} #${num}]\n\n${ar}\n\n${tr}\n\n- Mukmin.com`;
         navigator.clipboard.writeText(txt).then(() => {
             const original = btn.innerText;
             btn.innerText = "COPIED!";
             setTimeout(() => btn.innerText = original, 2000);
         });
+    }
+
+    function escapeHtml(text) {
+        return text.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+    }
+    function unescapeHtml(text) {
+        return text.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
     }
 </script>
 </body>
