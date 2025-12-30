@@ -1,205 +1,638 @@
 <!DOCTYPE html>
-<html lang="ms" data-theme="light">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pustaka Panduan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#A67734">
+    <title>Ultimate Guides | Mukmin.com</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --border:#E5E7EB; }
-        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; }
+        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --shadow: 0 4px 20px rgba(0,0,0,0.05); --card-bg: rgba(255, 255, 255, 0.8); }
+        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --shadow: 0 4px 20px rgba(0,0,0,0.3); --card-bg: rgba(30, 30, 30, 0.8); }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
-        
-        /* Loading State */
-        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; color: #999; }
-        .spinner { width: 30px; height: 30px; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 10px; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: background 0.3s; min-height: 100vh; }
 
-        /* Grid Layout */
-        .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        /* HEADER & HERO */
+        .sticky-header { position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 15px 20px; padding-top: max(15px, env(safe-area-inset-top)); border-bottom: 1px solid transparent; transition: 0.2s; }
+        .sticky-header.scrolled { border-color: var(--border); background: rgba(var(--bg), 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         
-        /* Card Button */
-        .tool-btn { 
-            background: var(--surface); 
-            border: 1px solid var(--border); 
-            border-radius: 16px; 
-            padding: 20px; 
-            text-align: center; 
-            cursor: pointer; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 12px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            transition: all 0.2s ease; 
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .back-btn { background: var(--surface); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text); cursor: pointer; text-decoration: none; box-shadow: var(--shadow); transition: 0.2s; }
+        .back-btn:active { transform: scale(0.95); }
+        
+        /* SPOTLIGHT BANNER */
+        .spotlight-wrapper { padding: 0 20px; margin-bottom: 20px; }
+        .spotlight-card { 
+            background: linear-gradient(135deg, var(--primary), #8b6020); 
+            border-radius: 24px; padding: 20px; color: white; position: relative; overflow: hidden; 
+            box-shadow: 0 10px 30px -5px rgba(166, 119, 52, 0.4); cursor: pointer;
         }
-        .tool-btn:active { transform: scale(0.96); }
+        .spotlight-card::before { content:''; position: absolute; top:-50%; left:-50%; width: 200%; height: 200%; background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E"); opacity: 0.6; pointer-events: none; }
         
-        /* Icons */
-        .icon-box { 
-            width: 50px; height: 50px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 28px; 
-        }
-        .icon-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
-        
-        .tool-btn span { font-size: 14px; font-weight: 700; line-height: 1.3; }
+        .spotlight-badge { background: rgba(255,255,255,0.25); font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; backdrop-filter: blur(4px); letter-spacing: 1px; }
+        .spotlight-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .spotlight-sub { font-size: 13px; opacity: 0.9; }
 
-        /* Article View */
-        #articleView { display: none; animation: fadeIn 0.3s; }
-        .back-btn { 
-            display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; 
-            background: var(--surface); border: 1px solid var(--border); 
-            padding: 10px 20px; border-radius: 50px; 
-            cursor: pointer; font-weight: 600; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        /* MODE SWITCHER */
+        .mode-wrapper { padding: 0 20px; margin-bottom: 15px; }
+        .mode-switch { display: flex; background: var(--surface); padding: 5px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+        .mode-btn { flex: 1; border: none; background: none; padding: 12px; font-weight: 700; font-size: 13px; color: var(--text-muted); cursor: pointer; border-radius: 12px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .mode-btn.active { color: var(--primary); background: var(--primary-light); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        /* SEARCH & CATS */
+        .search-wrapper { padding: 0 20px 10px 20px; }
+        .search-box { width: 100%; padding: 14px 20px; padding-left: 45px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") no-repeat 15px center; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: 0.3s; }
+        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(166, 119, 52, 0.1); }
+
+        .cat-scroller { display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 15px 20px; scrollbar-width: none; -ms-overflow-style: none; }
+        .cat-scroller::-webkit-scrollbar { display: none; }
+        .cat-pill { padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 600; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); transition: 0.2s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .cat-pill.active { background: var(--text); color: var(--bg); border-color: var(--text); transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+        /* LIST */
+        .guide-list { display: flex; flex-direction: column; gap: 12px; padding: 0 20px; }
+        .guide-card { 
+            display: flex; align-items: center; padding: 16px; 
+            background: var(--card-bg); border: 1px solid var(--border); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: relative; overflow: hidden;
         }
+        .guide-card:active { transform: scale(0.98); background: var(--primary-light); }
         
-        /* Content Styling */
-        #articleContent { background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border); min-height: 300px; }
-        #articleContent img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 10px auto; }
-        #articleContent p { line-height: 1.7; margin-bottom: 15px; font-size: 15px; }
-        #articleContent h1, #articleContent h2, #articleContent h3 { color: var(--primary); margin-top: 20px; }
+        .card-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--bg); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-right: 15px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .card-content { flex: 1; min-width: 0; }
+        .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-meta { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); }
         
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .fav-btn { z-index: 5; padding: 8px; background: none; border: none; cursor: pointer; color: var(--border); transition: 0.2s; }
+        .fav-btn.active { color: #ef4444; transform: scale(1.2); }
+        .fav-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        /* TAGS COLORS */
+        .tag-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .cat-asas .tag-dot { background: #0f766e; } .cat-fardhu .tag-dot { background: #0284C7; }
+        .cat-sunat .tag-dot { background: #C2410C; } .cat-umum .tag-dot { background: #9333EA; }
+        .cat-harian .tag-dot { background: #166534; } .cat-sosial .tag-dot { background: #075985; }
+
+        /* READER MODAL */
+        #articleView { 
+            position: fixed; inset: 0; background: var(--bg); z-index: 200; 
+            display: none; flex-direction: column;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .reader-nav { padding: 15px 20px; padding-top: max(15px, env(safe-area-inset-top)); display: flex; justify-content: space-between; align-items: center; background: var(--surface); border-bottom: 1px solid var(--border); }
+        .reader-controls { display: flex; gap: 10px; }
+        .control-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 14px; cursor: pointer; }
+        
+        .reader-scroll { flex: 1; overflow-y: auto; padding: 25px 20px 100px 20px; scroll-behavior: smooth; }
+        
+        .article-body { max-width: 650px; margin: 0 auto; transition: font-size 0.2s; }
+        .article-body h1 { font-size: 28px; margin-top: 0; margin-bottom: 10px; color: var(--primary); font-family: 'Amiri', serif; line-height: 1.3; }
+        .article-body h2 { font-size: 1.1em; margin-top: 30px; margin-bottom: 12px; border-left: 4px solid var(--primary); padding-left: 15px; font-weight: 800; color: var(--text); }
+        .article-body p, .article-body li { font-size: 1em; line-height: 1.7; color: var(--text); margin-bottom: 15px; opacity: 0.9; }
+        .article-body ol { padding-left: 20px; }
+        
+        /* SPECIAL BLOCKS */
+        .ar-text { 
+            font-family: 'Amiri', serif; font-size: 1.8em; color: var(--primary); 
+            margin: 25px 0; text-align: right; line-height: 2.2; 
+            background: var(--surface); padding: 15px; border-radius: 16px; 
+            border: 1px dashed var(--border);
+        }
+        .dalil-box {
+            background: var(--primary-light); padding: 20px; border-radius: 16px;
+            margin: 25px 0; position: relative; border: 1px solid rgba(166, 119, 52, 0.1);
+        }
+        .dalil-box::before {
+            content: "💡"; position: absolute; top: -12px; left: 20px; 
+            background: var(--bg); padding: 0 5px; font-size: 20px;
+        }
+
+        /* HIGHLIGHT */
+        .highlight { background: #fde047; color: black; padding: 0 2px; border-radius: 2px; }
+        :root[data-theme="dark"] .highlight { background: #854d0e; color: white; }
     </style>
 </head>
 <body>
 
-    <div id="loading" class="loading-container">
-        <div class="spinner"></div>
-        <div>Memuatkan panduan...</div>
+    <div class="sticky-header" id="mainHeader">
+        <div class="header-top">
+            <a href="index.html" class="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+            <div style="font-weight:800; font-size:16px;" id="pageTitle">Knowledge</div>
+            <button class="back-btn" onclick="toggleLang()" id="langBtn" style="font-size:11px; font-weight:800;">EN</button>
+        </div>
     </div>
 
-    <div id="menuView" style="display:none">
-        <h3 style="margin: 0 0 20px 0; font-weight: 800; color: var(--primary);">Pustaka Panduan</h3>
-        <div class="guide-grid" id="gridContainer"></div>
+    <div id="listView">
+        
+        <div class="spotlight-wrapper" id="spotlightArea">
+            <div class="spotlight-card" onclick="openSpotlight()">
+                <div class="spotlight-badge" id="spotlightBadge">DAILY READ</div>
+                <div class="spotlight-title" id="spotlightTitle">Loading...</div>
+                <div class="spotlight-sub" id="spotlightSub">Tap to read today's wisdom</div>
+            </div>
+        </div>
+
+        <div class="mode-wrapper">
+            <div class="mode-switch">
+                <button class="mode-btn active" onclick="switchSection('ibadah')" id="btn-ibadah">Guides</button>
+                <button class="mode-btn" onclick="switchSection('adab')" id="btn-adab">Etiquette</button>
+                <button class="mode-btn" onclick="switchSection('fav')" id="btn-fav">Favorites</button>
+            </div>
+        </div>
+
+        <div class="search-wrapper">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search topics..." onkeyup="filterGuides()">
+        </div>
+
+        <div class="cat-scroller" id="catContainer"></div>
+
+        <div class="guide-list" id="guideListContainer"></div>
     </div>
 
     <div id="articleView">
-        <div class="back-btn" onclick="showMenu()">
-            <i class="fas fa-arrow-left"></i> Kembali
+        <div class="reader-nav">
+            <button class="back-btn" onclick="closeArticle()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+            
+            <div class="reader-controls">
+                <button class="control-btn" onclick="adjustFont(-1)">A-</button>
+                <button class="control-btn" onclick="adjustFont(1)">A+</button>
+                <button class="control-btn" onclick="shareArticle()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                </button>
+            </div>
         </div>
-        <div style="padding: 0 5px;">
-            <div id="articleSubtitle" style="font-size:12px; opacity:0.7; text-transform:uppercase; letter-spacing:1px; color:var(--primary);">Pustaka Panduan</div>
-            <div id="articleTitle" style="font-size:24px; font-weight:800; margin-bottom:20px; line-height: 1.2;"></div>
-            <div id="articleContent"></div>
+        <div class="reader-scroll">
+            <div class="article-body" id="articleBody">
+                <h1 id="artTitle">...</h1>
+                <div id="artContent"></div>
+            </div>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
     <script>
-        // 1. Theme Handling
-        const savedTheme = localStorage.getItem('wsl_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-
-        // 2. Firebase Config (Must match Updater)
-        const firebaseConfig = { 
-            apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI", 
-            authDomain: "waktusolatlite.firebaseapp.com", 
-            databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app", 
-            projectId: "waktusolatlite", 
-            storageBucket: "waktusolatlite.firebasestorage.app", 
-            messagingSenderId: "86910439082", 
-            appId: "1:86910439082:web:e482d01e1451e58179cad3" 
+        // 1. STATE MANAGEMENT
+        const STATE = {
+            lang: localStorage.getItem('wsl_lang') || 'en',
+            theme: localStorage.getItem('wsl_theme') || 'light',
+            section: 'ibadah',
+            cat: 'all',
+            favorites: JSON.parse(localStorage.getItem('wsl_fav_guides') || '[]'),
+            fontSize: 16,
+            spotlightIndex: -1
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
 
-        let PANDUAN_DATA = [];
+        // Apply Theme
+        document.documentElement.setAttribute('data-theme', STATE.theme);
 
-        // 3. Fetch Data Real-time
-        db.ref('guides').on('value', snap => {
-            PANDUAN_DATA = []; // Clear array
-            const loader = document.getElementById('loading');
-            const menu = document.getElementById('menuView');
-            const grid = document.getElementById('gridContainer');
-
-            if(snap.exists()){
-                // Convert object to array
-                snap.forEach(c => {
-                    let item = c.val();
-                    item.key = c.key; // Keep ID just in case
-                    PANDUAN_DATA.push(item);
-                });
-                renderGrid();
-                loader.style.display = 'none';
-                menu.style.display = 'block';
-            } else {
-                loader.style.display = 'none';
-                menu.style.display = 'block';
-                grid.innerHTML = '<div style="grid-column:span 2; text-align:center; color:gray; padding-top:20px;">Tiada panduan dijumpai.</div>';
-            }
-        });
-
-        // 4. Render Grid Logic
-        function renderGrid() {
-            const gridEl = document.getElementById('gridContainer');
-            gridEl.innerHTML = PANDUAN_DATA.map((item, index) => {
-                // Determine Icon (Emoji vs Image URL)
-                let iconDisplay = item.icon || '📘';
-                if(item.icon && (item.icon.startsWith('http') || item.icon.startsWith('data:image'))) {
-                    iconDisplay = `<img src="${item.icon}" alt="icon">`;
+        // 2. DATA SOURCE
+        const ALL_DATA = [
+            // --- ASAS (Basics) ---
+            { 
+                id: 'g01', section: 'ibadah', cat: 'asas', icon: '☪️',
+                title: { ms: "Rukun Islam (5 Perkara)", en: "5 Pillars of Islam" },
+                content: {
+                    ms: `<ol><li><strong>Syahadah:</strong> Mengucap dua kalimah syahadah.</li><li><strong>Solat:</strong> Menunaikan solat 5 waktu sehari semalam.</li><li><strong>Puasa:</strong> Berpuasa di bulan Ramadhan.</li><li><strong>Zakat:</strong> Mengeluarkan zakat (fitrah & harta).</li><li><strong>Haji:</strong> Menunaikan haji bagi yang mampu.</li></ol>`,
+                    en: `<ol><li><strong>Shahada:</strong> Declaration of faith.</li><li><strong>Salah:</strong> Prayer 5 times a day.</li><li><strong>Sawm:</strong> Fasting in Ramadan.</li><li><strong>Zakat:</strong> Almsgiving.</li><li><strong>Hajj:</strong> Pilgrimage to Mecca if able.</li></ol>`
                 }
+            },
+            { 
+                id: 'g02', section: 'ibadah', cat: 'asas', icon: '❤️',
+                title: { ms: "Rukun Iman (6 Perkara)", en: "6 Pillars of Faith" },
+                content: {
+                    ms: `<ol><li>Beriman kepada Allah.</li><li>Beriman kepada Malaikat.</li><li>Beriman kepada Kitab.</li><li>Beriman kepada Rasul.</li><li>Beriman kepada Hari Kiamat.</li><li>Beriman kepada Qada' & Qadar.</li></ol>`,
+                    en: `<ol><li>Belief in Allah.</li><li>Belief in Angels.</li><li>Belief in Books.</li><li>Belief in Prophets.</li><li>Belief in Judgment Day.</li><li>Belief in Divine Decree.</li></ol>`
+                }
+            },
+            { 
+                id: 'g03', section: 'ibadah', cat: 'asas', icon: '✨',
+                title: { ms: "Sifat 20 Allah", en: "20 Attributes of Allah" },
+                content: {
+                    ms: `<p>Sifat wajib bagi Allah yang perlu diketahui:</p><ol><li>Wujud (Ada)</li> <li>Qidam (Sedia)</li> <li>Baqa (Kekal)</li><li>Mukhalafatuhu lil hawadith</li><li>Qiyamuhu binafsihi</li><li>Wahdaniat (Esa)</li> <li>Qudrat (Berkuasa)</li><li>Iradat (Berkehendak)</li> <li>Ilmun (Mengetahui)</li><li>Hayat (Hidup)</li> <li>Sama' (Mendengar)</li><li>Basar (Melihat)</li> <li>Kalam (Berkata-kata)</li></ol>`,
+                    en: `<p>The obligatory attributes of Allah:</p><ol><li>Wujud (Existence)</li> <li>Qidam (Pre-existence)</li> <li>Baqa (Eternity)</li><li>Mukhalafatuhu lil hawadith</li><li>Qiyamuhu binafsihi</li><li>Wahdaniat (Oneness)</li> <li>Qudrat (Power)</li><li>Iradat (Will)</li> <li>Ilmun (Knowledge)</li><li>Hayat (Life)</li> <li>Sama' (Hearing)</li><li>Basar (Sight)</li> <li>Kalam (Speech)</li></ol>`
+                }
+            },
+            // --- FARDHU ---
+            { 
+                id: 'g04', section: 'ibadah', cat: 'fardhu', icon: '💧',
+                title: { ms: "Cara Wudhu Sempurna", en: "Perfect Wudhu Guide" },
+                content: {
+                    ms: `<h2>Rukun Wudhu</h2><ol><li>Niat</li><li>Muka</li><li>Tangan hingga siku</li><li>Menyapu sedikit kepala</li><li>Kaki hingga buku lali</li><li>Tertib</li></ol><div class="ar-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَصْغَرِ لِلَّهِ تَعَالَى</div><p>Ertinya: "Sahaja aku mengangkat hadas kecil kerana Allah Taala."</p>`,
+                    en: `<h2>Pillars of Wudhu</h2><ol><li>Intention</li><li>Face</li><li>Arms to elbows</li><li>Wiping head</li><li>Feet to ankles</li><li>Order</li></ol><div class="ar-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَصْغَرِ لِلَّهِ تَعَالَى</div>`
+                }
+            },
+            { 
+                id: 'g05', section: 'ibadah', cat: 'fardhu', icon: '🚿',
+                title: { ms: "Mandi Wajib", en: "Ghusl (Major Ablution)" },
+                content: {
+                    ms: `<h2>Rukun Mandi</h2><p>1. Niat dalam hati ketika air menyentuh tubuh pertama kali.<br>2. Meratakan air ke seluruh badan, rambut dan lipatan.</p><div class="ar-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَكْبَرِ لِلَّهِ تَعَالَى</div>`,
+                    en: `<h2>Pillars of Ghusl</h2><p>1. Intention when water touches the body.<br>2. Ensuring water reaches every part of the body.</p><div class="ar-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَكْبَرِ لِلَّهِ تَعَالَى</div>`
+                }
+            },
+            { 
+                id: 'g06', section: 'ibadah', cat: 'fardhu', icon: '🕌',
+                title: { ms: "13 Rukun Solat", en: "13 Pillars of Prayer" },
+                content: {
+                    ms: `<ol><li>Niat</li><li>Berdiri tegak</li><li>Takbiratul Ihram</li><li>Al-Fatihah</li><li>Rukuk</li><li>Iktidal</li><li>Sujud</li><li>Duduk Antara 2 Sujud</li><li>Duduk Tahiyat Akhir</li><li>Baca Tahiyat Akhir</li><li>Selawat atas Nabi</li><li>Salam yang pertama</li><li>Tertib</li></ol>`,
+                    en: `<ol><li>Intention</li><li>Standing</li><li>Takbiratul Ihram</li><li>Al-Fatihah</li><li>Ruku'</li><li>Iktidal</li><li>Sujud</li><li>Sitting Between Sujoods</li><li>Final Sitting</li><li>Final Tashahhud</li><li>Salawat</li><li>First Salam</li><li>Order</li></ol>`
+                }
+            },
+            // --- SUNAT ---
+            { 
+                id: 'g07', section: 'ibadah', cat: 'sunat', icon: '☀️',
+                title: { ms: "Solat Sunat Dhuha", en: "Dhuha Prayer" },
+                content: {
+                    ms: `<h2>Waktu</h2><p>20 minit lepas syuruk hingga sebelum Zohor.</p><h2>Niat</h2><div class="ar-text">أُصَلِّي سُنَّةَ الضُّحَى رَكْعَتَيْنِ لِلَّهِ تَعَالَى</div><div class="dalil-box">"Setiap pagi sendi-sendi kamu perlu bersedekah... memadai dengan 2 rakaat Dhuha." (Muslim)</div>`,
+                    en: `<h2>Time</h2><p>20 mins after sunrise until before Dhuhr.</p><h2>Intention</h2><div class="ar-text">أُصَلِّي سُنَّةَ الضُّحَى رَكْعَتَيْنِ لِلَّهِ تَعَالَى</div>`
+                }
+            },
+            { 
+                id: 'g08', section: 'ibadah', cat: 'sunat', icon: '🌙',
+                title: { ms: "Solat Sunat Tahajjud", en: "Tahajjud Prayer" },
+                content: {
+                    ms: `<h2>Syarat</h2><p>Dilakukan selepas tidur malam, walaupun sekejap.</p><h2>Niat</h2><div class="ar-text">أُصَلِّي سُنَّةَ التَّهَجُّدِ رَكْعَتَيْنِ لِلَّهِ تَعَالَى</div>`,
+                    en: `<h2>Condition</h2><p>Must be performed after sleeping.</p><h2>Intention</h2><div class="ar-text">أُصَلِّي سُنَّةَ التَّهَجُّدِ رَكْعَتَيْنِ لِلَّهِ تَعَالَى</div>`
+                }
+            },
+            // --- UMUM ---
+            { 
+                id: 'g09', section: 'ibadah', cat: 'umum', icon: '📿',
+                title: { ms: "Zikir Selepas Solat", en: "Zikir After Prayer" },
+                content: {
+                    ms: `<p>1. Istighfar (3x)<br>2. Ayat Kursi<br>3. Subhanallah (33x)<br>4. Alhamdulillah (33x)<br>5. Allahu Akbar (33x)<br>6. Lailahaillallah...</p>`,
+                    en: `<p>1. Istighfar (3x)<br>2. Ayatul Kursi<br>3. Subhanallah (33x)<br>4. Alhamdulillah (33x)<br>5. Allahu Akbar (33x)<br>6. Lailahaillallah...</p>`
+                }
+            },
+            { 
+                id: 'g10', section: 'ibadah', cat: 'umum', icon: '🍽️',
+                title: { ms: "Niat Puasa", en: "Fasting Intentions" },
+                content: {
+                    ms: `<h2>Ramadhan (Harian)</h2><div class="ar-text">نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ رَمَضَانَ هَذِهِ السَّنَةِ لِلَّهِ تَعَالَى</div><h2>Ganti (Qada)</h2><div class="ar-text">نَوَيْتُ صَوْمَ غَدٍ عَنْ قَضَاءِ فَرْضِ رَمَضَانَ لِلَّهِ تَعَالَى</div>`,
+                    en: `<h2>Ramadan (Daily)</h2><div class="ar-text">نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ رَمَضَانَ هَذِهِ السَّنَةِ لِلَّهِ تَعَالَى</div>`
+                }
+            },
+            // --- ADAB HARIAN ---
+            { 
+                id: 'g11', section: 'adab', cat: 'harian', icon: '🌅',
+                title: { ms: "Adab Bangun Tidur", en: "Waking Up Etiquette" },
+                content: {
+                    ms: `<ol><li>Sapu muka hilangkan kesan tidur.</li><li>Baca doa bangun tidur.</li><li>Bersugi (gosok gigi).</li><li>Basuh tangan 3 kali.</li></ol><div class="dalil-box">"Apabila Nabi SAW bangun... baginda menggosok wajahnya dan membersihkan mulutnya." (Al-Bukhari)</div>`,
+                    en: `<ol><li>Wipe face.</li><li>Recite Dua.</li><li>Use Siwak/Brush teeth.</li><li>Wash hands 3 times.</li></ol>`
+                }
+            },
+            { 
+                id: 'g12', section: 'adab', cat: 'harian', icon: '🏡',
+                title: { ms: "Adab Masuk Rumah", en: "Entering Home" },
+                content: {
+                    ms: `<p>Masuk kaki <strong>Kanan</strong> dan beri Salam walaupun tiada orang.</p><div class="ar-text">بِسْمِ اللهِ وَلَجْنَا، وَ بِسْمِ اللهِ خَرَجْنَا...</div>`,
+                    en: `<p>Enter with <strong>Right</strong> foot and say Salam even if empty.</p>`
+                }
+            },
+            { 
+                id: 'g13', section: 'adab', cat: 'harian', icon: '🚽',
+                title: { ms: "Adab Tandas", en: "Toilet Etiquette" },
+                content: {
+                    ms: `<p>Masuk Kaki Kiri, Pakai alas kaki, Tutup kepala.</p><h2>Doa Masuk</h2><div class="ar-text">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ</div>`,
+                    en: `<p>Enter Left Foot, Wear slippers, Cover head.</p><h2>Dua Entering</h2><div class="ar-text">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ</div>`
+                }
+            },
+            // --- ADAB SOSIAL ---
+            { 
+                id: 'g14', section: 'adab', cat: 'sosial', icon: '👨‍👩‍👧',
+                title: { ms: "Adab Ibu Bapa", en: "Parents Etiquette" },
+                content: {
+                    ms: `<p>Jangan kata "Ah" (Uff). Cakap dengan suara lembut. Sentiasa doakan mereka.</p><div class="dalil-box">"Dan rendahkanlah dirimu terhadap mereka berdua dengan penuh kesayangan." (Al-Isra: 24)</div>`,
+                    en: `<p>Don't say "Uff". Speak softly. Pray for them.</p><div class="dalil-box">"And lower to them the wing of humility out of mercy." (Al-Isra: 24)</div>`
+                }
+            },
+        
+                // --- RARE / SITUATIONAL (Panic Button Topics) ---
+            
+            // 1. DEATH MANAGEMENT (Critical when it happens)
+            { 
+                id: 'x01', section: 'ibadah', cat: 'fardhu', icon: '⚰️',
+                title: { ms: "Pengurusan Jenazah (Asas)", en: "Funeral Management Basics" },
+                content: {
+                    ms: `<h2>4 Kewajipan Terhadap Jenazah</h2><ol><li><strong>Mandi:</strong> Meratakan air ke seluruh tubuh mayat.</li><li><strong>Kafan:</strong> Membalut dengan kain putih (3 lapis lelaki, 5 wanita).</li><li><strong>Solat:</strong> Solat Jenazah (4 Takbir).</li><li><strong>Kebumi:</strong> Menanam dalam liang lahad/liang cempaka.</li></ol><div class="dalil-box">"Segerakanlah pengurusan jenazah..." (Al-Bukhari)</div>`,
+                    en: `<h2>4 Obligations</h2><ol><li><strong>Washing (Ghusl):</strong> Cleaning the body.</li><li><strong>Shrouding (Kafan):</strong> Wrapping in white cloth.</li><li><strong>Prayer:</strong> Janazah Prayer.</li><li><strong>Burial:</strong> Burying in the grave.</li></ol>`
+                }
+            },
 
-                return `
-                <div class="tool-btn" onclick="openArticle(${index})">
-                    <div class="icon-box">${iconDisplay}</div>
-                    <span>${item.title}</span>
+            // 2. FORGETFULNESS IN PRAYER (Very Common)
+            { 
+                id: 'x02', section: 'ibadah', cat: 'sunat', icon: '🙇',
+                title: { ms: "Sujud Sahwi (Terlupa)", en: "Sujud Sahwi (Forgetfulness)" },
+                content: {
+                    ms: `<h2>Bila Perlu Buat?</h2><p>Jika tertinggal Tahiyat Awal atau ragu bilangan rakaat.</p><h2>Cara:</h2><p>Sujud 2 kali <strong>sebelum</strong> memberi salam.</p><h2>Bacaan</h2><div class="ar-text">سُبْحَانَ مَنْ لَا يَنَامُ وَلَا يَسْهُو</div><p>"Maha Suci Allah yang tidak tidur dan tidak lupa."</p>`,
+                    en: `<h2>When?</h2><p>If you missed the First Tashahhud or doubt the rak'ah count.</p><h2>How:</h2><p>Prostrate 2 times <strong>before</strong> Salam.</p><h2>Recitation</h2><div class="ar-text">سُبْحَانَ مَنْ لَا يَنَامُ وَلَا يَسْهُو</div>`
+                }
+            },
+
+            // 3. NIGHTMARES (Scary Moments)
+            { 
+                id: 'x03', section: 'adab', cat: 'harian', icon: '😱',
+                title: { ms: "Mimpi Buruk/Ngeri", en: "Bad Dreams/Nightmares" },
+                content: {
+                    ms: `<h2>Apa Perlu Buat?</h2><ol><li>Ludah (isyarat tanpa air) ke kiri 3 kali.</li><li>Baca Ta'awudz (A'uzubillah...).</li><li>Ubah posisi tidur.</li><li>Jangan cerita pada orang lain.</li></ol><div class="dalil-box">"Mimpi buruk itu dari syaitan..." (Muslim)</div>`,
+                    en: `<h2>What to do?</h2><ol><li>Spit (dry/symbolic) to the left 3 times.</li><li>Seek refuge (A'uzubillah...).</li><li>Change sleeping position.</li><li>Do not tell anyone.</li></ol>`
+                }
+            },
+
+            // 4. FINDING LOST ITEMS (Moral Dilemma)
+            { 
+                id: 'x04', section: 'adab', cat: 'sosial', icon: '💰',
+                title: { ms: "Jumpa Barang Hilang (Luqatah)", en: "Finding Lost Items" },
+                content: {
+                    ms: `<h2>Barang Remeh (Pen, duit syiling)</h2><p>Boleh diambil dan dimanfaatkan.</p><h2>Barang Berharga (Dompet, Emas)</h2><p>Wajib dihebahkan selama setahun. Jika tiada tuntutan selepas setahun, baru boleh dimilik/sedekah.</p>`,
+                    en: `<h2>Trivial Items (Pen, coins)</h2><p>Can be kept or used.</p><h2>Valuable Items (Wallet, Gold)</h2><p>Must be announced/advertised for one year. Only after that can it be kept or donated.</p>`
+                }
+            },
+
+            // 5. NEWBORN BABY (New Dad Panic)
+            { 
+                id: 'x05', section: 'adab', cat: 'sosial', icon: '👶',
+                title: { ms: "Sambut Bayi Baru Lahir", en: "Newborn Protocols" },
+                content: {
+                    ms: `<ol><li><strong>Azan:</strong> Diazankan telinga kanan (sunat).</li><li><strong>Tahnik:</strong> Belah mulut dengan kurma/benda manis.</li><li><strong>Nama:</strong> Beri nama baik (hari ke-7).</li><li><strong>Aqiqah:</strong> Sembelihan kambing (hari ke-7).</li></ol>`,
+                    en: `<ol><li><strong>Adhan:</strong> Call to prayer in right ear.</li><li><strong>Tahnik:</strong> Rubbing gums with dates/sweet.</li><li><strong>Naming:</strong> Good name (Day 7).</li><li><strong>Aqiqah:</strong> Sacrifice (Day 7).</li></ol>`
+                }
+            },
+
+                        // 6. ECLIPSE (Rare Event)
+            { 
+                id: 'x06', section: 'ibadah', cat: 'sunat', icon: '🌑',
+                title: { ms: "Solat Gerhana (Kusuf)", en: "Eclipse Prayer" },
+                content: {
+                    ms: `<h2>Cara Ringkas</h2><p>Solat 2 rakaat seperti biasa, ATAU;</p><h2>Cara Sempurna</h2><p>2 Rakaat, setiap rakaat ada <strong>2 kali Rukuk</strong> (Rukuk, Iktidal, Baca Fatihah lagi, Rukuk, Iktidal, Sujud).</p>`,
+                    en: `<h2>Simple Way</h2><p>Pray 2 rak'ah as normal, OR;</p><h2>Perfect Way</h2><p>2 Rak'ah, each rak'ah has <strong>2 Bowings (Ruku')</strong>.</p>`
+                }
+            }, // <--- THIS COMMA WAS MISSING!
+
+            // --- DAILY GUIDES EXPANSION (Routine) ---
+
+            // 1. EATING & DRINKING (3 Times a Day)
+            { 
+                id: 'h01', section: 'adab', cat: 'harian', icon: '🍽️',
+
+                title: { ms: "Adab Makan & Minum", en: "Eating & Drinking" },
+                content: {
+                    ms: `<h2>Adab Utama</h2><ol><li><strong>Basuh Tangan:</strong> Sebelum & selepas.</li><li><strong>Bismillah:</strong> Baca doa makan.</li><li><strong>Tangan Kanan:</strong> Wajib guna tangan kanan.</li><li><strong>Duduk:</strong> Jangan makan/minum berdiri.</li></ol><div class="dalil-box">"Wahai anak, sebutlah nama Allah, makanlah dengan tangan kananmu, dan makanlah makanan yang dekat denganmu." (Al-Bukhari)</div>`,
+                    en: `<h2>Key Etiquette</h2><ol><li><strong>Wash Hands:</strong> Before & after.</li><li><strong>Bismillah:</strong> Recite Dua.</li><li><strong>Right Hand:</strong> Mandatory to use right hand.</li><li><strong>Sit Down:</strong> Do not eat/drink while standing.</li></ol>`
+                }
+            },
+
+            // 2. DRESSING (Morning Routine)
+            { 
+                id: 'h02', section: 'adab', cat: 'harian', icon: '👕',
+                title: { ms: "Adab Berpakaian", en: "Dressing Etiquette" },
+                content: {
+                    ms: `<h2>Cara Pakai & Buka</h2><p><strong>Memakai:</strong> Mulakan anggota KANAN (baju/seluar/kasut).<br><strong>Membuka:</strong> Mulakan anggota KIRI.</p><h2>Syarat Pakaian</h2><p>Menutup aurat, tidak ketat, dan tidak menyerupai jantina lawan.</p><div class="ar-text">اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ خَيْرِهِ وَخَيْرِ مَا هُوَ لَهُ</div>`,
+                    en: `<h2>Wearing & Removing</h2><p><strong>Wear:</strong> Start with RIGHT limb.<br><strong>Remove:</strong> Start with LEFT limb.</p><h2>Conditions</h2><p>Cover Awrah, not tight, and does not imitate the opposite gender.</p>`
+                }
+            },
+
+            // 3. LEAVING HOME (Safety & Tawakkal)
+            { 
+                id: 'h03', section: 'adab', cat: 'harian', icon: '🚪',
+                title: { ms: "Adab Keluar Rumah", en: "Leaving Home" },
+                content: {
+                    ms: `<h2>Amalan</h2><p>Langkah keluar dengan kaki <strong>Kiri</strong> (sebaliknya dari masjid/rumah). Pandang ke langit dan baca doa tawakkal.</p><h2>Doa Power</h2><div class="ar-text">بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ</div><p>"Dengan nama Allah, aku bertawakkal kepada-Nya..."</p>`,
+                    en: `<h2>Practice</h2><p>Step out with <strong>Left</strong> foot (opposite of mosque/entering). Look at the sky and recite Dua.</p><h2>The Dua</h2><div class="ar-text">بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ</div>`
+                }
+            },
+
+            // 4. SNEEZING & YAWNING (Social Reflexes)
+            { 
+                id: 'h04', section: 'adab', cat: 'sosial', icon: '🤧',
+                title: { ms: "Bersin & Menguap", en: "Sneezing & Yawning" },
+                content: {
+                    ms: `<h2>Bersin (Rahmat)</h2><p>Ucap <strong>Alhamdulillah</strong>. Orang yang dengar jawab <strong>Yarhamukallah</strong>. Kita balas <strong>Yahdikumullah</strong>.</p><h2>Menguap (Malas)</h2><p>Tutup mulut dengan tangan kiri (belakang tapak tangan). Tahan bunyi "Aaa".</p>`,
+                    en: `<h2>Sneezing (Mercy)</h2><p>Say <strong>Alhamdulillah</strong>. Listener says <strong>Yarhamukallah</strong>. You reply <strong>Yahdikumullah</strong>.</p><h2>Yawning (Laziness)</h2><p>Cover mouth with left hand. Suppress the noise.</p>`
+                }
+            },
+
+                     // 5. SLEEPING (Closing the Day)
+            { 
+                id: 'h05', section: 'adab', cat: 'harian', icon: '🛌',
+                title: { ms: "Adab Tidur Lengkap", en: "Full Sleeping Guide" },
+                content: {
+                    ms: `<h2>Sunnah Nabi SAW</h2><ol><li><strong>Wudhu:</strong> Tidur dalam keadaan suci.</li><li><strong>Kibas:</strong> Kibas tempat tidur 3 kali.</li><li><strong>Posisi:</strong> Mengiring ke kanan, tapak tangan di pipi kanan.</li><li><strong>Bacaan:</strong> 3 Qul (Al-Ikhlas, Al-Falaq, An-Nas) & Ayatul Kursi.</li></ol><div class="ar-text">بِسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا</div>`,
+                    en: `<h2>Sunnah of Prophet SAW</h2><ol><li><strong>Wudhu:</strong> Sleep in a state of purity.</li><li><strong>Dusting:</strong> Dust the bed 3 times.</li><li><strong>Position:</strong> Lie on right side, palm under cheek.</li><li><strong>Recite:</strong> 3 Quls & Ayatul Kursi.</li></ol><div class="ar-text">بِسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا</div>`
+                }
+            }
+        ]; // <--- CLOSE THE ARRAY HERE
+
+        // 3. UI TEXT CONSTANTS
+        const TEXT = {
+            en: {
+                pageTitle: "Knowledge", btnIbadah: "Guides", btnAdab: "Etiquette", btnFav: "Favorites",
+                search: "Search topics...", all: "All", spotlight: "Daily Read",
+                cats: { asas: "Basics", fardhu: "Obligatory", sunat: "Voluntary", umum: "General", harian: "Daily", sosial: "Social", sunnah: "Sunnah" }
+            },
+            ms: {
+                pageTitle: "Pustaka Ilmu", btnIbadah: "Panduan", btnAdab: "Adab", btnFav: "Pilihan",
+                search: "Cari topik...", all: "Semua", spotlight: "Bacaan Hari Ini",
+                cats: { asas: "Asas", fardhu: "Fardhu", sunat: "Sunat", umum: "Umum", harian: "Harian", sosial: "Sosial", sunnah: "Sunnah" }
+            }
+        };
+
+
+        // 4. CORE FUNCTIONS
+        function init() {
+            updateLangUI();
+            
+            // Random Spotlight
+            const rand = Math.floor(Math.random() * ALL_DATA.length);
+            STATE.spotlightIndex = rand;
+            const spotItem = ALL_DATA[rand];
+            document.getElementById('spotlightTitle').textContent = spotItem.title[STATE.lang];
+            document.getElementById('spotlightBadge').textContent = TEXT[STATE.lang].spotlight;
+            
+            renderCategories();
+            renderList();
+            
+            // Header Scroll Effect
+            window.addEventListener('scroll', () => {
+                const h = document.getElementById('mainHeader');
+                if(window.scrollY > 20) h.classList.add('scrolled');
+                else h.classList.remove('scrolled');
+            });
+        }
+
+        function updateLangUI() {
+            const t = TEXT[STATE.lang];
+            document.getElementById('langBtn').textContent = STATE.lang.toUpperCase();
+            document.getElementById('pageTitle').textContent = t.pageTitle;
+            document.getElementById('btn-ibadah').textContent = t.btnIbadah;
+            document.getElementById('btn-adab').textContent = t.btnAdab;
+            document.getElementById('btn-fav').textContent = t.btnFav;
+            document.getElementById('searchInput').placeholder = t.search;
+        }
+
+        function toggleLang() {
+            STATE.lang = STATE.lang === 'en' ? 'ms' : 'en';
+            localStorage.setItem('wsl_lang', STATE.lang);
+            init();
+        }
+
+        function switchSection(sec) {
+            STATE.section = sec;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${sec}`).classList.add('active');
+            
+            // Hide/Show Search & Spotlight based on Favorites view
+            const isFav = sec === 'fav';
+            document.getElementById('spotlightArea').style.display = isFav ? 'none' : 'block';
+            document.getElementById('catContainer').style.display = isFav ? 'none' : 'flex';
+            
+            renderCategories();
+            renderList();
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('catContainer');
+            if(STATE.section === 'fav') return; // No cats for favs
+
+            const t = TEXT[STATE.lang];
+            let cats = STATE.section === 'ibadah' 
+                ? ['asas', 'fardhu', 'sunat', 'umum'] 
+                : ['harian', 'sosial', 'sunnah'];
+
+            let html = `<div class="cat-pill ${STATE.cat==='all'?'active':''}" onclick="filterCat('all')">${t.all}</div>`;
+            cats.forEach(c => {
+                html += `<div class="cat-pill cat-${c} ${STATE.cat===c?'active':''}" onclick="filterCat('${c}')">
+                    <span class="tag-dot"></span> ${t.cats[c] || c}
                 </div>`;
-            }).join('');
+            });
+            container.innerHTML = html;
         }
 
-        // 5. Handle Click & Formats
-        function openArticle(index) {
-            const data = PANDUAN_DATA[index];
-            if(!data) return;
+        function filterCat(cat) {
+            STATE.cat = cat;
+            renderCategories();
+            renderList();
+        }
 
-            // TYPE 1: URL (Redirect)
-            if(data.format === 'url') {
-                window.location.href = data.content;
-                return;
-            }
-
-            // Prepare Content View
-            document.getElementById('articleTitle').textContent = data.title;
-            const contentEl = document.getElementById('articleContent');
-            contentEl.innerHTML = ''; // Clear previous
-
-            // TYPE 2: Image (Cloudinary)
-            if(data.format === 'image') {
-                contentEl.innerHTML = `
-                    <img src="${data.content}" alt="${data.title}">
-                    <div style="text-align:center; font-size:12px; color:grey; margin-top:10px;">
-                        <a href="${data.content}" target="_blank" style="color:var(--primary)">Lihat Saiz Penuh</a>
-                    </div>
-                `;
-            } 
-            // TYPE 3: HTML / Text
-            else {
-                // Replace newlines with <br> if it's plain text, otherwise trust HTML
-                let safeContent = data.content;
-                // Simple check if it doesn't look like HTML, treat as text
-                if(!safeContent.includes('<') && safeContent.includes('\n')) {
-                   safeContent = safeContent.replace(/\n/g, '<br>');
+        function renderList() {
+            const container = document.getElementById('guideListContainer');
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered;
+            
+            if (STATE.section === 'fav') {
+                filtered = ALL_DATA.filter(item => STATE.favorites.includes(item.id));
+                if (filtered.length === 0) {
+                    container.innerHTML = `<div style="text-align:center;padding:40px;opacity:0.6;">
+                        <div style="font-size:40px;margin-bottom:10px;">💔</div>
+                        ${STATE.lang==='en'?'No favorites yet.':'Tiada simpanan.'}
+                    </div>`;
+                    return;
                 }
-                contentEl.innerHTML = safeContent;
+            } else {
+                filtered = ALL_DATA.filter(item => {
+                    if(item.section !== STATE.section) return false;
+                    if(STATE.cat !== 'all' && item.cat !== STATE.cat) return false;
+                    return item.title[STATE.lang].toLowerCase().includes(q);
+                });
             }
 
-            // Switch Views
-            document.getElementById('menuView').style.display = 'none';
-            document.getElementById('articleView').style.display = 'block';
-            window.scrollTo(0,0);
+            let html = '';
+            filtered.forEach(item => {
+                const isFav = STATE.favorites.includes(item.id);
+                // Highlight logic
+                let displayTitle = item.title[STATE.lang];
+                if(q) {
+                    const re = new RegExp(`(${q})`, "gi");
+                    displayTitle = displayTitle.replace(re, '<span class="highlight">$1</span>');
+                }
+
+                html += `
+                <div class="guide-card cat-${item.cat}" onclick="openArticle('${item.id}')">
+                    <div class="card-icon"><span>${item.icon}</span></div>
+                    <div class="card-content">
+                        <div class="card-title">${displayTitle}</div>
+                        <div class="card-meta">
+                            <span class="tag-dot"></span>
+                            ${(TEXT[STATE.lang].cats[item.cat] || item.cat).toUpperCase()}
+                        </div>
+                    </div>
+                    <button class="fav-btn ${isFav?'active':''}" onclick="toggleFav(event, '${item.id}')">
+                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
+                </div>`;
+            });
+            container.innerHTML = html || `<div style="text-align:center;padding:20px;opacity:0.5;">No results.</div>`;
         }
 
-        function showMenu() {
-            document.getElementById('articleView').style.display = 'none';
-            document.getElementById('menuView').style.display = 'block';
+        function filterGuides() { renderList(); }
+
+        function toggleFav(e, id) {
+            e.stopPropagation();
+            const idx = STATE.favorites.indexOf(id);
+            if(idx > -1) STATE.favorites.splice(idx, 1);
+            else STATE.favorites.push(id);
+            
+            localStorage.setItem('wsl_fav_guides', JSON.stringify(STATE.favorites));
+            
+            // Animation for button
+            const btn = e.currentTarget;
+            btn.classList.toggle('active');
+            
+            if(STATE.section === 'fav') renderList(); // Refresh if in fav view
         }
+
+        // 5. READER FUNCTIONS
+        function openSpotlight() { openArticle(ALL_DATA[STATE.spotlightIndex].id); }
+
+        function openArticle(id) {
+            const item = ALL_DATA.find(x => x.id === id);
+            if(!item) return;
+
+            document.getElementById('artTitle').textContent = item.title[STATE.lang];
+            document.getElementById('artContent').innerHTML = item.content[STATE.lang];
+            
+            const modal = document.getElementById('articleView');
+            modal.style.display = 'flex';
+            
+            // Reset Font
+            STATE.fontSize = 16;
+            document.getElementById('articleBody').style.fontSize = '16px';
+        }
+
+        function closeArticle() { document.getElementById('articleView').style.display = 'none'; }
+
+        function adjustFont(delta) {
+            STATE.fontSize += delta;
+            if(STATE.fontSize < 12) STATE.fontSize = 12;
+            if(STATE.fontSize > 24) STATE.fontSize = 24;
+            document.getElementById('articleBody').style.fontSize = STATE.fontSize + 'px';
+        }
+
+        function shareArticle() {
+            const title = document.getElementById('artTitle').textContent;
+            const text = document.getElementById('artContent').innerText.substring(0, 100) + "...";
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: title + "\n\n" + text + "\n\nRead more on Mukmin.com",
+                    url: window.location.href
+                });
+            } else {
+                alert("Share copied to clipboard!");
+            }
+        }
+
+        // Start App
+        init();
+
     </script>
 </body>
 </html>
