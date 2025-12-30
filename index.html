@@ -446,6 +446,20 @@
                 </div>
             </div>
         </div>
+<div id="last-read-container" style="display:none; margin: 0 20px 20px 20px; cursor:pointer;" onclick="resumeLastRead()">
+    <div class="card" style="background:var(--primary); color:var(--primary-light); display:flex; align-items:center; justify-content:space-between; padding:15px 20px; border:none; box-shadow:0 10px 20px -5px rgba(166,119,52,0.4);">
+        <div>
+            <div style="font-size:10px; text-transform:uppercase; font-weight:700; opacity:0.8;">Continue Reading</div>
+            <div style="font-size:16px; font-weight:800; margin-top:2px;">
+                <span id="lr-name">Surah...</span> <span id="lr-num" style="opacity:0.6; font-size:12px;">#</span>
+            </div>
+            <div id="lr-meta" style="font-size:11px; opacity:0.9;">Ayah ...</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.2); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+    </div>
+</div>
 
         <div id="app-container">
             
@@ -632,24 +646,7 @@
         </div>
     </aside>
 
-    <div id="pwaInstall">
-        <div class="pwa-header">
-            <div style="font-weight:700; font-size:14px;">Install App</div>
-            <div style="font-size:11px; opacity:0.8;">Add to home screen for offline access</div>
-        </div>
-        
-        <div id="pwa-android" style="display:none; gap:10px; margin-top:10px;">
-            <button onclick="closePWA()" style="background:rgba(128,128,128,0.2); color:var(--text); border:none; padding:8px 12px; border-radius:8px; font-weight:600; font-size:12px;">Close</button>
-            <button onclick="installPWA()" style="background:var(--primary); color:var(--surface); border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:12px;">Install</button>
-        </div>
-
-        <div id="pwa-ios" style="display:none; flex-direction:column; margin-top:10px; font-size:12px; gap:8px;">
-            <div style="display:flex; align-items:center; gap:8px;">1. Tap the Share button <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></div>
-            <div style="display:flex; align-items:center; gap:8px;">2. Select "Add to Home Screen" <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg></div>
-            <button onclick="closePWA()" style="align-self:flex-end; background:rgba(128,128,128,0.2); color:var(--text); border:none; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:5px;">Close</button>
-        </div>
-    </div>
-
+    
     <div id="hadithModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:600; display:none; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s ease;">
         <div class="card" style="width:100%; max-width:400px; margin:0; max-height:80vh; overflow-y:auto; position:relative;">
             <button onclick="closeHadithModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:24px;">&times;</button>
