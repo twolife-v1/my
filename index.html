@@ -199,7 +199,67 @@
         .hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         #heroTime { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
         #countdown { font-size: 14px; font-weight: 600; opacity: 0.9; font-variant-numeric: tabular-nums; }
-        #locationName { font-size: 14px; font-weight: 700; margin-bottom: 4px;}
+        /* --- PREMIUM LOCATION BADGE --- */
+.location-badge {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 14px;
+    border-radius: 50px; /* Pill shape */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 100%;
+}
+
+.location-badge:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.location-icon {
+    width: 16px; 
+    height: 16px;
+    color: #FFD700; /* Gold icon */
+}
+
+/* Text Styling */
+.location-text {
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px; /* Prevent long city names breaking layout */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.location-chevron {
+    font-size: 10px; 
+    opacity: 0.7;
+    transition: transform 0.3s;
+}
+
+/* Pulsing Animation for "Detecting" state */
+.location-badge.searching {
+    background: rgba(255, 215, 0, 0.15); /* Gold tint */
+    border-color: rgba(255, 215, 0, 0.4);
+}
+
+.location-badge.searching .location-icon {
+    animation: pulseIcon 1.5s infinite;
+}
+
+@keyframes pulseIcon {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
         .hero-date-group { display: flex; flex-direction: column; gap: 2px; }
         .hero-divider { height: 1px; background: rgba(255,255,255,0.2); margin: 15px 0; }
         #prayerNames, #prayerTimes { display: flex; justify-content: space-between; width: 100%; }
@@ -425,13 +485,22 @@
             <div class="hero-content-layer">
                 <div class="hero-card-bg">
                      <div class="hero-top">
-                         <div class="hero-left">
-                             <div id="locationName">Detecting...</div>
-                             <div class="hero-date-group">
-                                 <div id="heroDate" style="font-size:12px; opacity:0.9; font-weight:600;">...</div>
-                                 <div id="hijriDate" style="font-size:11px; opacity:0.75; font-family:'Amiri', sans-serif;">...</div>
-                             </div>
-                         </div>
+                    <div class="hero-left">
+    <div id="locationBadge" class="location-badge searching" onclick="openLocationModal()">
+        <svg class="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"></path>
+            <circle cx="12" cy="9" r="3"></circle>
+        </svg>
+        <span id="locationName" class="location-text">Detecting...</span>
+        <span class="location-chevron">▼</span>
+    </div>
+
+    <div class="hero-date-group" style="margin-top: 10px; margin-left: 5px;">
+        <div id="heroDate" style="font-size:12px; opacity:0.9; font-weight:600;">...</div>
+        <div id="hijriDate" style="font-size:11px; opacity:0.75; font-family:'Amiri', sans-serif;">...</div>
+    </div>
+</div>
+
                          <div class="hero-right" style="text-align:right;">
                              <div id="heroTime">--:--</div>
                              <div id="countdown">--:--:--</div>
@@ -462,6 +531,27 @@
 </div>
 
         <div id="app-container">
+<div class="card" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 150%); color: var(--surface); border:none; position:relative; overflow:hidden;">
+    <div style="position:absolute; top:-20px; right:-20px; font-size:100px; opacity:0.1; transform:rotate(15deg); pointer-events: none;">📿</div>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; position:relative; z-index:5;">
+        <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--surface);">Quick Tasbih</div>
+        
+        <button onclick="resetTasbih()" style="background:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.4); border-radius:50%; width:32px; height:32px; color:white; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px;">
+            ↺
+        </button>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; position:relative; z-index:5;">
+        <div style="font-size:42px; font-weight:800; font-variant-numeric:tabular-nums;" id="tasbihCount">0</div>
+        <button onclick="countTasbih()" id="btnTasbih" style="width:60px; height:60px; border-radius:50%; border:4px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; font-size:24px; display:flex; align-items:center; justify-content:center; box-shadow:0 5px 15px rgba(0,0,0,0.2); transition:transform 0.1s;">
+            +
+        </button>
+    </div>
+    <div style="font-size:11px; opacity:0.9; margin-top:5px; position:relative; z-index:5;">Subhanallah • Alhamdulillah • Allahuakbar</div>
+</div>
+
+
             
             <div class="section-header" id="cat-tools">🛠️ Alatan & Ibadah</div>
             <div class="feature-grid">
@@ -683,6 +773,21 @@
         </div>
         <div class="reader-content" id="readerContent" style="flex:1; overflow-y:auto; padding:20px;"></div>
     </div>
+<div id="locationModal" style="position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; padding:20px;">
+    <div class="card" style="width:100%; max-width:350px; max-height:80vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0;">Select Location</h3>
+            <button onclick="closeLocationModal()" style="background:none; border:none; font-size:24px;">&times;</button>
+        </div>
+        <button onclick="getLocation()" style="width:100%; padding:15px; margin-bottom:10px; border:1px dashed var(--primary); background:var(--primary-light); color:var(--primary); border-radius:12px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"></path><circle cx="12" cy="9" r="3"></circle></svg>
+            Auto Detect (GPS)
+        </button>
+        <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:10px 0;">Major Zones</div>
+        <div id="zoneList" style="display:flex; flex-direction:column; gap:8px;">
+            </div>
+    </div>
+</div>
 
    <nav class="nav-bar">
     <button class="nav-item active" onclick="switchTab('home', this)">
@@ -995,17 +1100,74 @@
         }
     };
 
-    function getLocation() {
-        const locText = document.getElementById('locationName');
-        const t = TRANSLATIONS[window.STATE.lang];
-        const onSuccess = (p) => {
-            window.STATE.lat = p.coords.latitude; window.STATE.lon = p.coords.longitude;
-            localStorage.setItem('wsl_coords', JSON.stringify({lat: window.STATE.lat, lon: window.STATE.lon}));
-            locText.textContent = t.currentLoc; calculateLocalTimes();
-        };
-        const onError = () => { locText.textContent = savedCoords ? t.savedLoc : t.defaultLoc; calculateLocalTimes(); };
-        if(navigator.geolocation) { navigator.geolocation.getCurrentPosition(onSuccess, onError, { timeout: 6000 }); } else { onError(); }
+    /* --- ENHANCED LOCATION LOGIC --- */
+
+function updateLocationUI(text, isSearching = false) {
+    const badge = document.getElementById('locationBadge');
+    const nameEl = document.getElementById('locationName');
+    
+    if(nameEl) nameEl.textContent = text;
+    
+    if(badge) {
+        if(isSearching) {
+            badge.classList.add('searching');
+        } else {
+            badge.classList.remove('searching');
+        }
     }
+}
+
+function getLocation() {
+    // 1. Close the menu immediately so user sees the dashboard
+    closeLocationModal();
+
+    const t = TRANSLATIONS[window.STATE.lang];
+    
+    // 2. Show "Locating..." animation on the dashboard
+    updateLocationUI("Locating...", true);
+
+    const onSuccess = (p) => {
+        // 3. Success! Save coords and update times
+        window.STATE.lat = p.coords.latitude; 
+        window.STATE.lon = p.coords.longitude;
+        localStorage.setItem('wsl_coords', JSON.stringify({lat: window.STATE.lat, lon: window.STATE.lon}));
+        
+        updateLocationUI(t.currentLoc, false); 
+        calculateLocalTimes();
+    };
+    
+    const onError = (err) => { 
+        console.warn("GPS Error:", err);
+        // 4. If it fails, tell them to select manually
+        updateLocationUI("Select Location 📍", false);
+        // Optional: Re-open the modal so they can choose a city
+        setTimeout(() => {
+             alert("GPS Failed. Please select a city.");
+             openLocationModal();
+        }, 500);
+    };
+
+    if (navigator.geolocation) {
+        // Give GPS 10 seconds to find you
+        navigator.geolocation.getCurrentPosition(onSuccess, onError, { timeout: 10000, maximumAge: 60000 });
+    } else {
+        onError();
+    }
+}
+
+function manualSelectLoc(lat, lon, name) {
+    window.STATE.lat = lat;
+    window.STATE.lon = lon;
+    localStorage.setItem('wsl_coords', JSON.stringify({lat, lon, name})); 
+    
+    // Update UI clearly with the city name
+    updateLocationUI(name, false);
+    
+    calculateLocalTimes(); 
+    closeLocationModal();
+}
+
+
 
     function calculateLocalTimes() {
         const date = new Date();
@@ -1380,9 +1542,7 @@
     /* =========================================
        7. READER & SURAH LOGIC
        ========================================= */
-    const SURAH_CACHE = {}; 
-    
-    async function openSurah(num, name) {
+        async function openSurah(num, name) {
         const lang = document.getElementById('quranLangSelect').value; 
         const m = document.getElementById('readerModal');
         const c = document.getElementById('readerContent');
@@ -1394,8 +1554,10 @@
         // 1. Try Offline DB
         try {
             const offlineData = await getFromDB(`full_quran_${lang}`);
+            // Safety Check added here:
             if (offlineData && offlineData.arabic && offlineData.arabic[num-1]) {
-                renderAyahs(num, name, offlineData.arabic[num-1].ayahs, offlineData.translation[num-1].ayahs);
+                const trData = (offlineData.translation && offlineData.translation[num-1]) ? offlineData.translation[num-1].ayahs : null;
+                renderAyahs(num, name, offlineData.arabic[num-1].ayahs, trData);
                 return;
             }
         } catch(e) {}
@@ -1419,6 +1581,7 @@
             renderAyahs(num, name, d1.data.ayahs, d2.data.ayahs);
         } catch(e) { c.innerHTML = `<div style="text-align:center; padding:50px;"><b>No Internet & No Offline Data</b></div>`; }
     }
+
 
     function renderAyahs(num, name, arAyahs, trAyahs) {
         const c = document.getElementById('readerContent');
@@ -1704,6 +1867,70 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
     }); 
     window.installPWA = () => { if(dp) dp.prompt(); };
     window.closePWA = () => { document.getElementById('pwaInstall').style.display = 'none'; };
+
+/* --- SMART TASBIH LOGIC --- */
+let tasbihCounter = parseInt(localStorage.getItem('wsl_tasbih')) || 0;
+document.getElementById('tasbihCount').textContent = tasbihCounter;
+
+function countTasbih() {
+    tasbihCounter++;
+    updateTasbihUI();
+    
+    // Haptic Feedback (Vibration)
+    if(navigator.vibrate) navigator.vibrate(15); 
+    
+    // Animate Button
+    const btn = document.getElementById('btnTasbih');
+    btn.style.transform = "scale(0.9)";
+    setTimeout(() => btn.style.transform = "scale(1)", 100);
+}
+
+function resetTasbih() {
+    // Vibrate to confirm click
+    if(navigator.vibrate) navigator.vibrate(50);
+    
+    tasbihCounter = 0;
+    updateTasbihUI();
+}
+
+
+function updateTasbihUI() {
+    document.getElementById('tasbihCount').textContent = tasbihCounter;
+    localStorage.setItem('wsl_tasbih', tasbihCounter);
+}
+/* --- MANUAL LOCATION LOGIC --- */
+const MALAYSIA_ZONES = [
+    { name: "Kuala Lumpur", lat: 3.1390, lon: 101.6869 },
+    { name: "Putrajaya", lat: 2.9264, lon: 101.6964 },
+    { name: "Johor Bahru", lat: 1.4927, lon: 103.7414 },
+    { name: "Penang (George Town)", lat: 5.4141, lon: 100.3288 },
+    { name: "Kota Bharu", lat: 6.1254, lon: 102.2381 },
+    { name: "Kuala Terengganu", lat: 5.3117, lon: 103.1324 },
+    { name: "Kuantan", lat: 3.8077, lon: 103.3260 },
+    { name: "Ipoh", lat: 4.5975, lon: 101.0901 },
+    { name: "Shah Alam", lat: 3.0738, lon: 101.5183 },
+    { name: "Melaka City", lat: 2.1896, lon: 102.2501 },
+    { name: "Kota Kinabalu", lat: 5.9804, lon: 116.0735 },
+    { name: "Kuching", lat: 1.5533, lon: 110.3592 }
+];
+
+function openLocationModal() {
+    const list = document.getElementById('zoneList');
+    // Note: We use the manualSelectLoc defined in the ENHANCED LOGIC block above
+    list.innerHTML = MALAYSIA_ZONES.map(z => 
+        `<button onclick="manualSelectLoc(${z.lat}, ${z.lon}, '${z.name}')" 
+          style="text-align:left; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; font-weight:600; cursor:pointer;">
+          ${z.name}
+         </button>`
+    ).join('');
+    document.getElementById('locationModal').style.display = 'flex';
+}
+
+function closeLocationModal() {
+    document.getElementById('locationModal').style.display = 'none';
+}
+    
+    
 
 </script>
 
