@@ -2025,14 +2025,13 @@ function manualSelectLoc(lat, lon, name) {
     }
 
 
-        function renderAyahs(num, name, arAyahs, trAyahs) {
+            function renderAyahs(num, name, arAyahs, trAyahs) {
         const c = document.getElementById('readerContent');
-        
-        // --- FIX STARTS HERE ---
-        // 1. Get the saved reciter from storage, or default to 'ar.alafasy'
-        // Ensure your settings.html saves the ID to 'wsl_reciter_id'
-        const reciterId = localStorage.getItem('wsl_reciter_id') || 'ar.alafasy';
-        // --- FIX ENDS HERE ---
+
+        // --- FIX: READ THE SAVED RECITER KEY ---
+        // settings.html saves it as 'wsl_reciter', so we use that exact key here.
+        const reciterId = localStorage.getItem('wsl_reciter') || 'ar.alafasy';
+        // ---------------------------------------
 
         let html = (num!==1 && num!==9) ? '<div style="text-align:center;font-family:Amiri;font-size:26px;margin:20px 0;color:var(--primary);">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '';
             
@@ -2040,10 +2039,9 @@ function manualSelectLoc(lat, lon, name) {
             const trans = (trAyahs && trAyahs[i]) ? trAyahs[i].text : '';
             const saved = window.STATE.bookmarks.some(b => b.id === `ayah_${num}_${a.numberInSurah}`);
             
-            // --- UPDATED URL LINE ---
-            // Now uses the variable 'reciterId' instead of hardcoded text
+            // --- FIX: USE THE VARIABLE ---
             const audioUrl = `https://cdn.islamic.network/quran/audio/128/${reciterId}/${a.number}.mp3`;
-            // ------------------------
+            // -----------------------------
 
             const safeAr = encodeURIComponent(a.text).replace(/'/g, "%27");
             const safeTr = encodeURIComponent(trans).replace(/'/g, "%27");
@@ -2065,6 +2063,7 @@ function manualSelectLoc(lat, lon, name) {
         });
         c.innerHTML = html;
     }
+
 
 
     const audioPlayer = new Audio();
