@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#A67734">
+    <title>Settings - Mukmin.com</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --shadow:0 10px 30px -10px rgba(0,0,0,0.1); }
+        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --shadow:0 10px 30px -10px rgba(0,0,0,0.5); }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 50px; transition: background 0.3s; }
+
+        /* HEADER */
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 20px; padding-top: max(15px, env(safe-area-inset-top));
+            display: flex; align-items: center; gap: 15px;
+        }
+        :root[data-theme="dark"] .header { background: rgba(30, 30, 30, 0.85); }
+        
+        .header h1 { margin: 0; font-size: 18px; font-weight: 800; flex: 1; }
+        .back-btn { background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; padding: 0; display: flex; align-items: center; }
+
+        /* SETTINGS LIST */
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        
+        .section-title {
+            font-size: 13px; font-weight: 800; color: var(--text-muted); 
+            text-transform: uppercase; letter-spacing: 1px; 
+            margin: 30px 0 15px 0;
+        }
+        .section-title:first-child { margin-top: 10px; }
+
+        .setting-card {
+            background: var(--surface); border-radius: 16px; 
+            box-shadow: var(--shadow); border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .setting-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .setting-item:last-child { border-bottom: none; }
+        
+        .setting-label { display: flex; flex-direction: column; gap: 4px; flex: 1; padding-right: 15px; }
+        .setting-name { font-weight: 600; font-size: 15px; }
+        .setting-desc { font-size: 12px; color: var(--text-muted); line-height: 1.3; }
+
+        /* CONTROLS */
+        select {
+            appearance: none; background: var(--bg); border: 1px solid var(--border);
+            color: var(--text); padding: 8px 30px 8px 12px; border-radius: 8px;
+            font-size: 13px; font-weight: 600; outline: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right 10px center; background-size: 10px;
+        }
+
+        .stepper { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 4px; border-radius: 8px; border: 1px solid var(--border); }
+        .stepper btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-weight: 700; color: var(--primary); }
+        .stepper span { font-size: 14px; font-weight: 700; width: 20px; text-align: center; }
+
+        input[type="range"] {
+            width: 120px; accent-color: var(--primary);
+        }
+
+        /* QURAN PREVIEW */
+        .quran-preview {
+            background: var(--bg); padding: 20px; margin: 15px 20px; 
+            border-radius: 12px; text-align: right; border: 1px dashed var(--border);
+        }
+        .preview-text {
+            font-family: 'Amiri', serif; line-height: 2.2; color: var(--text);
+            transition: font-size 0.2s;
+        }
+
+        /* TOGGLE SWITCH */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .btn-save {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: var(--primary-light);
+            padding: 14px 40px; border-radius: 50px; border: none;
+            font-weight: 700; font-size: 15px; 
+            box-shadow: 0 10px 25px rgba(166, 119, 52, 0.4);
+            cursor: pointer; z-index: 200;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn-save:active { transform: translateX(-50%) scale(0.95); }
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <button class="back-btn" onclick="goBack()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h1>Settings</h1>
+    </header>
+
+    <div class="container">
+        
+        <div class="section-title">🕌 Prayer Times (Waktu Solat)</div>
+        <div class="setting-card">
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="setting-name">Calculation Method</span>
+                    <span class="setting-desc">Standard used for angles</span>
+                </div>
+                <select id="calcMethod">
+                    <option value="JAKIM">Malaysia (JAKIM)</option>
+                    <option value="MWL">World League (MWL)</option>
+                    <option value="ISNA">North America (ISNA)</option>
+                    <option value="MAKKAH">Umm al-Qura (Makkah)</option>
+                    <option value="EGYPT">Egyptian Authority</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="setting-name">Asr Method (Mazhab)</span>
+                    <span class="setting-desc">Shafi/Maliki/Hanbali vs Hanafi</span>
+                </div>
+                <select id="asrMethod">
+                    <option value="STANDARD">Standard (Majority)</option>
+                    <option value="HANAFI">Hanafi (Later Asr)</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="setting-name">Hijri Date Adjustment</span>
+                    <span class="setting-desc">Correct moon sighting (+/- days)</span>
+                </div>
+                <div class="stepper">
+                    <btn onclick="adjustHijri(-1)">-</btn>
+                    <span id="hijriAdjDisplay">0</span>
+                    <btn onclick="adjustHijri(1)">+</btn>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section-title">📖 Al-Quran Experience</div>
+        <div class="setting-card">
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="setting-name">Arabic Font Size</span>
+                    <span class="setting-desc">Adjust size for reading</span>
+                </div>
+                <input type="range" id="fontSizeSlider" min="20" max="42" step="2" oninput="updatePreview()">
+            </div>
+
+            <div class="quran-preview">
+                <div id="fontPreview" class="preview-text">
+                    بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+                </div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:5px; text-align:center;">Preview Text</div>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="setting-name">Audio Reciter</span>
+                    <span class="setting-desc">Select your preferred Qari</span>
+                </div>
+                <select id="reciterSelect">
+                    <option value="ar.alafasy">Mishary Alafasy</option>
+                    <option value="ar.sudais">Abdurrahmaan As-Sudais</option>
+                    <option value="ar.ghamadi">Saad Al-Ghamdi</option>
+                    <option value="ar.husary">Mahmoud Khalil Al-Husary</option>
+                </select>
+            </div>
+            
+        </div>
+
+        <div class="section-title">⚙️ App Preferences</div>
+        <div class="setting-card">
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span class="setting-name">Dark Mode</span>
+                    <span class="setting-desc">Toggle app theme</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle" onchange="toggleTheme(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-item" onclick="resetDefaults()" style="cursor:pointer;">
+                <div class="setting-label">
+                    <span class="setting-name" style="color:#ef4444;">Reset Settings</span>
+                    <span class="setting-desc">Restore all defaults</span>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </div>
+
+        </div>
+        
+        <div style="height: 100px;"></div> </div>
+
+    <button class="btn-save" onclick="saveAndExit()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        Save Changes
+    </button>
+
+<script>
+    // 1. CONFIGURATION
+    const DEFAULT_SETTINGS = {
+        calcMethod: 'JAKIM',
+        asrMethod: 'STANDARD',
+        hijriAdj: 0,
+        quranFontSize: 26,
+        reciter: 'ar.alafasy',
+        theme: 'light'
+    };
+
+    // 2. LOAD SAVED SETTINGS
+    function loadSettings() {
+        const s = {
+            calc: localStorage.getItem('wsl_calc_method') || DEFAULT_SETTINGS.calcMethod,
+            asr: localStorage.getItem('wsl_asr_method') || DEFAULT_SETTINGS.asrMethod,
+            hijri: parseInt(localStorage.getItem('wsl_hijri_adj') || DEFAULT_SETTINGS.hijriAdj),
+            font: parseInt(localStorage.getItem('wsl_quran_fontsize') || DEFAULT_SETTINGS.quranFontSize),
+            reciter: localStorage.getItem('wsl_reciter') || DEFAULT_SETTINGS.reciter,
+            theme: localStorage.getItem('wsl_theme') || DEFAULT_SETTINGS.theme
+        };
+
+        // Populate UI
+        document.getElementById('calcMethod').value = s.calc;
+        document.getElementById('asrMethod').value = s.asr;
+        document.getElementById('hijriAdjDisplay').textContent = (s.hijri > 0 ? '+' : '') + s.hijri;
+        document.getElementById('fontSizeSlider').value = s.font;
+        document.getElementById('reciterSelect').value = s.reciter;
+        document.getElementById('darkModeToggle').checked = (s.theme === 'dark');
+        
+        // Initial Visuals
+        updatePreview();
+        document.documentElement.setAttribute('data-theme', s.theme);
+    }
+
+    // 3. UI INTERACTION FUNCTIONS
+    let currentHijri = 0;
+    
+    function adjustHijri(amount) {
+        let val = parseInt(document.getElementById('hijriAdjDisplay').textContent);
+        val += amount;
+        if(val > 2) val = 2; // Max limits
+        if(val < -2) val = -2;
+        document.getElementById('hijriAdjDisplay').textContent = (val > 0 ? '+' : '') + val;
+    }
+
+    function updatePreview() {
+        const size = document.getElementById('fontSizeSlider').value;
+        document.getElementById('fontPreview').style.fontSize = size + 'px';
+    }
+
+    function toggleTheme(isDark) {
+        const theme = isDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    function resetDefaults() {
+        if(confirm("Reset all settings to default?")) {
+            localStorage.clear(); // Clears everything including coords (optional, or specific keys)
+            // Ideally clear only specific keys:
+            ['wsl_calc_method','wsl_asr_method','wsl_hijri_adj','wsl_quran_fontsize','wsl_reciter'].forEach(k => localStorage.removeItem(k));
+            location.reload();
+        }
+    }
+
+    // 4. SAVE & EXIT
+    function saveAndExit() {
+        const hijriVal = parseInt(document.getElementById('hijriAdjDisplay').textContent);
+        
+        localStorage.setItem('wsl_calc_method', document.getElementById('calcMethod').value);
+        localStorage.setItem('wsl_asr_method', document.getElementById('asrMethod').value);
+        localStorage.setItem('wsl_hijri_adj', hijriVal);
+        localStorage.setItem('wsl_quran_fontsize', document.getElementById('fontSizeSlider').value);
+        localStorage.setItem('wsl_reciter', document.getElementById('reciterSelect').value);
+        
+        // Theme is saved immediately on toggle usually, but let's ensure consistency
+        const isDark = document.getElementById('darkModeToggle').checked;
+        localStorage.setItem('wsl_theme', isDark ? 'dark' : 'light');
+
+        // Go back to main app
+        window.location.href = 'index.html';
+    }
+
+    function goBack() {
+        // Just go back without saving if they click arrow
+        // Or you can make it save. Standard behavior is usually back = cancel, save = save.
+        window.location.href = 'index.html';
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', loadSettings);
+
+</script>
+</body>
+</html>
