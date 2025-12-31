@@ -435,6 +435,173 @@
 
         @keyframes popIn { to { transform: scale(1); opacity: 1; } }
         
+
+/* --- UPGRADED FLOATING NOTEBOOK --- */
+#quickNotePanel {
+    position: fixed; 
+    bottom: 160px; 
+    right: 20px; 
+    width: 300px; 
+    height: 350px;
+    background: var(--surface); 
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 24px; 
+    
+    /* CHANGE 1: Increased z-index to 1500 (was 399) */
+    z-index: 1500; 
+    
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    display: flex; 
+    flex-direction: column;
+    transform: scale(0.9); 
+    opacity: 0; 
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: bottom right;
+}
+
+#quickNotePanel.active { 
+    transform: scale(1); 
+    opacity: 1; 
+    pointer-events: auto; 
+    bottom: 100px; 
+}
+
+#noteToggleBtn {
+    position: fixed; 
+    bottom: 100px; 
+    right: 20px; 
+    
+    /* CHANGE 2: Increased z-index to 1501 (was 400) */
+    z-index: 1501; 
+    
+    width: 56px; 
+    height: 56px; 
+    border-radius: 50%;
+    background: var(--primary); 
+    color: var(--primary-light);
+    border: none; 
+    box-shadow: 0 4px 20px rgba(166, 119, 52, 0.4);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    cursor: pointer; 
+    transition: transform 0.2s;
+}
+
+#noteToggleBtn:active { 
+    transform: scale(0.9); 
+}
+
+.note-inputs { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+
+#noteTitleInput {
+    background: rgba(var(--primary), 0.05); border: none; padding: 10px;
+    border-radius: 8px; font-weight: 700; color: var(--text); font-family: inherit;
+}
+
+#noteBodyInput {
+    flex: 1; border: none; background: transparent; resize: none; outline: none;
+    font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; color: var(--text);
+}
+
+.note-actions {
+    padding: 10px 15px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end;
+}
+
+.btn-save-note {
+    background: var(--primary); color: white; border: none;
+    padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+}
+
+/* --- SAVED NOTES LIST STYLING --- */
+.note-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px; margin-bottom: 12px;
+    position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.note-card-title { font-weight: 800; font-size: 15px; margin-bottom: 5px; color: var(--primary); }
+.note-card-date { font-size: 10px; opacity: 0.6; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.note-card-body { font-size: 13px; line-height: 1.5; color: var(--text-muted); white-space: pre-wrap; }
+.btn-delete-note {
+    position: absolute; top: 10px; right: 10px;
+    background: none; border: none; color: #ef4444; opacity: 0.6; cursor: pointer;
+}/* --- TRUNCATED LIST VIEW --- */
+.note-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px; margin-bottom: 12px;
+    position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    cursor: pointer; transition: transform 0.2s, background 0.2s;
+}
+.note-card:active { transform: scale(0.98); background: var(--primary-light); }
+
+.note-card-body { 
+    font-size: 13px; line-height: 1.5; color: var(--text-muted); 
+    /* Truncate text after 2 lines */
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;  
+    overflow: hidden; text-overflow: ellipsis;
+}
+
+/* --- INSTAGRAM-READY VIEW MODAL --- */
+#noteViewOverlay {
+    position: fixed; inset: 0; z-index: 2500;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    padding: 30px; animation: fadeIn 0.3s ease;
+}
+
+#noteViewCard {
+    width: 100%; max-width: 360px;
+    background: var(--surface); 
+    border-radius: 24px; 
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    overflow: hidden; position: relative;
+    transform: scale(0.95); opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* This background makes screenshots look pro */
+.screenshot-bg {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%);
+    padding: 30px 25px; min-height: 300px; display: flex; flex-direction: column;
+}
+
+.view-date { 
+    font-size: 10px; text-transform: uppercase; letter-spacing: 2px; 
+    color: var(--text-muted); margin-bottom: 15px; font-weight: 700; opacity: 0.7;
+}
+
+.view-title { 
+    font-size: 22px; font-weight: 800; color: var(--primary); 
+    margin-bottom: 20px; line-height: 1.3; font-family: 'Amiri', serif;
+}
+
+.view-body { 
+    font-size: 15px; line-height: 1.8; color: var(--text); 
+    white-space: pre-wrap; font-family: 'Inter', sans-serif;
+}
+
+.view-watermark {
+    margin-top: 40px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.brand-mark { font-size: 12px; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+/* Close Button (Hidden when screenshotting if user taps correctly, but usually fine) */
+.btn-close-view {
+    position: absolute; top: 15px; right: 15px; width: 32px; height: 32px;
+    border-radius: 50%; background: rgba(0,0,0,0.05); border: none;
+    color: var(--text); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 10;
+}
+
+
+
   </style>
 </head>
 <body>
@@ -709,10 +876,22 @@
 </div>
 
 
-    <div id="view-saved" class="view" style="padding: 20px; padding-top: 85px;">
-        <h1 id="txt-saved-title" style="font-size:24px; font-weight:800; margin-bottom:20px;">Saved</h1>
-        <div id="bookmarksList" class="card"></div>
+<div id="view-saved" class="view" style="padding: 20px; padding-top: 85px;">
+    <h1 style="font-size:24px; font-weight:800; margin-bottom:20px;">Saved & Notes</h1>
+    
+    <div class="section-header">📑 Bookmarks</div>
+    <div id="bookmarksList" class="card" style="min-height: 50px;"></div>
+
+    <div class="section-header" style="margin-top: 30px;">📝 My Notebook</div>
+    <div id="notebookList">
+        <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px; font-style:italic;">
+            No notes yet. Use the pen button to add one!
+        </div>
     </div>
+    
+    <div style="height: 80px;"></div>
+</div>
+
 
     <div id="sidePanelOverlay" onclick="toggleSidePanel()"></div>
     <aside id="sidePanel">
@@ -722,6 +901,19 @@
         </div>
         <div class="panel-content">
             <div id="txt-legacy" class="section-header" style="margin-top:0;">Utiliti Lama</div>
+            <a href="settings.html" style="text-decoration:none;">
+    <div class="card" style="display:flex; align-items:center; gap:12px; padding:15px; margin-bottom:20px; border:1px solid var(--primary);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <div>
+            <div style="font-weight:700; color:var(--primary);">App Settings</div>
+            <div style="font-size:11px; color:var(--text-muted);">Prayer methods, Fonts & Audio</div>
+        </div>
+    </div>
+</a>
+
             <div class="card" style="padding:10px; margin-bottom:25px;">
                 <div id="txt-takwim" style="font-size:13px; font-weight:700; margin-bottom:8px;">Takwim Hijri</div>
                 <div class="iframe-wrap" style="height: 320px;"><iframe src="Takwim-hijri.html" style="width:100%; height:100%; border:none;"></iframe></div>
@@ -788,6 +980,29 @@
             </div>
     </div>
 </div>
+<div id="quickNotePanel">
+    <div class="modal-header" style="padding: 15px; background: rgba(var(--primary), 0.05);">
+        <span style="font-weight:800; font-size:13px;">New Note</span>
+        <button onclick="toggleNotePanel()" style="background:none; border:none; font-size:20px;">&times;</button>
+    </div>
+    <div class="note-inputs">
+        <input type="text" id="noteTitleInput" placeholder="Title (e.g. Surah Yasin Reflection)">
+        <textarea id="noteBodyInput" placeholder="Write your thoughts here..."></textarea>
+    </div>
+    <div class="note-actions">
+        <button onclick="saveToNotebook()" class="btn-save-note">
+            <span>Save Note</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        </button>
+    </div>
+</div>
+
+<button id="noteToggleBtn" onclick="toggleNotePanel()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
+</button>
 
    <nav class="nav-bar">
     <button class="nav-item active" onclick="switchTab('home', this)">
@@ -847,6 +1062,27 @@
             <button class="btn-broadcast-ok" onclick="closeBroadcast()">Got it</button>
         </div>
     </div>
+    <div id="noteViewOverlay" onclick="closeNoteView(event)">
+    <div id="noteViewCard" onclick="event.stopPropagation()">
+        <button class="btn-close-view" onclick="closeNoteView()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div class="screenshot-bg">
+            <div class="view-date" id="viewNoteDate">...</div>
+            <div class="view-title" id="viewNoteTitle">...</div>
+            <div class="view-body" id="viewNoteBody">...</div>
+            
+            <div class="view-watermark">
+                <div class="brand-mark">
+                    <span style="color:var(--primary);">Mukmin.com</span>
+                </div>
+                <div style="font-size:10px; opacity:0.5;">Personal Note</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     /* =========================================
        1. CONFIGURATION & STATE MANAGEMENT
@@ -1021,13 +1257,19 @@
         if(greetEl) greetEl.textContent = `Assalamualaikum, ${g}`;
     }
 
-    function switchTab(id, btn) {
+        function switchTab(id, btn) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-'+id).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         btn.classList.add('active');
+        
         if(id === 'quran') loadQuran();
+        if(id === 'saved') {
+            renderBookmarksList(); // Existing bookmarks
+            renderNotebook();      // NEW: Render notes
+        }
     }
+
 
     function toggleSidePanel() { 
         const panel = document.getElementById('sidePanel');
@@ -1118,41 +1360,241 @@ function updateLocationUI(text, isSearching = false) {
 }
 
 function getLocation() {
-    // 1. Close the menu immediately so user sees the dashboard
-    closeLocationModal();
+    closeLocationModal(); // Close menu first
+    updateLocationUI("Locating...", true); // Show "Detecting" animation
 
-    const t = TRANSLATIONS[window.STATE.lang];
-    
-    // 2. Show "Locating..." animation on the dashboard
-    updateLocationUI("Locating...", true);
+    // 1. Check if browser supports it
+    if (!navigator.geolocation) {
+        alert("GPS not supported by this browser.");
+        updateLocationUI("Select Location 📍", false);
+        return;
+    }
 
+    // 2. The Options
+    const options = {
+        enableHighAccuracy: true, // Force Real GPS (better accuracy)
+        timeout: 30000,           // Wait 30 seconds (fix for "Timeout" errors)
+        maximumAge: 0             // Do not use old cached position
+    };
+
+    // 3. Success Handler
     const onSuccess = (p) => {
-        // 3. Success! Save coords and update times
         window.STATE.lat = p.coords.latitude; 
         window.STATE.lon = p.coords.longitude;
-        localStorage.setItem('wsl_coords', JSON.stringify({lat: window.STATE.lat, lon: window.STATE.lon}));
         
-        updateLocationUI(t.currentLoc, false); 
+        // Reverse Geocode (Optional: Get City Name from Coords)
+        // For now, we just save coords
+        localStorage.setItem('wsl_coords', JSON.stringify({
+            lat: window.STATE.lat, 
+            lon: window.STATE.lon,
+            name: "Current Location"
+        }));
+        
+        updateLocationUI("Current Location", false); 
         calculateLocalTimes();
     };
     
+    // 4. Error Handler (Now explains WHY it failed)
     const onError = (err) => { 
         console.warn("GPS Error:", err);
-        // 4. If it fails, tell them to select manually
+        let msg = "GPS Failed";
+        
+        if(err.code === 1) msg = "Permission Denied. Please Allow Location.";
+        if(err.code === 2) msg = "Signal Weak. Try Outdoors.";
+        if(err.code === 3) msg = "Timeout. GPS took too long.";
+
+        alert(msg + "\nPlease select your city manually.");
         updateLocationUI("Select Location 📍", false);
-        // Optional: Re-open the modal so they can choose a city
-        setTimeout(() => {
-             alert("GPS Failed. Please select a city.");
-             openLocationModal();
-        }, 500);
+        
+        // Re-open modal so they can choose immediately
+        setTimeout(() => openLocationModal(), 500);
     };
 
-    if (navigator.geolocation) {
-        // Give GPS 10 seconds to find you
-        navigator.geolocation.getCurrentPosition(onSuccess, onError, { timeout: 10000, maximumAge: 60000 });
+    // 5. Fire the request
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+}
+
+/* --- NOTEBOOK SYSTEM LOGIC --- */
+
+// 1. Initialize State
+window.STATE.notebook = safeParse('mukmin_notebook', []);
+
+// 2. Toggle Panel
+function toggleNotePanel() {
+    const p = document.getElementById('quickNotePanel');
+    const b = document.getElementById('noteToggleBtn');
+    
+    if (p.classList.contains('active')) {
+        p.classList.remove('active');
+        b.style.opacity = '1';
+        b.style.pointerEvents = 'auto';
     } else {
-        onError();
+        p.classList.add('active');
+        b.style.opacity = '0';
+        b.style.pointerEvents = 'none';
+        setTimeout(() => document.getElementById('noteTitleInput').focus(), 100);
     }
+}
+
+// 3. Save Function
+function saveToNotebook() {
+    const title = document.getElementById('noteTitleInput').value.trim();
+    const body = document.getElementById('noteBodyInput').value.trim();
+    
+    if (!body) { alert("Please write something first."); return; }
+    
+    const newNote = {
+        id: Date.now(), // Unique ID
+        title: title || "Untitled Note",
+        body: body,
+        date: new Date().toLocaleDateString() + " • " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    };
+    
+    // Add to start of array
+    window.STATE.notebook.unshift(newNote);
+    localStorage.setItem('mukmin_notebook', JSON.stringify(window.STATE.notebook));
+    
+    // Reset UI
+    document.getElementById('noteTitleInput').value = "";
+    document.getElementById('noteBodyInput').value = "";
+    toggleNotePanel();
+    
+    // Refresh List if on Saved Tab
+    renderNotebook();
+    
+    // Simple feedback
+    if(navigator.vibrate) navigator.vibrate(50);
+}
+/* --- UPGRADED NOTEBOOK LOGIC --- */
+
+// 1. Render List (Truncated Preview)
+function renderNotebook() {
+    const container = document.getElementById('notebookList');
+    if (!container) return;
+    
+    if (window.STATE.notebook.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px; font-style:italic;">No notes yet. Use the pen button to add one!</div>`;
+        return;
+    }
+    
+    let html = '';
+    window.STATE.notebook.forEach(note => {
+        const safeTitle = note.title.replace(/</g, "&lt;");
+        const safeBody = note.body.replace(/</g, "&lt;");
+        
+        // Note: The whole card is now clickable to VIEW
+        html += `
+        <div class="note-card" onclick="viewNote(${note.id})">
+            <div class="note-card-title">${safeTitle}</div>
+            <div class="note-card-date">${note.date}</div>
+            <div class="note-card-body">${safeBody}</div>
+            
+            <button class="btn-delete-note" onclick="event.stopPropagation(); deleteNote(${note.id})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+        </div>`;
+    });
+    
+    container.innerHTML = html;
+}
+
+// 2. Open Note in "Instagram Mode"
+window.viewNote = function(id) {
+    const note = window.STATE.notebook.find(n => n.id === id);
+    if (!note) return;
+
+    document.getElementById('viewNoteTitle').textContent = note.title;
+    document.getElementById('viewNoteDate').textContent = note.date;
+    document.getElementById('viewNoteBody').textContent = note.body;
+
+    const overlay = document.getElementById('noteViewOverlay');
+    const card = document.getElementById('noteViewCard');
+    
+    overlay.style.display = 'flex';
+    // Small delay to trigger CSS transition
+    setTimeout(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'scale(1)';
+    }, 10);
+}
+
+// 3. Close Modal
+window.closeNoteView = function(e) {
+    // If e is passed, it means we clicked the background overlay
+    if (e && e.target.id !== 'noteViewOverlay') return;
+
+    const overlay = document.getElementById('noteViewOverlay');
+    const card = document.getElementById('noteViewCard');
+    
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+        overlay.style.display = 'none';
+    }, 300);
+}
+
+// 4. Delete Logic (Unchanged but ensures list refresh)
+function deleteNote(id) {
+    if(!confirm("Delete this note?")) return;
+    window.STATE.notebook = window.STATE.notebook.filter(n => n.id !== id);
+    localStorage.setItem('mukmin_notebook', JSON.stringify(window.STATE.notebook));
+    renderNotebook();
+}
+
+
+// 5. Hook into existing initialization
+window.addEventListener('DOMContentLoaded', () => {
+    // ... existing init code ...
+    renderNotebook(); 
+});
+
+/* --- FLOATING NOTE LOGIC --- */
+const notePanel = document.getElementById('quickNotePanel');
+const noteBtn = document.getElementById('noteToggleBtn');
+const noteInput = document.getElementById('userNoteInput');
+const noteStatus = document.getElementById('noteSaveStatus');
+
+// Load saved note on startup
+window.addEventListener('DOMContentLoaded', () => {
+    const savedNote = localStorage.getItem('mukmin_user_note');
+    if (savedNote && noteInput) {
+        noteInput.value = savedNote;
+    }
+});
+
+function toggleNote() {
+    // Simple toggle class
+    const isOpen = notePanel.classList.contains('active');
+    
+    if (isOpen) {
+        notePanel.classList.remove('active');
+        noteBtn.style.opacity = '1';
+        noteBtn.style.pointerEvents = 'auto';
+    } else {
+        notePanel.classList.add('active');
+        // Hide the floating button to make it look like it expanded into the card
+        noteBtn.style.opacity = '0';
+        noteBtn.style.pointerEvents = 'none';
+        // Auto focus for immediate typing
+        setTimeout(() => noteInput.focus(), 100);
+    }
+}
+
+function saveUserNote() {
+    const content = noteInput.value;
+    localStorage.setItem('mukmin_user_note', content);
+    
+    // Visual Feedback
+    noteStatus.textContent = "Saving...";
+    noteStatus.style.color = "var(--primary)";
+    
+    // Debounce the "Saved" status
+    if (window.saveTimeout) clearTimeout(window.saveTimeout);
+    window.saveTimeout = setTimeout(() => {
+        noteStatus.textContent = "Saved";
+        noteStatus.style.color = "var(--text-muted)";
+    }, 800);
 }
 
 function manualSelectLoc(lat, lon, name) {
