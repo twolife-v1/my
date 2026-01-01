@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Way of Life | Ultimate Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@400;500;700&family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root[data-theme="dark"] {
+            --bg: #0B1019; /* Deep Void */
+            --surface: #131B29;
+            --primary: #C5A059; /* Muted Gold */
+            --primary-glow: rgba(197, 160, 89, 0.15);
+            --text: #E2E8F0;
+            --text-muted: #94A3B8;
+            --success: #10B981;
+            --border: rgba(255,255,255,0.06);
+            --glass: rgba(19, 27, 41, 0.85);
+        }
+
+        :root[data-theme="light"] {
+            --bg: #F8F5F1; /* Alabaster */
+            --surface: #FFFFFF;
+            --primary: #A67C38; /* Bronze Gold */
+            --primary-glow: rgba(166, 124, 56, 0.1);
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --success: #059669;
+            --border: rgba(0,0,0,0.06);
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background 0.4s ease; }
+
+        /* --- BACKGROUND PARTICLES --- */
+        .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.4; background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 30px 30px; }
+
+        /* --- HEADER --- */
+        header {
+            padding: 18px 24px; padding-top: max(18px, env(safe-area-inset-top));
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 100; border-bottom: 1px solid var(--border);
+        }
+        .brand { font-family: 'Cinzel', serif; font-weight: 600; font-size: 18px; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; }
+        
+        .header-actions { display: flex; gap: 10px; }
+        .icon-btn {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-muted); width: 38px; height: 38px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .icon-btn:active { transform: scale(0.92); background: var(--surface); color: var(--primary); }
+
+        /* --- TABS --- */
+        .nav-tabs { display: flex; padding: 10px 20px; gap: 10px; background: var(--bg); z-index: 50; position: relative; }
+        .tab {
+            flex: 1; padding: 14px; background: var(--surface); border: 1px solid var(--border);
+            border-radius: 2px; color: var(--text-muted); font-size: 11px; font-weight: 600;
+            cursor: pointer; transition: 0.3s; text-align: center; letter-spacing: 1px; text-transform: uppercase;
+            position: relative; overflow: hidden;
+        }
+        .tab::after { content:''; position: absolute; bottom:0; left:0; width:100%; height:2px; background:var(--primary); transform: scaleX(0); transition: 0.3s; }
+        .tab.active { color: var(--primary); background: var(--surface); border-color: rgba(197, 160, 89, 0.3); }
+        .tab.active::after { transform: scaleX(1); }
+
+        /* --- CONTENT AREA --- */
+        .content-area { flex: 1; overflow-y: auto; position: relative; scroll-behavior: smooth; padding-bottom: 60px; z-index: 10; }
+        .view { display: none; padding: 24px; animation: fadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- HERO PROGRESS --- */
+        .hero-progress {
+            background: linear-gradient(135deg, #1A2230 0%, #0F151E 100%);
+            border-radius: 4px; padding: 30px; margin-bottom: 40px; position: relative;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+        }
+        .hero-progress h2 { 
+            margin: 10px 0; font-size: 26px; color: #E2E8F0; 
+            font-family: 'Cinzel', serif; letter-spacing: 1px; font-weight: 500; 
+        }
+        .hero-progress p { color: #94A3B8; font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; opacity: 0.8; }
+        .ring-container {
+            width: 80px; height: 80px; margin: 0 auto 15px auto; position: relative; display: flex; align-items: center; justify-content: center;
+        }
+        .progress-ring__circle {
+            transition: 0.5s stroke-dashoffset; transform: rotate(-90deg); transform-origin: 50% 50%;
+        }
+        .lvl-num { font-family: 'Cinzel', serif; font-size: 24px; color: var(--primary); font-weight: 700; }
+
+        /* --- TIMELINE NODES --- */
+        .timeline { position: relative; border-left: 1px solid var(--border); margin-left: 15px; padding-left: 35px; }
+        .day-node { margin-bottom: 30px; position: relative; opacity: 0.5; transition: 0.4s; filter: grayscale(1); pointer-events: none; }
+        .day-node.unlocked { opacity: 1; filter: grayscale(0); pointer-events: auto; }
+        .day-node.completed { opacity: 0.7; }
+        
+        .node-dot {
+            position: absolute; left: -40px; top: 0; width: 10px; height: 10px;
+            background: var(--bg); border: 1px solid var(--text-muted); transform: rotate(45deg); z-index: 2; transition: 0.3s;
+        }
+        .day-node.unlocked .node-dot { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 0 6px var(--primary-glow); }
+        .day-node.completed .node-dot { background: var(--success); border-color: var(--success); }
+
+        .day-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+            padding: 20px; cursor: pointer; transition: 0.3s; 
+        }
+        .day-card:hover { border-color: var(--primary); transform: translateX(5px); }
+        .day-meta { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--primary); font-weight: 700; }
+        .day-title { font-size: 18px; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+        .day-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; font-weight: 300; }
+
+        /* --- COMPASS & BREATHING --- */
+        .compass-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .emotion-card {
+            background: var(--surface); padding: 25px 15px; border-radius: 2px; text-align: center; 
+            border: 1px solid var(--border); cursor: pointer; transition: all 0.3s;
+        }
+        .emotion-card:hover { border-color: var(--primary); background: var(--primary-glow); }
+        .emotion-emoji { font-size: 32px; margin-bottom: 15px; display: block; opacity: 0.8; filter: grayscale(0.5); transition: 0.3s; }
+        .emotion-card:hover .emotion-emoji { filter: grayscale(0); transform: scale(1.1); }
+        .emotion-name { font-weight: 500; font-size: 12px; letter-spacing: 1px; color: var(--text); text-transform: uppercase; }
+
+        /* Breathing Circle */
+        #breathingCircle {
+            width: 150px; height: 150px; border-radius: 50%; background: var(--primary-glow);
+            margin: 30px auto; border: 2px solid var(--primary); position: relative;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cinzel', serif; color: var(--primary);
+            display: none; /* Hidden by default */
+        }
+        @keyframes breathAnim { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 1; } }
+        .breathing #breathingCircle { display: flex; animation: breathAnim 8s infinite ease-in-out; }
+
+        /* --- JOURNAL --- */
+        .journal-entry { 
+            border-left: 2px solid var(--primary); padding-left: 15px; margin-bottom: 25px; 
+            background: linear-gradient(90deg, var(--surface) 0%, transparent 100%); padding: 15px;
+        }
+        .j-date { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 5px; }
+        .j-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; color: var(--text); line-height: 1.6; }
+
+        /* --- MODAL --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        .overlay.active { display: flex; animation: fadeIn 0.3s; }
+        
+        .modal-card {
+            background: var(--surface); width: 100%; max-width: 550px; max-height: 85vh;
+            border: 1px solid var(--border); padding: 40px; overflow-y: auto; position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+        }
+        
+        .modal-badge { font-family: 'Cinzel', serif; color: var(--primary); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 10px; text-align: center; }
+        .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; line-height: 1.1; margin: 0 0 30px 0; color: var(--text); text-align: center; font-weight: 600; }
+        
+        .modal-body { font-size: 16px; line-height: 1.8; color: var(--text-muted); margin-bottom: 30px; text-align: justify; font-weight: 300; }
+        .modal-body strong { color: var(--text); font-weight: 600; }
+        
+        .mission-box {
+            background: var(--bg); border: 1px solid var(--border);
+            padding: 25px; margin-bottom: 25px; position: relative;
+        }
+        .mission-box::before { content:'⚡'; position: absolute; top:-12px; left:20px; background:var(--surface); padding:0 10px; font-size: 14px; color:var(--primary); }
+        .mission-text { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; color: var(--text); }
+
+        .journal-input {
+            width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+            padding: 15px; font-family: 'Cormorant Garamond', serif; font-size: 16px; 
+            min-height: 100px; margin-bottom: 20px; resize: none;
+        }
+        .journal-input:focus { outline: none; border-color: var(--primary); }
+
+        .btn-primary {
+            width: 100%; padding: 18px; background: var(--primary); color: #000;
+            border: none; font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; letter-spacing: 1px;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        .btn-primary:hover { background: #fff; }
+        .btn-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 24px; }
+
+    </style>
+</head>
+<body>
+    <div class="particles"></div>
+
+    <header>
+        <a href="indexs.html" class="icon-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </a>
+        <div class="brand">Way of Life</div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="toggleLang()" id="langBtn">EN</button>
+            <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">☀</button>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <div class="tab active" onclick="switchTab('path', this)" id="tabPath">The Path</div>
+        <div class="tab" onclick="switchTab('compass', this)" id="tabCompass">Compass</div>
+        <div class="tab" onclick="switchTab('journal', this)" id="tabJournal">Journal</div>
+    </div>
+
+    <div class="content-area">
+        
+        <div id="view-path" class="view active">
+            <div class="hero-progress">
+                <div class="ring-container">
+                    <svg class="progress-ring" width="80" height="80">
+                        <circle class="progress-ring__circle" stroke="var(--primary)" stroke-width="4" fill="transparent" r="36" cx="40" cy="40"/>
+                    </svg>
+                    <div class="lvl-num" id="lvlNum">1</div>
+                </div>
+                <h2 id="progressTitle">The Awakening</h2>
+                <p id="progressSub">"He who knows himself, knows his Lord."</p>
+            </div>
+
+            <div class="timeline" id="timelineContainer"></div>
+        </div>
+
+        <div id="view-compass" class="view">
+            <div style="text-align:center; margin-bottom:40px;">
+                <h2 style="font-family:'Cinzel', serif; color:var(--primary); margin-bottom:5px;">Spiritual Compass</h2>
+                <p style="color:var(--text-muted); font-size:14px;">Diagnose the state of your heart.</p>
+            </div>
+            <div class="compass-grid" id="compassContainer"></div>
+        </div>
+
+        <div id="view-journal" class="view">
+            <div style="text-align:center; margin-bottom:40px;">
+                <h2 style="font-family:'Cinzel', serif; color:var(--primary); margin-bottom:5px;">Reflections</h2>
+                <p style="color:var(--text-muted); font-size:14px;">Your spiritual footprints.</p>
+            </div>
+            <div id="journalContainer">
+                <div style="text-align:center; padding:30px; opacity:0.5;">No entries yet. Complete days to unlock journaling.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="overlay" id="mainModal">
+        <div class="modal-card">
+            <button class="btn-close" onclick="closeModal()">&times;</button>
+            <span id="mBadge" class="modal-badge">DAY 1</span>
+            <h1 id="mTitle" class="modal-title">Title Here</h1>
+            
+            <div id="breathingContainer" class="breathing">
+                <div id="breathingCircle">INHALE</div>
+            </div>
+
+            <div id="mBody" class="modal-body">Body Content...</div>
+            
+            <div id="mActionBox" class="mission-box">
+                <div id="mActionText" class="mission-text">Task description...</div>
+            </div>
+
+            <div id="journalArea" style="display:none;">
+                <textarea id="jInput" class="journal-input" placeholder="Reflect on this lesson... What did you feel?"></textarea>
+            </div>
+
+            <button id="mBtn" class="btn-primary" onclick="completeMission()">Confirm</button>
+        </div>
+    </div>
+
+<script>
+    /* ================= TRANSLATION & PROFESSIONAL LEXICON ================= */
+    const UI = {
+        en: { tabPath: "THE PATH", tabCompass: "COMPASS", tabJournal: "JOURNAL", title: "Way of Life", mission: "Practical Application", complete: "Commit to Journal & Complete", close: "Close", breatheIn: "INHALE", breatheOut: "EXHALE" },
+        ms: { tabPath: "HALUAN", tabCompass: "KOMPAS", tabJournal: "JURNAL", title: "Jalan Kehidupan", mission: "Aplikasi Amali", complete: "Catat & Selesaikan", close: "Tutup", breatheIn: "TARIK", breatheOut: "HEMBUS" }
+    };
+
+    /* ================= ULTIMATE EDITION CONTENT (Clear & Professional) ================= */
+    const JOURNEY = [
+        {
+            day: 1, 
+            title: { en: "The Power of Intention", ms: "Kuasa Niat" },
+            desc: { en: "The foundation of all your actions.", ms: "Asas bagi segala tindakan anda." },
+            body: { en: "A building without a foundation will collapse. An action without an intention is empty.\n\nIn Islam, the **Niyyah** (Intention) is the soul of your action. You can turn a simple habit, like sleeping or working, into an act of worship just by changing your 'Why'.\n\nDon't just live automatically. Live with purpose.", ms: "Bangunan tanpa asas akan runtuh. Amalan tanpa niat adalah kosong.\n\nDalam Islam, **Niat** adalah jiwa perbuatan. Anda boleh tukar tabiat biasa, seperti tidur atau bekerja, menjadi ibadah hanya dengan mengubah 'Kenapa'.\n\nJangan hidup secara automatik. Hiduplah dengan tujuan." },
+            mission: { en: "Before you sleep tonight, formulate a clear intention for tomorrow. Tell Allah: 'I live tomorrow for You.'", ms: "Sebelum tidur, tetapkan niat jelas untuk esok. Beritahu Allah: 'Aku hidup esok untuk-Mu.'" }
+        },
+        {
+            day: 2, 
+            title: { en: "The Spiritual Connection", ms: "Hubungan Rohani" },
+            desc: { en: "Prayer is your lifeline, not a burden.", ms: "Solat adalah talian hayat, bukan beban." },
+            body: { en: "We charge our phones daily because they run out of energy. Your soul also runs out of energy.\n\n**Salah** (Prayer) is not a tax you pay to God. It is the connection you need to survive the chaos of life. When you rush your prayer, you cut off your own oxygen supply.", ms: "Kita cas telefon setiap hari kerana tenaga habis. Jiwa anda juga kehabisan tenaga.\n\n**Solat** bukan cukai kepada Tuhan. Ia adalah sambungan yang anda perlu untuk harungi kekacauan hidup. Bila anda solat tergesa-gesa, anda memotong bekalan oksigen sendiri." },
+            mission: { en: "Perform one prayer today with total focus. Pause for 5 seconds in every Prostration (Sujood).", ms: "Lakukan satu solat dengan fokus penuh. Berhenti 5 saat dalam setiap Sujud." }
+        },
+        {
+            day: 3, title: {en:"Cleansing the Heart", ms:"Penyucian Hati"},
+            desc: {en:"Removing the weight of regret.", ms:"Membuang berat penyesalan."},
+            body: {en:"Mistakes and stress create a layer of dust over your heart. This makes you feel heavy and anxious.\n\n**Istighfar** (Asking for forgiveness) is the soap that cleans your heart. It removes the guilt and restores your peace. You don't have to carry that baggage anymore.", ms:"Kesilapan dan stres mencipta lapisan debu pada hati. Ini membuatkan anda rasa berat dan resah.\n\n**Istighfar** adalah sabun yang membersihkan hati. Ia membuang rasa bersalah dan kembalikan ketenangan. Anda tidak perlu pikul beban itu lagi."},
+            mission: {en:"Recite 'Astaghfirullah' 100 times today. Visualize the heavy weight being lifted from your chest.", ms:"Baca 'Astaghfirullah' 100 kali hari ini. Bayangkan beban berat diangkat dari dada anda."}
+        },
+        {
+            day: 4, title: {en:"The Divine Message", ms:"Pesan Ilahi"},
+            desc: {en:"The Quran is a personal letter to you.", ms:"Quran adalah surat peribadi untuk anda."},
+            body: {en:"Imagine receiving a letter from the King, but never opening it. The Quran is a direct message from the Creator to you.\n\nIt contains the guidance you are looking for. It is the map for when you feel lost in life.", ms:"Bayangkan dapat surat dari Raja, tapi tak pernah buka. Quran adalah mesej langsung dari Pencipta kepada anda.\n\nIa mengandungi panduan yang anda cari. Ia adalah peta bila anda rasa sesat dalam hidup."},
+            mission: {en:"Read Surah Ad-Duha with the translation. Find the verse that comforts your heart.", ms:"Baca Surah Ad-Duha dengan terjemahan. Cari ayat yang memujuk hati anda."}
+        },
+        {
+            day: 5, title: {en:"The Infinite Investment", ms:"Pelaburan Infiniti"},
+            desc: {en:"Charity never decreases wealth.", ms:"Sedekah tidak kurangkan harta."},
+            body: {en:"When you give, you think you have less. But spiritual logic is different: what you give is transferred to your eternal account.\n\n**Sadaqah** (Charity) heals illness, protects from calamity, and purifies your wealth. It is the only investment with guaranteed returns.", ms:"Bila memberi, kita rasa berkurang. Tapi logik rohani berbeza: apa yang diberi dipindah ke akaun abadi.\n\n**Sedekah** menyembuhkan sakit, lindungi dari musibah, dan sucikan harta. Ia satu-satunya pelaburan dengan pulangan terjamin."},
+            mission: {en:"Give a small amount to charity today secretly. Do not let anyone see it.", ms:"Sedekah jumlah kecil hari ini secara rahsia. Jangan biar sesiapa nampak."}
+        },
+        {
+            day: 6, title: {en:"Mastering Speech", ms:"Menguasai Lisan"},
+            desc: {en:"Words have powerful energy.", ms:"Kata-kata ada tenaga kuat."},
+            body: {en:"Your tongue is a small muscle that can build bridges or burn them down. Silence is a discipline.\n\nIf you have nothing good to say, silence is an act of worship. Don't waste your energy on complaints or gossip.", ms:"Lidah adalah otot kecil yang boleh bina jambatan atau bakarnya. Diam adalah disiplin.\n\nJika tiada benda baik untuk cakap, diam adalah ibadah. Jangan bazir tenaga untuk mengeluh atau mengumpat."},
+            mission: {en:"Practice silence for 1 hour today. Speak only if absolutely necessary.", ms:"Latih diam selama 1 jam hari ini. Cakap hanya jika perlu."}
+        },
+        {
+            day: 7, title: {en:"True Reliance", ms:"Tawakkul Sebenar"},
+            desc: {en:"Trusting the Planner.", ms:"Percaya pada Perancang."},
+            body: {en:"Anxiety comes from thinking you have to control everything. Peace comes from knowing Allah is in control.\n\n**Tawakkul** means you do your best, and then let go of the worry. You are not the General; you are the Soldier. Follow orders and trust the outcome.", ms:"Resah datang bila fikir kita kena kawal semua. Tenang datang bila tahu Allah yang kawal.\n\n**Tawakkul** bermaksud buat sehabis baik, kemudian lepaskan risau. Anda bukan Jeneral; anda Askar. Ikut arahan dan percaya hasilnya."},
+            mission: {en:"Identify your biggest worry. Say: 'I transfer this problem to You, O Allah.'", ms:"Kenal pasti risau terbesar. Sebut: 'Aku serahkan masalah ini pada-Mu, Ya Allah.'"}
+        },
+        {
+            day: 8, title: {en:"Honoring Origins", ms:"Menghormati Asal Usul"},
+            desc: {en:"Kindness to parents is a divine duty.", ms:"Berbakti pada ibu bapa adalah tugas ilahi."},
+            body: {en:"Your parents are the reason you exist in this world. Treating them with kindness is linked to Allah's pleasure.\n\nYou cannot be a good believer if you are arrogant to your parents. Serve them with humility.", ms:"Ibu bapa adalah sebab anda wujud di dunia. Melayan mereka dengan baik berkait dengan redha Allah.\n\nAnda tak boleh jadi mukmin baik jika sombong dengan ibu bapa. Khidmat mereka dengan rendah diri."},
+            mission: {en:"Do something nice for your parents today without being asked.", ms:"Buat sesuatu yang baik untuk ibu bapa hari ini tanpa disuruh."}
+        },
+        {
+            day: 9, title: {en:"The Neighbor's Right", ms:"Hak Jiran"},
+            desc: {en:"Building a safe community.", ms:"Membina komuniti selamat."},
+            body: {en:"A true believer is someone whose neighbor feels safe and respected. We are losing the art of community.\n\nSmall acts of kindness create bonds that strengthen society.", ms:"Mukmin sejati adalah orang yang jirannya rasa selamat dan dihormati. Kita makin hilang seni bermasyarakat.\n\nKebaikan kecil mencipta ikatan yang menguatkan masyarakat."},
+            mission: {en:"Send food or a small gift to a neighbor to reconnect.", ms:"Hantar makanan atau hadiah kecil pada jiran untuk eratkan hubungan."}
+        },
+        {
+            day: 10, title: {en:"The Mirror Effect", ms:"Kesan Cermin"},
+            desc: {en:"Others reflect your own character.", ms:"Orang lain pantulkan watak anda."},
+            body: {en:"The Prophet said: 'The believer is the mirror of his brother.'\n\nIf you see a fault in someone, check yourself first. Are you projecting? Correct them gently, like you would wipe a mirror, don't break it.", ms:"Nabi bersabda: 'Mukmin adalah cermin saudaranya.'\n\nJika nampak salah pada orang, semak diri dulu. Adakah anda memantul? Tegur dengan lembut, macam lap cermin, jangan pecahkannya."},
+            mission: {en:"Reach out to a friend you haven't spoken to in a while. Revive the bond.", ms:"Hubungi kawan yang lama tak bertegur. Hidupkan semula ikatan."}
+        },
+        {
+            day: 11, title: {en:"Softening the Heart", ms:"Melembutkan Hati"},
+            desc: {en:"Compassion cures hardness.", ms:"Belas kasihan rawat kekerasan."},
+            body: {en:"When the heart feels hard or numb, the cure is to be near the vulnerable.\n\nHelping the poor or being kind to an orphan activates the mercy in your heart. You heal yourself by healing others.", ms:"Bila hati rasa keras atau kebas, ubatnya adalah dekat dengan yang lemah.\n\nBantu orang miskin atau berbaik dengan anak yatim aktifkan rahmat dalam hati. Anda ubat diri dengan ubatkan orang lain."},
+            mission: {en:"Do a specific act of kindness for someone weaker than you today.", ms:"Buat satu kebaikan khusus untuk orang yang lebih lemah dari anda hari ini."}
+        },
+        {
+            day: 12, title: {en:"Marriage & Family", ms:"Nikah & Keluarga"},
+            desc: {en:"The best of you are best to their families.", ms:"Terbaik kalangan kamu adalah pada keluarga."},
+            body: {en:"Family life is not a distraction from spirituality; it is the testing ground for it.\n\nPatience with your spouse and kindness to your children are high acts of worship.", ms:"Hidup berkeluarga bukan gangguan rohani; ia medan ujiannya.\n\nSabar dengan pasangan dan baik pada anak-anak adalah ibadah tinggi."},
+            mission: {en:"Serve your family member today with a smile, expecting nothing in return.", ms:"Layan ahli keluarga hari ini dengan senyuman, tanpa harap balasan."}
+        },
+        {
+            day: 13, title: {en:"Generous Hospitality", ms:"Hospitaliti Pemurah"},
+            desc: {en:"Sharing is a sign of faith.", ms:"Berkongsi tanda iman."},
+            body: {en:"Hospitality is about an open heart, not a full table. Welcoming guests brings blessings into the home.\n\nIt breaks the selfishness of the ego.", ms:"Hospitaliti adalah tentang hati terbuka, bukan meja penuh. Menyambut tetamu bawa berkat ke rumah.\n\nIa memecahkan sifat pentingkan diri ego."},
+            mission: {en:"Offer a drink or snack to someone with genuine warmth.", ms:"Tawarkan air atau snek kepada seseorang dengan kemesraan tulus."}
+        },
+        {
+            day: 14, title: {en:"Global Empathy", ms:"Empati Global"},
+            desc: {en:"Feeling the pain of others.", ms:"Merasai sakit orang lain."},
+            body: {en:"We are one body. You cannot be comfortable while part of your body is in pain.\n\nDo not become numb to the suffering of people around the world. Empathy keeps your heart alive.", ms:"Kita adalah satu tubuh. Anda tak boleh selesa bila sebahagian tubuh sakit.\n\nJangan jadi kebas pada penderitaan orang di dunia. Empati memastikan hati hidup."},
+            mission: {en:"Make a sincere, heartfelt prayer for the oppressed people in the world.", ms:"Buat doa yang tulus untuk orang yang tertindas di dunia."}
+        },
+        {
+            day: 15, title: {en:"The Morning Blessing", ms:"Keberkatan Pagi"},
+            desc: {en:"Success starts at dawn.", ms:"Kejayaan bermula subuh."},
+            body: {en:"The early morning hours have a special quality called **Barakah** (Blessing/Expansion).\n\nSuccessful people and spiritual masters value this time. Don't sleep through the most productive hours of the day.", ms:"Waktu awal pagi ada kualiti istimewa dipanggil **Barakah**.\n\nOrang berjaya dan ahli rohani hargai masa ini. Jangan tidur waktu paling produktif hari ini."},
+            mission: {en:"Stay awake for 30 minutes after Fajr. Plan your day or read.", ms:"Kekal berjaga 30 minit lepas Subuh. Rancang hari atau membaca."}
+        },
+        {
+            day: 16, title: {en:"The Body Trust", ms:"Amanah Tubuh"},
+            desc: {en:"Your body is on loan to you.", ms:"Tubuh dipinjamkan pada anda."},
+            body: {en:"You don't own your body; you are taking care of it for the Creator. Eating unhealthy food or being lazy is mistreating that trust.\n\nA strong, healthy believer can do more good than a weak one.", ms:"Anda bukan pemilik tubuh; anda penjaganya untuk Pencipta. Makan tak sihat atau malas adalah khianat amanah.\n\nMukmin yang kuat dan sihat boleh buat lebih kebaikan dari yang lemah."},
+            mission: {en:"Do a quick workout today with the intention of strengthening your body for good deeds.", ms:"Bersenam hari ini dengan niat kuatkan tubuh untuk amal baik."}
+        },
+        {
+            day: 17, title: {en:"Self-Reflection", ms:"Refleksi Diri"},
+            desc: {en:"Audit yourself every night.", ms:"Audit diri setiap malam."},
+            body: {en:"A smart business owner checks their accounts daily. A smart believer checks their actions daily.\n\nReview your day. What did you do well? Where did you mess up? Fix it before tomorrow.", ms:"Peniaga bijak semak akaun setiap hari. Mukmin bijak semak amalan setiap hari.\n\nSemak hari anda. Apa yang baik? Di mana silap? Betulkan sebelum esok."},
+            mission: {en:"Spend 5 minutes in silence tonight reviewing your day.", ms:"Luang 5 minit dalam diam malam ini menyemak hari anda."}
+        },
+        {
+            day: 18, title: {en:"Self-Discipline", ms:"Disiplin Diri"},
+            desc: {en:"Fasting trains your will-power.", ms:"Puasa latih kekuatan kehendak."},
+            body: {en:"Fasting is not just about hunger. It is proving to yourself that you are in control, not your desires.\n\nIt builds the muscle of saying 'No' to temporary pleasure for long-term gain.", ms:"Puasa bukan sekadar lapar. Ia membuktikan anda yang mengawal, bukan nafsu.\n\nIa bina otot untuk kata 'Tak' pada keseronokan sementara demi kebaikan jangka masa panjang."},
+            mission: {en:"Skip one snack or comfort food today to train your discipline.", ms:"Tinggalkan satu snek atau makanan kegemaran hari ini untuk latih disiplin."}
+        },
+        {
+            day: 19, title: {en:"Staying Clean", ms:"Kekal Bersih"},
+            desc: {en:"Purity affects your mindset.", ms:"Kebersihan kesan minda."},
+            body: {en:"**Wudu** (Ablution) is a refreshing reset. It washes away spiritual fatigue.\n\nTry to stay clean throughout the day. When you feel physically clean, you feel mentally sharp and spiritually ready.", ms:"**Wuduk** adalah reset yang menyegarkan. Ia basuh keletihan rohani.\n\nCuba kekal bersih sepanjang hari. Bila rasa bersih secara fizikal, minda jadi tajam dan rohani bersedia."},
+            mission: {en:"Renew your Wudu immediately if you lose it today. Stay fresh.", ms:"Perbaharui Wuduk serta-merta jika batal hari ini. Kekal segar."}
+        },
+        {
+            day: 20, title: {en:"Sending Peace", ms:"Kirim Salam"},
+            desc: {en:"Connecting with the Prophet.", ms:"Berhubung dengan Nabi."},
+            body: {en:"Sending blessings (Salawat) upon the Prophet (ﷺ) is a way to tune your heart to a frequency of mercy.\n\nIt creates a connection with the best of creation and brings peace to your life.", ms:"Mengucap selawat pada Nabi (ﷺ) adalah cara melaras hati ke frekuensi rahmat.\n\nIa mencipta hubungan dengan sebaik-baik ciptaan dan bawa ketenangan dalam hidup."},
+            mission: {en:"Recite Salawat 100 times today with focus and love.", ms:"Baca Selawat 100 kali hari ini dengan fokus dan kasih."}
+        },
+        {
+            day: 21, title: {en:"The Growth Mindset", ms:"Minda Berkembang"},
+            desc: {en:"Gratitude increases abundance.", ms:"Syukur tambah rezeki."},
+            body: {en:"This is a spiritual law: 'If you are grateful, I will increase you.'\n\nFocus on what you lack, and you lose. Focus on what you have, and it grows. Gratitude is the key to abundance.", ms:"Ini hukum rohani: 'Jika syukur, Aku tambah.'\n\nFokus pada yang tiada, anda rugi. Fokus pada yang ada, ia berkembang. Syukur adalah kunci kelimpahan."},
+            mission: {en:"Write down 10 things you are grateful for right now in the journal.", ms:"Tulis 10 perkara yang anda syukuri sekarang dalam jurnal."}
+        },
+        {
+            day: 22, title: {en:"The Night Prayer", ms:"Solat Malam"},
+            desc: {en:"The VIP meeting.", ms:"Mesyuarat VIP."},
+            body: {en:"While the world sleeps, the seekers wake up. The night prayer (**Tahajjud**) is a private meeting with the Divine.\n\nIt is the time when requests are granted and hearts are healed.", ms:"Bila dunia tidur, pencari bangun. Solat malam (**Tahajjud**) adalah mesyuarat peribadi dengan Tuhan.\n\nIa masa permintaan ditunaikan dan hati disembuhkan."},
+            mission: {en:"Wake up 20 minutes before dawn and pray 2 units in the quiet.", ms:"Bangun 20 minit sebelum subuh dan solat 2 rakaat dalam kesunyian."}
+        },
+        {
+            day: 23, title: {en:"Remembering Reality", ms:"Mengingati Realiti"},
+            desc: {en:"Death gives life perspective.", ms:"Kematian beri perspektif hidup."},
+            body: {en:"Remembering death is not morbid; it is clarifying. It reminds you that time is short.\n\nLive like a traveler. Don't carry too much baggage (grudges, greed). Travel light.", ms:"Ingat mati bukan menakutkan; ia menjelas. Ia ingatkan bahawa masa itu singkat.\n\nHidup ibarat pengembara. Jangan bawa banyak bagasi (dendam, tamak). Jalan ringan."},
+            mission: {en:"Imagine today is your last day. Who would you apologize to? Do it.", ms:"Bayangkan ini hari terakhir. Siapa anda nak minta maaf? Buatlah."}
+        },
+        {
+            day: 24, title: {en:"Dignity & Modesty", ms:"Maruah & Malu"},
+            desc: {en:"Protecting your spiritual value.", ms:"Lindungi nilai rohani."},
+            body: {en:"Modesty is not just about clothes. It is about having too much self-respect to engage in low behavior.\n\nProtect your eyes and your heart from things that pollute your soul.", ms:"Malu bukan sekadar pakaian. Ia tentang ada harga diri untuk tidak terlibat perbuatan rendah.\n\nLindungi mata dan hati dari perkara yang cemarkan jiwa."},
+            mission: {en:"Avoid looking at inappropriate content online today completely.", ms:"Elak tengok kandungan tak elok di internet hari ini sepenuhnya."}
+        },
+        {
+            day: 25, title: {en:"The Ultimate Request", ms:"Permintaan Agung"},
+            desc: {en:"Dua can change destiny.", ms:"Doa boleh ubah takdir."},
+            body: {en:"Never underestimate a sincere prayer. It is the weapon of the believer.\n\nDon't ask with doubt. Ask with the certainty that you are speaking to the Owner of everything.", ms:"Jangan pandang rendah doa yang tulus. Ia senjata mukmin.\n\nJangan minta dengan ragu. Minta dengan yakin bahawa anda bercakap dengan Pemilik segalanya."},
+            mission: {en:"Ask Allah for something 'impossible' today with full conviction.", ms:"Minta sesuatu yang 'mustahil' pada Allah hari ini dengan penuh yakin."}
+        },
+        {
+            day: 26, title: {en:"The Charity of a Smile", ms:"Sedekah Senyuman"},
+            desc: {en:"Warmth changes everything.", ms:"Kemesraan ubah segalanya."},
+            body: {en:"A smile is a small action with a huge impact. It breaks tension and warms hearts.\n\nThe Prophet (ﷺ) smiled often. It is a sign of inner peace and generosity.", ms:"Senyuman adalah tindakan kecil impak besar. Ia pecah ketegangan dan hangatkan hati.\n\nNabi (ﷺ) selalu senyum. Ia tanda ketenangan dalaman dan kemurahan hati."},
+            mission: {en:"Smile genuinely at 3 strangers today. It counts as charity.", ms:"Senyum tulus pada 3 orang asing hari ini. Ia dikira sedekah."}
+        },
+        {
+            day: 27, title: {en:"Seeking Knowledge", ms:"Menuntut Ilmu"},
+            desc: {en:"Understanding your path.", ms:"Memahami jalan anda."},
+            body: {en:"You cannot follow a map you haven't read. Seeking knowledge is a duty.\n\nOne hour of learning can be better than a whole night of worship without understanding.", ms:"Anda tak boleh ikut peta yang tak dibaca. Menuntut ilmu itu wajib.\n\nSatu jam belajar boleh jadi lebih baik dari semalam ibadah tanpa faham."},
+            mission: {en:"Read about one Name of Allah today and understand its meaning.", ms:"Baca tentang satu Nama Allah hari ini dan fahamkan maksudnya."}
+        },
+        {
+            day: 28, title: {en:"Constant Remembrance", ms:"Ingatan Sentiasa"},
+            desc: {en:"Keep the connection alive.", ms:"Kekalkan sambungan hidup."},
+            body: {en:"The difference between a living heart and a dead heart is remembrance (Dhikr).\n\nKeep your tongue busy with good words. It plants seeds for your future in Paradise.", ms:"Beza hati hidup dan mati adalah ingatan (Zikir).\n\nSibirkan lidah dengan kata baik. Ia tanam benih untuk masa depan di Syurga."},
+            mission: {en:"Complete 'SubhanAllah, Alhamdulillah, Allahu Akbar' (33x) with focus.", ms:"Selesaikan 'SubhanAllah, Alhamdulillah, Allahu Akbar' (33x) dengan fokus."}
+        },
+        {
+            day: 29, title: {en:"Consistency is Key", ms:"Konsistensi Kunci"},
+            desc: {en:"Small habits, big results.", ms:"Tabiat kecil, hasil besar."},
+            body: {en:"Allah loves deeds that are done consistently, even if they are small.\n\nDon't burn out by doing too much at once. Pick one thing and stick to it forever.", ms:"Allah suka amal yang konsisten, walau sedikit.\n\nJangan 'burn out' buat terlalu banyak. Pilih satu benda dan kekalkan selamanya."},
+            mission: {en:"Commit to ONE habit from this month to keep for life.", ms:"Komited pada SATU tabiat dari bulan ini untuk kekal seumur hidup."}
+        },
+        {
+            day: 30, title: {en:"A New Beginning", ms:"Permulaan Baru"},
+            desc: {en:"You have evolved.", ms:"Anda telah evolusi."},
+            body: {en:"You completed the cycle. You are not the same person who started Day 1.\n\nDo not go back to your old ways. You have wings now; don't crawl anymore. Keep moving forward.", ms:"Anda tamatkan kitaran. Anda bukan orang sama yang mula Hari 1.\n\nJangan kembali ke cara lama. Anda dah ada sayap; jangan merangkak lagi. Terus maju ke depan."},
+            mission: {en:"Write a letter to your future self in the journal. Thank Allah.", ms:"Tulis surat pada diri masa depan dalam jurnal. Syukur pada Allah."}
+        }
+    ];
+
+    const COMPASS = [
+        { id: 'anxious', emoji: '⚔️', label: {en:'Anxious', ms:'Gelisah'}, verse: "Verily, in the remembrance of Allah do hearts find rest.", advice: {en:"Anxiety happens when you try to control what isn't yours. Let go. **Breathe**. Trust the Planner.", ms:"Gelisah berlaku bila anda cuba kawal apa yang bukan milik anda. Lepaskan. **Bernafas**. Percaya Perancang."} },
+        { id: 'angry', emoji: '🔥', label: {en:'Angry', ms:'Marah'}, verse: "Who repress anger, and who pardon men...", advice: {en:"Anger is like fire. Don't burn your own house down. Sit down, be silent, and drink water.", ms:"Marah ibarat api. Jangan bakar rumah sendiri. Duduk, diam, dan minum air."} },
+        { id: 'lost', emoji: '🌫️', label: {en:'Lost', ms:'Sesat'}, verse: "And He found you lost and guided [you].", advice: {en:"You are not lost; you are just in transition. The fog will lift. Keep walking.", ms:"Anda tak sesat; anda dalam transisi. Kabus akan hilang. Terus berjalan."} },
+        { id: 'jealous', emoji: '👁️', label: {en:'Jealous', ms:'Cemburu'}, verse: "From the evil of the envier when he envies.", advice: {en:"Jealousy hurts you, not them. Pray for them to have more, and the angels will pray for you.", ms:"Cemburu sakitkan anda, bukan mereka. Doakan mereka lebih, malaikat akan doakan anda."} },
+        { id: 'lazy', emoji: '⚓', label: {en:'Lazy', ms:'Malas'}, verse: "Man will have nothing but what he strives for.", advice: {en:"Laziness is a heavy chain. Break it by just standing up. Action cures fear.", ms:"Malas adalah rantai berat. Pecahkan dengan berdiri. Tindakan ubat ketakutan."} },
+        { id: 'sad', emoji: '🌧️', label: {en:'Sad', ms:'Sedih'}, verse: "Do not lose hope, nor be sad...", advice: {en:"Sadness proves you have a heart. It's okay to cry. Let it out, then trust Him again.", ms:"Sedih bukti anda ada hati. Tak apa menangis. Luahkan, kemudian percaya Dia semula."} },
+        { id: 'confused', emoji: '🕸️', label: {en:'Confused', ms:'Keliru'}, verse: "Grant us from Yourself mercy and prepare for us from our affair right guidance.", advice: {en:"Confusion comes before clarity. Ask Allah for light, and the path will appear.", ms:"Kekeliruan datang sebelum kejelasan. Minta cahaya pada Allah, jalan akan muncul."} },
+        { id: 'guilty', emoji: '💔', label: {en:'Guilty', ms:'Bersalah'}, verse: "Despair not of the mercy of Allah.", advice: {en:"Guilt means your conscience is alive. Don't stay stuck. Apologize, repent, and move on.", ms:"Rasa bersalah tanda hati hidup. Jangan tersekat. Minta maaf, taubat, dan teruskan."} },
+        { id: 'lonely', emoji: '🌑', label: {en:'Lonely', ms:'Sunyi'}, verse: "We are closer to him than [his] jugular vein.", advice: {en:"You are never truly alone. The Creator is closer to you than you are to yourself. Talk to Him.", ms:"Anda tak pernah keseorangan. Pencipta lebih dekat dari anda dengan diri sendiri. Cakap dengan-Nya."} },
+        { id: 'ungrateful', emoji: '🌵', label: {en:'Ungrateful', ms:'Tak Bersyukur'}, verse: "If you are grateful, I will surely increase you.", advice: {en:"You are blind to what you have because you stare at what you miss. Open your eyes to the blessings.", ms:"Anda buta pada apa yang ada sebab tenung apa yang hilang. Buka mata pada nikmat."} },
+        { id: 'fear', emoji: '⚡', label: {en:'Scared', ms:'Takut'}, verse: "Fear them not, but fear Me.", advice: {en:"Fear makes the enemy look big. Faith makes the Creator look big. Shift your focus.", ms:"Takut buat musuh nampak besar. Iman buat Pencipta nampak besar. Alih fokus anda."} },
+        { id: 'bored', emoji: '⏳', label: {en:'Bored', ms:'Bosan'}, verse: "Did you think that We created you in play?", advice: {en:"Boredom means you forgot your mission. You are here for a reason. Find something useful to do.", ms:"Bosan bermaksud lupa misi. Anda di sini bersebab. Cari benda manfaat untuk buat."} },
+        { id: 'arrogant', emoji: '👑', label: {en:'Arrogant', ms:'Sombong'}, verse: "Do not walk upon the earth exultantly.", advice: {en:"Remember you came from dust and you will go back to dust. Be humble.", ms:"Ingat anda dari tanah dan akan balik ke tanah. Rendah diri."} },
+        { id: 'heartbroken', emoji: '🩹', label: {en:'Heartbroken', ms:'Patah Hati'}, verse: "Perhaps you hate a thing and it is good for you.", advice: {en:"Sometimes hearts break to let the light in. Something better is coming. Be patient.", ms:"Kadang hati pecah untuk bagi cahaya masuk. Sesuatu lebih baik akan datang. Sabar."} },
+        { id: 'successful', emoji: '🏔️', label: {en:'Successful', ms:'Berjaya'}, verse: "This is from the favor of my Lord to test me.", advice: {en:"Success is a test. Don't let it get to your head. Be thankful and share it.", ms:"Kejayaan adalah ujian. Jangan biar ia naik kepala. Bersyukur dan kongsi."} }
+    ];
+
+    /* ================= APP ENGINE ================= */
+    const STATE = {
+        lang: localStorage.getItem('wsl_lang') || 'en',
+        theme: localStorage.getItem('wsl_theme') || 'dark',
+        level: parseInt(localStorage.getItem('twolife_level')) || 1,
+        journal: JSON.parse(localStorage.getItem('twolife_journal')) || []
+    };
+
+    let breathInterval;
+
+    function init() {
+        applyTheme();
+        updateLangUI();
+        renderTimeline();
+        renderCompass();
+        renderJournal();
+        updateRing();
+    }
+
+    /* --- THEME & LANG --- */
+    function toggleTheme() {
+        STATE.theme = STATE.theme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('wsl_theme', STATE.theme);
+        applyTheme();
+    }
+
+    function applyTheme() {
+        document.documentElement.setAttribute('data-theme', STATE.theme);
+        document.getElementById('themeBtn').textContent = STATE.theme === 'light' ? '☾' : '☀';
+    }
+
+    function toggleLang() {
+        STATE.lang = STATE.lang === 'en' ? 'ms' : 'en';
+        localStorage.setItem('wsl_lang', STATE.lang);
+        updateLangUI();
+        init(); // Re-render all text
+    }
+
+    function updateLangUI() {
+        document.getElementById('langBtn').textContent = STATE.lang.toUpperCase();
+        const T = UI[STATE.lang];
+        document.getElementById('tabPath').textContent = T.tabPath;
+        document.getElementById('tabCompass').textContent = T.tabCompass;
+        document.getElementById('tabJournal').textContent = T.tabJournal;
+        document.querySelector('.brand').textContent = T.title;
+        document.getElementById('mBtn').textContent = T.complete;
+    }
+
+    /* --- PROGRESS RING --- */
+    function updateRing() {
+        const circle = document.querySelector('.progress-ring__circle');
+        const radius = circle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        
+        const percent = (STATE.level / 30) * 100;
+        const offset = circumference - (percent / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+        
+        document.getElementById('lvlNum').textContent = STATE.level;
+    }
+
+    /* --- RENDERERS --- */
+    function renderTimeline() {
+        const c = document.getElementById('timelineContainer');
+        c.innerHTML = JOURNEY.map(item => {
+            let status = 'locked', icon = '🔒';
+            if (item.day < STATE.level) { status = 'completed unlocked'; icon = '✦'; }
+            else if (item.day === STATE.level) { status = 'unlocked'; icon = '🔓'; }
+            
+            // Generate placeholders for future days not yet in array
+            if(!item.title) return; 
+
+            return `
+            <div class="day-node ${status}" onclick="openDay(${item.day})">
+                <div class="node-dot"></div>
+                <div class="day-card">
+                    <div class="day-meta">
+                        <span>Day ${item.day}</span>
+                        <span>${icon}</span>
+                    </div>
+                    <div class="day-title">${item.title[STATE.lang]}</div>
+                    <div class="day-desc">${item.desc[STATE.lang]}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderCompass() {
+        document.getElementById('compassContainer').innerHTML = COMPASS.map(item => `
+            <div class="emotion-card" onclick="openCompass('${item.id}')">
+                <span class="emotion-emoji">${item.emoji}</span>
+                <span class="emotion-name">${item.label[STATE.lang]}</span>
+            </div>
+        `).join('');
+    }
+
+    function renderJournal() {
+        const c = document.getElementById('journalContainer');
+        if(STATE.journal.length === 0) return; // Keep placeholder
+        c.innerHTML = STATE.journal.map(j => `
+            <div class="journal-entry">
+                <div class="j-date">DAY ${j.day} • ${new Date(j.date).toLocaleDateString()}</div>
+                <div class="j-text">"${j.text}"</div>
+            </div>
+        `).reverse().join('');
+    }
+
+    /* --- INTERACTIONS --- */
+    let activeDay = 0;
+
+    window.switchTab = (viewId, btn) => {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('view-' + viewId).classList.add('active');
+        btn.classList.add('active');
+    };
+
+    window.openDay = (day) => {
+        if (day > STATE.level) return;
+        const d = JOURNEY.find(x => x.day === day);
+        if(!d) return;
+
+        activeDay = day;
+        document.getElementById('mBadge').textContent = `DAY ${d.day}`;
+        document.getElementById('mTitle').textContent = d.title[STATE.lang];
+        document.getElementById('mBody').innerHTML = d.body[STATE.lang].replace(/\n/g, '<br>');
+        document.getElementById('mActionText').textContent = d.mission[STATE.lang];
+        
+        document.getElementById('breathingContainer').style.display = 'none';
+        
+        // Show Journal Input only if it's the current active level
+        const journalArea = document.getElementById('journalArea');
+        const btn = document.getElementById('mBtn');
+        
+        if (day === STATE.level) {
+            journalArea.style.display = 'block';
+            btn.style.display = 'block';
+            document.getElementById('jInput').value = '';
+        } else {
+            journalArea.style.display = 'none';
+            btn.style.display = 'none';
+        }
+
+        document.getElementById('mainModal').classList.add('active');
+    };
+
+    window.openCompass = (id) => {
+        const d = COMPASS.find(x => x.id === id);
+        document.getElementById('mBadge').textContent = "DIAGNOSIS";
+        document.getElementById('mTitle').textContent = d.label[STATE.lang];
+        document.getElementById('mBody').innerHTML = `<strong style="color:var(--primary)">"${d.verse}"</strong><br><br>${d.advice[STATE.lang]}`;
+        
+        document.getElementById('mActionBox').style.display = 'none';
+        document.getElementById('journalArea').style.display = 'none';
+        document.getElementById('mBtn').style.display = 'none';
+
+        // Breathing Logic for Anxiety/Anger/Fear/Confusion
+        const breathBox = document.getElementById('breathingContainer');
+        if(['anxious', 'angry', 'fear', 'confused'].includes(id)) {
+            breathBox.style.display = 'flex';
+            startBreathing();
+        } else {
+            breathBox.style.display = 'none';
+            stopBreathing();
+        }
+
+        document.getElementById('mainModal').classList.add('active');
+    };
+
+    window.completeMission = () => {
+        const txt = document.getElementById('jInput').value;
+        if(txt.length < 5) { alert("Please write a short reflection first."); return; }
+
+        if(activeDay === STATE.level) {
+            STATE.level++;
+            STATE.journal.push({ day: activeDay, text: txt, date: Date.now() });
+            
+            localStorage.setItem('twolife_level', STATE.level);
+            localStorage.setItem('twolife_journal', JSON.stringify(STATE.journal));
+            
+            closeModal();
+            init();
+            
+            // Unlock next animation
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        }
+    };
+
+    window.closeModal = () => {
+        document.getElementById('mainModal').classList.remove('active');
+        stopBreathing();
+    };
+
+    function startBreathing() {
+        const circle = document.getElementById('breathingCircle');
+        const T = UI[STATE.lang];
+        let isIn = true;
+        circle.textContent = T.breatheIn;
+        
+        breathInterval = setInterval(() => {
+            isIn = !isIn;
+            circle.textContent = isIn ? T.breatheIn : T.breatheOut;
+        }, 4000); // 4 seconds in, 4 seconds out
+    }
+
+    function stopBreathing() {
+        clearInterval(breathInterval);
+    }
+
+    init();
+</script>
+</body>
+</html>
