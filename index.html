@@ -1,0 +1,2981 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#A67734">
+    <title>Mukmin.com</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.2); --glass-text: #FFFFFF; --header-scrolled: rgba(255, 255, 255, 0.85); --header-text-scrolled: #1F2937; --shadow:0 10px 30px -10px rgba(0,0,0,0.1); }
+        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --glass: rgba(0, 0, 0, 0.4); --glass-border: rgba(255, 255, 255, 0.1); --glass-text: #FFFFFF; --header-scrolled: rgba(30, 30, 30, 0.85); --header-text-scrolled: #F3F4F6; --shadow:0 10px 30px -10px rgba(0,0,0,0.5); }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { min-height: 100%; }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 100px; transition: background 0.3s; }
+
+        /* HEADER */
+        .header-overlay { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 10px 20px; padding-top: max(10px, env(safe-area-inset-top)); display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; }
+        .header-overlay.scrolled { background: var(--header-scrolled); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding-bottom: 15px; }
+        .header-overlay.scrolled .header-greeting { color: var(--text-muted); text-shadow: none; }
+        .header-overlay.scrolled .header-title-overlay { color: var(--header-text-scrolled); text-shadow: none; }
+        .header-overlay.scrolled .icon-btn-glass { background: var(--bg); color: var(--text); border-color: var(--border); }
+        .header-greeting { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); transition: color 0.3s; }
+        .header-title-overlay { font-size: 20px; font-weight: 800; color: white; margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.5); transition: color 0.3s; }
+        .icon-btn-glass { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; backdrop-filter: blur(4px); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s; font-size: 12px; }
+
+        /* HERO & COSMIC VISUALS (REALISTIC ENGINE) */
+        .hero-wrapper { 
+            position: relative; width: 100%; height: 380px; overflow: hidden; 
+            border-bottom-left-radius: 32px; border-bottom-right-radius: 32px; 
+            box-shadow: 0 10px 50px -10px rgba(0,0,0,0.5); margin-bottom: 25px; 
+            background: #0f172a; transform: translateZ(0); /* GPU accel */
+        }
+
+        /* The Sky: Gradients + Vignette */
+        .sky-container {
+            position: absolute; inset: 0; z-index: 0;
+            background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-bot) 100%);
+            transition: background 3s ease-in-out;
+        }
+        .sky-container::after { /* Vignette for focus */
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%);
+            pointer-events: none;
+        }
+
+        /* Canvas: Stars & Haze */
+        #cosmosCanvas {
+            position: absolute; inset: 0; z-index: 1; opacity: 0;
+            transition: opacity 2s ease; mix-blend-mode: screen;
+        }
+
+    /* --- UPDATED: TIGHTER ORBIT (MOBILE FRIENDLY) --- */
+.celestial-anchor {
+    position: absolute;
+    left: 50%;
+    bottom: 0px; /* Pivot sits exactly at the bottom of the hero */
+    width: 0;
+    height: 0;
+    transform-origin: center center;
+    z-index: 2; /* Behind the glass card, above the sky */
+    pointer-events: none;
+    transition: transform 1s linear;
+}
+
+.celestial-body {
+    position: absolute;
+    /* REDUCED RADIUS: -230px keeps it inside mobile screens */
+    top: -230px; 
+    left: -35px; /* Centers the 70px ball */
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--orb-bg);
+    box-shadow: var(--orb-glow);
+    transition: all 1s ease;
+}
+
+/* MOON TEXTURE RESTORED */
+.is-moon .celestial-body {
+    background: radial-gradient(circle at 35% 35%, #fdfdfd 0%, #e0e0e0 20%, #c2c2c2 100%);
+    box-shadow: 0 0 25px rgba(255,255,255,0.4);
+}
+
+.is-moon .celestial-body::before { 
+    content: '';
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
+    background-image: 
+        radial-gradient(circle at 60% 70%, rgba(0,0,0,0.08) 10%, transparent 11%),
+        radial-gradient(circle at 30% 65%, rgba(0,0,0,0.1) 6%, transparent 7%),
+        radial-gradient(circle at 75% 40%, rgba(0,0,0,0.07) 12%, transparent 13%);
+    transform: rotate(-30deg);
+}
+
+/* BIRDS (Stick Style) */
+.bird-container {
+    position: absolute; top: 10%; left: 0; width: 100%; height: 60%;
+    z-index: 1; pointer-events: none; transition: opacity 2s ease;
+}
+.bird {
+    position: absolute;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' stroke='rgba(0,0,0,0.5)' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s4-4 9-4 9 4 9 4'/><path d='M11 8v.5'/></svg>");
+   background-size: contain; width: 40px; height: 40px;
+}
+.bird-1 { top: 15%; animation: flyRight 35s linear infinite; opacity: 0.7; }
+.bird-2 { top: 30%; animation: flyRight 25s linear infinite 5s; transform: scale(0.8); opacity: 0.6; }
+.bird-3 { top: 35%; animation: flyRight 26s linear infinite 5.2s; transform: scale(0.6); opacity: 0.5; }
+
+@keyframes flyRight {
+    0% { transform: translateX(-10vw) translateY(0) rotate(5deg); }
+    50% { transform: translateY(-15px) rotate(-5deg); }
+    100% { transform: translateX(110vw) translateY(0) rotate(5deg); }
+}
+
+
+        /* MOON TEXTURE (CSS Procedural) */
+        .is-moon .celestial-body {
+            background: radial-gradient(circle at 35% 35%, #fdfdfd 0%, #e0e0e0 20%, #c2c2c2 100%);
+        }
+        .is-moon .celestial-body::before { /* Craters */
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
+            background-image: 
+                radial-gradient(circle at 60% 70%, rgba(0,0,0,0.06) 10%, transparent 11%),
+                radial-gradient(circle at 30% 65%, rgba(0,0,0,0.08) 6%, transparent 7%),
+                radial-gradient(circle at 75% 40%, rgba(0,0,0,0.05) 12%, transparent 13%);
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); /* Shadow side */
+        }
+        .is-sun .celestial-body {
+            background: radial-gradient(circle at center, #fff 0%, #ffd700 60%);
+        }
+
+        /* CLOUDS: Parallax Layers */
+        .cloud-layer {
+            position: absolute; width: 300%; height: 100%; top: 0; left: 0;
+            background: url('https://raw.githubusercontent.com/nexus-js/cdn/main/fog-texture.png') repeat-x;
+            background-size: 50% 100%; opacity: var(--cloud-opacity);
+            z-index: 3; mix-blend-mode: overlay; pointer-events: none;
+            filter: blur(var(--cloud-blur));
+        }
+        .c1 { animation: drift 120s linear infinite; }
+        .c2 { animation: drift 180s linear infinite reverse; opacity: calc(var(--cloud-opacity) * 0.6); top: -20px; z-index: 2; transform: scale(1.2); }
+        .c3 { animation: drift 240s linear infinite; opacity: calc(var(--cloud-opacity) * 0.4); bottom: -40px; z-index: 4; filter: blur(8px); }
+
+        @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-33%); } }
+
+        /* HERO CARD (Glass) */
+        .hero-content-layer {
+            position: absolute; inset: 0; z-index: 10;
+            display: flex; align-items: flex-end; justify-content: center;
+            padding: 20px 20px 30px 20px;
+        }
+        .hero-card-bg { 
+            width: 100%; max-width: 500px; 
+            background: rgba(255, 255, 255, 0.08); /* More subtle */
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-top: 1px solid rgba(255, 255, 255, 0.25); /* Top highlight */
+            border-radius: 24px; padding: 20px; color: #fff; 
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3); 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* --- REALISTIC STATES --- */
+        
+        /* FAJR: The Blue Hour */
+        .state-fajr { 
+            --sky-top: #0f172a; --sky-mid: #312e81; --sky-bot: #be185d; 
+            --orb-bg: #fff; --orb-glow: 0 0 40px rgba(255,200,150,0.4); 
+            --cloud-opacity: 0.3; --cloud-blur: 2px;
+        }
+        /* DHUHR: High Noon */
+        .state-dhuhr { 
+            --sky-top: #004e92; --sky-mid: #2b7bc4; --sky-bot: #56ccf2; 
+            --orb-bg: #fff; --orb-glow: 0 0 80px rgba(255,255,255,0.9), 0 0 20px rgba(255,255,210,0.8);
+            --cloud-opacity: 0.7; --cloud-blur: 0px;
+        }
+        /* ASR: Golden Hour */
+        .state-asr { 
+            --sky-top: #1e3c72; --sky-mid: #2a5298; --sky-bot: #eacda3; 
+            --orb-bg: #ffecd2; --orb-glow: 0 0 50px rgba(255,200,100,0.6);
+            --cloud-opacity: 0.5; --cloud-blur: 1px;
+        }
+        /* MAGHRIB: Sunset */
+        .state-maghrib { 
+            --sky-top: #2c0e37; --sky-mid: #6d1c4f; --sky-bot: #f55f20; 
+            --orb-bg: #ff4e00; --orb-glow: 0 0 60px rgba(255, 78, 0, 0.4);
+            --cloud-opacity: 0.4; --cloud-blur: 2px;
+        }
+        /* ISHA: Midnight */
+        .state-isha { 
+            --sky-top: #000000; --sky-mid: #0a0a1a; --sky-bot: #141e30; 
+            --orb-bg: #e0e0e0; --orb-glow: 0 0 30px rgba(255,255,255,0.15);
+            --cloud-opacity: 0.15; --cloud-blur: 4px;
+        }
+
+        /* Existing Text Styles */
+        .hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        #heroTime { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+        #countdown { font-size: 14px; font-weight: 600; opacity: 0.9; font-variant-numeric: tabular-nums; }
+        /* --- PREMIUM LOCATION BADGE --- */
+.location-badge {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 14px;
+    border-radius: 50px; /* Pill shape */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 100%;
+}
+
+.location-badge:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.location-icon {
+    width: 16px; 
+    height: 16px;
+    color: #FFD700; /* Gold icon */
+}
+
+/* Text Styling */
+.location-text {
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px; /* Prevent long city names breaking layout */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.location-chevron {
+    font-size: 10px; 
+    opacity: 0.7;
+    transition: transform 0.3s;
+}
+
+/* Pulsing Animation for "Detecting" state */
+.location-badge.searching {
+    background: rgba(255, 215, 0, 0.15); /* Gold tint */
+    border-color: rgba(255, 215, 0, 0.4);
+}
+
+.location-badge.searching .location-icon {
+    animation: pulseIcon 1.5s infinite;
+}
+
+@keyframes pulseIcon {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+        .hero-date-group { display: flex; flex-direction: column; gap: 2px; }
+        .hero-divider { height: 1px; background: rgba(255,255,255,0.2); margin: 15px 0; }
+        #prayerNames, #prayerTimes { display: flex; justify-content: space-between; width: 100%; }
+        #prayerNames div { font-size: 10px; opacity: 0.7; text-transform: uppercase; text-align: center; width: 16%; font-weight: 800; }
+        #prayerTimes div { font-size: 13px; font-weight: 700; text-align: center; width: 16%; margin-top: 5px; }
+
+        /* FEATURES GRID */
+        #app-container { padding: 0 20px; }
+        .section-header { font-size: 13px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; margin-top: 25px; display: flex; align-items: center; gap: 8px; }
+        .section-header:first-of-type { margin-top: 0; }
+        .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .feature-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: var(--shadow); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .feature-btn:active { transform: scale(0.96); background: var(--primary-light); }
+        .feature-btn svg { width: 28px; height: 28px; color: var(--primary); }
+        .feature-btn i { font-size: 28px; color: var(--primary); }
+        .feature-btn span { font-size: 12px; font-weight: 700; color: var(--text); text-align: center; line-height: 1.2; }
+
+        /* SIDE PANEL */
+        #sidePanelOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 290; opacity: 0; pointer-events: none; transition: 0.3s; }
+        #sidePanelOverlay.open { opacity: 1; pointer-events: auto; }
+        #sidePanel { position: fixed; top: 0; right: 0; bottom: 0; width: 85%; max-width: 380px; background: var(--bg); z-index: 300; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+        #sidePanel.open { transform: translateX(0); }
+        .panel-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); }
+        .panel-content { flex: 1; overflow-y: auto; padding: 20px; }
+
+        /* QURAN & MODALS */
+        .card { background: var(--surface); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .view { display: none; animation: fadeIn 0.4s ease; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        #readerModal { position: fixed; inset: 0; background: var(--bg); z-index: 500; display: none; flex-direction: column; padding-top: env(safe-area-inset-top); }
+        #readerModal.open { display: flex; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-header { padding: 15px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
+        /* 3D FLOATING GLASS MODAL */
+        #qiblaFloatOverlay { 
+            position: fixed; inset: 0; 
+            background: rgba(0,0,0,0.3); 
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 650; display: none; 
+            align-items: center; justify-content: center; 
+            animation: fadeIn 0.4s ease;
+            perspective: 1000px; 
+        }
+        #qiblaFloatModal { 
+            width: 320px; height: 460px; 
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 32px; 
+            position: relative; 
+            display: flex; flex-direction: column; 
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25), 
+                0 0 0 1px rgba(255,255,255,0.2) inset;
+            overflow: hidden; 
+            transform-style: preserve-3d;
+            animation: popUp3D 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        :root[data-theme="dark"] #qiblaFloatModal {
+            background: rgba(30, 30, 30, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .qibla-header-float {
+            position: absolute; top: 0; left: 0; right: 0; height: 60px;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10; pointer-events: none;
+        }
+        .qibla-title-badge {
+            background: var(--surface); padding: 8px 16px; border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-weight: 800; font-size: 13px;
+            border: 1px solid var(--border); pointer-events: auto;
+        }
+        
+        .close-float-btn {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--text); color: var(--bg);
+            border: none; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; z-index: 20;
+            transition: transform 0.2s;
+        }
+        .close-float-btn:active { transform: translateX(-50%) scale(0.9); }
+
+        @keyframes popUp3D { 
+            from { transform: translateY(40px) scale(0.9) rotateX(-10deg); opacity: 0; } 
+            to { transform: translateY(0) scale(1) rotateX(0); opacity: 1; } 
+        }
+        
+        /* Quran Text Styles */
+        .ayah-block { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px dashed var(--border); transition: all 0.4s ease; border-left: 0 solid var(--primary); }
+        .ayah-block.playing { background: var(--primary-light); border-left: 5px solid var(--primary); padding-left: 15px; box-shadow: inset 0 0 20px rgba(166, 119, 52, 0.05); }
+        .ayah-tools { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .ayah-arabic { font-family: 'Amiri', serif; font-size: 26px; text-align: right; margin-bottom: 10px; line-height: 2.2; }
+        .ayah-trans { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+        .surah-item { display: flex; align-items: center; padding: 16px; background: var(--surface); margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); cursor: pointer; }
+        .surah-num { background: var(--primary-light); color: var(--primary); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 700; margin-right: 15px; }
+
+        /* NAVBAR */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: calc(70px + env(safe-area-inset-bottom)); background: var(--surface); display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 200; box-shadow: 0 -5px 20px rgba(0,0,0,0.03); }
+        .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--text-muted); transition: 0.2s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-label { font-size: 10px; font-weight: 700; }
+
+        .bookmark-btn { background: none; border: none; color: var(--border); cursor: pointer; padding: 5px; }
+        .bookmark-btn.saved { color: var(--primary); }
+        .bookmark-btn svg { width: 22px; height: 22px; fill: currentColor; }
+            /* PWA INSTALL PROMPT (Modern Style) */
+        #pwaInstall { 
+            position: fixed; bottom: 20px; left: 20px; right: 20px; 
+            background: var(--surface); color: var(--text); 
+            padding: 20px; border-radius: 24px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+            border: 1px solid var(--border); 
+            z-index: 2000; /* High z-index to sit above Navbar */
+            display: none; /* Hidden by default */
+            flex-direction: column; gap: 15px;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .pwa-header { display: flex; align-items: center; gap: 15px; }
+        .pwa-icon { width: 48px; height: 48px; background: var(--primary-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+        .pwa-info { flex: 1; }
+        .pwa-title { font-weight: 800; font-size: 15px; margin-bottom: 2px; }
+        .pwa-desc { font-size: 12px; color: var(--text-muted); line-height: 1.3; }
+
+        /* Android Buttons */
+        #pwa-android { display: flex; gap: 10px; margin-top: 5px; }
+        .btn-pwa-install { flex: 1; background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .btn-pwa-close { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); padding: 12px 20px; border-radius: 12px; font-weight: 600; font-size: 13px; cursor: pointer; }
+
+        /* iOS Instructions */
+        #pwa-ios { display: none; flex-direction: column; gap: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .ios-step { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: var(--text); }
+        .ios-step svg { color: #007AFF; } /* Apple Blue */
+        .ios-close { width: 100%; margin-top: 5px; background: var(--bg); border: none; padding: 10px; border-radius: 10px; font-weight: 600; color: var(--text-muted); }
+      
+        /* MODERN ANNOUNCEMENT MODAL */
+        #broadcastModal {
+            position: fixed; inset: 0; z-index: 3000;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center;
+            padding: 20px; animation: fadeIn 0.3s ease;
+        }
+
+        .broadcast-card {
+            background: var(--surface); width: 100%; max-width: 320px;
+            border-radius: 24px; padding: 30px 25px; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--border);
+            transform: scale(0.9); opacity: 0;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .broadcast-icon {
+            width: 60px; height: 60px; background: rgba(166, 119, 52, 0.15); color: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px auto; font-size: 28px;
+        }
+
+        .broadcast-title { font-size: 18px; font-weight: 800; margin-bottom: 10px; color: var(--text); }
+        .broadcast-msg { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px; }
+
+        .btn-broadcast-ok {
+            background: var(--primary); color: #fff; border: none; padding: 12px 30px;
+            border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer;
+            width: 100%; transition: transform 0.2s;
+        }
+        .btn-broadcast-ok:active { transform: scale(0.95); }
+
+        @keyframes popIn { to { transform: scale(1); opacity: 1; } }
+        
+
+/* --- UPGRADED FLOATING NOTEBOOK --- */
+#quickNotePanel {
+    position: fixed; 
+    bottom: 160px; 
+    right: 20px; 
+    width: 300px; 
+    height: 350px;
+    background: var(--surface); 
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 24px; 
+    
+    /* CHANGE 1: Increased z-index to 1500 (was 399) */
+    z-index: 1500; 
+    
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    display: flex; 
+    flex-direction: column;
+    transform: scale(0.9); 
+    opacity: 0; 
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: bottom right;
+}
+
+#quickNotePanel.active { 
+    transform: scale(1); 
+    opacity: 1; 
+    pointer-events: auto; 
+    bottom: 100px; 
+}
+
+#noteToggleBtn {
+    position: fixed; 
+    bottom: 100px; 
+    right: 20px; 
+    
+    /* CHANGE 2: Increased z-index to 1501 (was 400) */
+    z-index: 1501; 
+    
+    width: 56px; 
+    height: 56px; 
+    border-radius: 50%;
+    background: var(--primary); 
+    color: var(--primary-light);
+    border: none; 
+    box-shadow: 0 4px 20px rgba(166, 119, 52, 0.4);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    cursor: pointer; 
+    transition: transform 0.2s;
+}
+
+#noteToggleBtn:active { 
+    transform: scale(0.9); 
+}
+
+.note-inputs { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+
+#noteTitleInput {
+    background: rgba(var(--primary), 0.05); border: none; padding: 10px;
+    border-radius: 8px; font-weight: 700; color: var(--text); font-family: inherit;
+}
+
+#noteBodyInput {
+    flex: 1; border: none; background: transparent; resize: none; outline: none;
+    font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; color: var(--text);
+}
+
+.note-actions {
+    padding: 10px 15px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end;
+}
+
+.btn-save-note {
+    background: var(--primary); color: white; border: none;
+    padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+}
+
+/* --- SAVED NOTES LIST STYLING --- */
+.note-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px; margin-bottom: 12px;
+    position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.note-card-title { font-weight: 800; font-size: 15px; margin-bottom: 5px; color: var(--primary); }
+.note-card-date { font-size: 10px; opacity: 0.6; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.note-card-body { font-size: 13px; line-height: 1.5; color: var(--text-muted); white-space: pre-wrap; }
+.btn-delete-note {
+    position: absolute; top: 10px; right: 10px;
+    background: none; border: none; color: #ef4444; opacity: 0.6; cursor: pointer;
+}/* --- TRUNCATED LIST VIEW --- */
+.note-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px; margin-bottom: 12px;
+    position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    cursor: pointer; transition: transform 0.2s, background 0.2s;
+}
+.note-card:active { transform: scale(0.98); background: var(--primary-light); }
+
+.note-card-body { 
+    font-size: 13px; line-height: 1.5; color: var(--text-muted); 
+    /* Truncate text after 2 lines */
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;  
+    overflow: hidden; text-overflow: ellipsis;
+}
+
+/* --- INSTAGRAM-READY VIEW MODAL --- */
+#noteViewOverlay {
+    position: fixed; inset: 0; z-index: 2500;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    padding: 30px; animation: fadeIn 0.3s ease;
+}
+
+#noteViewCard {
+    width: 100%; max-width: 360px;
+    background: var(--surface); 
+    border-radius: 24px; 
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    overflow: hidden; position: relative;
+    transform: scale(0.95); opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* This background makes screenshots look pro */
+.screenshot-bg {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%);
+    padding: 30px 25px; min-height: 300px; display: flex; flex-direction: column;
+}
+
+.view-date { 
+    font-size: 10px; text-transform: uppercase; letter-spacing: 2px; 
+    color: var(--text-muted); margin-bottom: 15px; font-weight: 700; opacity: 0.7;
+}
+
+.view-title { 
+    font-size: 22px; font-weight: 800; color: var(--primary); 
+    margin-bottom: 20px; line-height: 1.3; font-family: 'Amiri', serif;
+}
+
+.view-body { 
+    font-size: 15px; line-height: 1.8; color: var(--text); 
+    white-space: pre-wrap; font-family: 'Inter', sans-serif;
+}
+
+.view-watermark {
+    margin-top: 40px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.brand-mark { font-size: 12px; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+/* Close Button (Hidden when screenshotting if user taps correctly, but usually fine) */
+.btn-close-view {
+    position: absolute; top: 15px; right: 15px; width: 32px; height: 32px;
+    border-radius: 50%; background: rgba(0,0,0,0.05); border: none;
+    color: var(--text); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 10;
+}
+
+/* --- FOCUS MODAL (Universal) --- */
+.focus-overlay {
+    position: fixed; inset: 0; z-index: 3000;
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; animation: fadeIn 0.3s ease;
+}
+.focus-overlay.open { display: flex; }
+
+.focus-card {
+    width: 100%; max-width: 360px;
+    background: var(--surface); border-radius: 28px;
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 60px -15px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 30px 25px; position: relative;
+    transform: scale(0.9); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.focus-overlay.open .focus-card { transform: scale(1); opacity: 1; }
+
+.focus-icon-wrapper {
+    width: 64px; height: 64px; border-radius: 20px;
+    background: linear-gradient(135deg, var(--primary) 0%, #8a622a 100%);
+    color: #fff; font-size: 28px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px; box-shadow: 0 10px 20px rgba(166, 119, 52, 0.3);
+}
+
+.focus-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 5px; line-height: 1.3; }
+.focus-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--text-muted); margin-bottom: 20px; background: var(--bg); padding: 4px 10px; border-radius: 20px; }
+.focus-body { font-size: 16px; line-height: 1.7; color: var(--text); margin-bottom: 20px; font-family: 'Inter', sans-serif; white-space: pre-wrap; }
+.focus-body.arabic { font-family: 'Amiri', serif; font-size: 22px; line-height: 2.2; margin-bottom: 10px; text-align: center; direction: rtl; }
+.focus-ref { font-size: 12px; font-weight: 600; color: var(--primary); background: var(--primary-light); padding: 8px 16px; border-radius: 12px; margin-bottom: 25px; display: inline-block; }
+
+.focus-actions { display: flex; width: 100%; gap: 10px; }
+.btn-focus { flex: 1; padding: 12px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s; }
+.btn-focus:active { transform: scale(0.96); }
+.btn-primary { background: var(--text); color: var(--bg); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+
+.btn-close-focus { position: absolute; top: 15px; right: 15px; background: var(--bg); border: none; width: 32px; height: 32px; border-radius: 50%; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* Hidden elements for screenshot branding */
+.screenshot-brand { display: none; margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; width: 100%; }
+.brand-flex { display: flex; justify-content: space-between; align-items: center; }
+.brand-name { font-size: 12px; font-weight: 800; color: var(--primary); letter-spacing: 1px; text-transform: uppercase; }
+
+
+  </style>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+</head>
+<body>
+
+    <header class="header-overlay" id="stickyHeader">
+        <div class="header-left">
+            <div class="header-greeting" id="greetings">Assalamualaikum</div>
+            <h1 class="header-title-overlay">Mukmin.com</h1>
+        </div>
+        <div style="display:flex; gap:10px;">
+    <button class="icon-btn-glass" onclick="toggleLang()" id="langBtn">EN</button>
+    <button class="icon-btn-glass" onclick="toggleTheme()">
+        <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+        </svg>
+    </button>
+    <button class="icon-btn-glass" onclick="toggleSidePanel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </button>
+</div>
+
+    </header>
+
+     <div id="view-home" class="view active">
+        <div class="hero-wrapper">
+            <div id="skyBg" class="sky-container state-dhuhr">
+                <canvas id="cosmosCanvas"></canvas>
+                <div class="cloud-layer c1"></div>
+                <div class="cloud-layer c2"></div>
+                <div class="cloud-layer c3"></div>
+                
+                <div class="bird-container" id="birdLayer" style="opacity: 0;">
+                    <div class="bird bird-1"></div>
+                    <div class="bird bird-2"></div>
+                    <div class="bird bird-3"></div>
+                </div>
+                
+                <div class="celestial-anchor" id="celestialAnchor">
+                    <div class="celestial-body"></div>
+                </div>
+            </div>
+            
+            <div class="hero-content-layer">
+                <div class="hero-card-bg">
+                     <div class="hero-top">
+                    <div class="hero-left">
+    <div id="locationBadge" class="location-badge searching" onclick="openLocationModal()">
+        <svg class="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"></path>
+            <circle cx="12" cy="9" r="3"></circle>
+        </svg>
+        <span id="locationName" class="location-text">Detecting...</span>
+        <span class="location-chevron">▼</span>
+    </div>
+
+    <div class="hero-date-group" style="margin-top: 10px; margin-left: 5px;">
+        <div id="heroDate" style="font-size:12px; opacity:0.9; font-weight:600;">...</div>
+        <div id="hijriDate" style="font-size:11px; opacity:0.75; font-family:'Amiri', sans-serif;">...</div>
+    </div>
+</div>
+
+                         <div class="hero-right" style="text-align:right;">
+                             <div id="heroTime">--:--</div>
+                             <div id="countdown">--:--:--</div>
+                             <div id="nextPrayer" style="font-size:11px; font-weight:800; color:#FFD700; margin-top:4px; text-transform:uppercase;">Next: --</div>
+                         </div>
+                     </div>
+                     <div class="hero-divider"></div>
+                     <div id="heroPrayers">
+                         <div id="prayerNames"></div>
+                         <div id="prayerTimes"></div>
+                     </div>
+                </div>
+            </div>
+        </div>
+<div id="last-read-container" style="display:none; margin: 0 20px 20px 20px; cursor:pointer;" onclick="resumeLastRead()">
+    <div class="card" style="background:var(--primary); color:var(--primary-light); display:flex; align-items:center; justify-content:space-between; padding:15px 20px; border:none; box-shadow:0 10px 20px -5px rgba(166,119,52,0.4);">
+        <div>
+            <div style="font-size:10px; text-transform:uppercase; font-weight:700; opacity:0.8;">Continue Reading</div>
+            <div style="font-size:16px; font-weight:800; margin-top:2px;">
+                <span id="lr-name">Surah...</span> <span id="lr-num" style="opacity:0.6; font-size:12px;">#</span>
+            </div>
+            <div id="lr-meta" style="font-size:11px; opacity:0.9;">Ayah ...</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.2); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+    </div>
+</div>
+
+        <div id="app-container">
+<div class="card" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 150%); color: var(--surface); border:none; position:relative; overflow:hidden;">
+    <div style="position:absolute; top:-20px; right:-20px; font-size:100px; opacity:0.1; transform:rotate(15deg); pointer-events: none;">📿</div>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; position:relative; z-index:5;">
+        <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--surface);">Quick Tasbih</div>
+        
+        <button onclick="resetTasbih()" style="background:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.4); border-radius:50%; width:32px; height:32px; color:white; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px;">
+            ↺
+        </button>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; position:relative; z-index:5;">
+        <div style="font-size:42px; font-weight:800; font-variant-numeric:tabular-nums;" id="tasbihCount">0</div>
+        <button onclick="countTasbih()" id="btnTasbih" style="width:60px; height:60px; border-radius:50%; border:4px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; font-size:24px; display:flex; align-items:center; justify-content:center; box-shadow:0 5px 15px rgba(0,0,0,0.2); transition:transform 0.1s;">
+            +
+        </button>
+    </div>
+    <div style="font-size:11px; opacity:0.9; margin-top:5px; position:relative; z-index:5;">Subhanallah • Alhamdulillah • Allahuakbar</div>
+</div>
+
+
+            
+            <div class="section-header" id="cat-tools">🛠️ Alatan & Ibadah</div>
+            <div class="feature-grid">
+                <div class="feature-btn" onclick="trackClick('qibla'); openQibla()"> 
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                    </svg>
+                    <span id="txt-tool-qibla">Qibla Finder</span>
+                </div>
+
+                <div class="feature-btn" onclick="trackClick('duas'); openDuas()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    <span id="txt-tool-duas">Daily Duas</span>
+                </div>
+            </div>
+
+            <div class="section-header" id="cat-knowledge">📚 Ilmu & Hikmah</div>
+            <div class="feature-grid">
+                <div class="feature-btn" onclick="window.location.href='sunnah.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        <path d="M12 6h5"></path>
+        <path d="M12 10h5"></path>
+        <path d="M12 14h5"></path>
+    </svg>
+    <span>Sunnah</span>
+</div>
+
+                <div class="feature-btn" onclick="openTracker()"> 
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    <span id="txt-tool-tracker">Mutabaah Amal</span>
+                </div>
+
+                <div class="feature-btn" onclick="openQuranEncy()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        <path d="M12 7v10"></path>
+                    </svg>
+                    <span id="txt-tool-ency">Info Quran</span>
+                </div>
+
+                <div class="feature-btn" onclick="openHadithModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        <path d="M12 6h4"></path><path d="M12 10h4"></path>
+                    </svg>
+                    <span id="txt-tool-hadith">Hadis Harian</span>
+                </div>
+
+                <div class="feature-btn" onclick="openExternalPanduan()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span id="txt-tool-guide">Panduan</span>
+                </div>
+                
+                <div class="feature-btn" onclick="openKisahNabi()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
+                    </svg>
+                    <span id="txt-tool-kisah">Kisah 25 Nabi</span>
+                </div>
+                
+                <div class="feature-btn" onclick="openQuiz()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <span id="txt-tool-quiz">Islamic Quiz</span>
+                </div>
+                
+                <div class="feature-btn" onclick="openHadith40()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
+                    </svg>
+                    <span>Hadis 40</span>
+                </div>
+                
+                <div class="feature-btn" onclick="openKutub()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    <span>Kitab Sahih</span>
+                </div>
+                
+                <div class="feature-btn" onclick="openAsbab()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        <circle cx="12" cy="12" r="3"></circle> 
+                    </svg>
+                    <span>Asbab Nuzul</span>
+                </div>
+            </div>
+
+            <div class="section-header" id="cat-lifestyle">✨ Ekstra</div>
+            <div class="feature-grid">
+                <div class="feature-btn" onclick="openAsmaul()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                    <span>Asmaul Husna</span>
+                </div>
+                <div class="feature-btn" onclick="openSmartVibes()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span id="txt-tool-vibes">Positive Vibes</span>
+                </div>
+            </div>
+            <br><br></div> </div>
+
+
+
+ <div id="view-quran" class="view" style="padding: 20px; padding-top: 85px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 id="txt-quran-title" style="font-size:24px; font-weight:800; margin:0;">Al Quran</h1>
+        <div id="offlineIndicator" style="display:none;">
+            <span style="font-size:10px; background:#dcfce7; color:#14532d; padding:4px 8px; border-radius:10px; font-weight:700;">OFFLINE READY</span>
+        </div>
+    </div>
+    
+    <div style="background:var(--surface); padding:15px; border-radius:16px; border:1px solid var(--border); margin-bottom:20px; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+        <input type="text" id="surahSearch" onkeyup="filterSurahList()" placeholder="🔍 Search Surah (e.g. Yasin)..." 
+            style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); margin-bottom:10px; font-weight:600;">
+        
+        <select id="quranLangSelect" onchange="resetQuranData()" style="width:100%; padding:10px; border-radius:10px; background:var(--bg); color:var(--text); border:1px solid var(--border);">
+            <option value="en.sahih">English (Sahih Intl)</option>
+            <option value="ms.basmeih">Bahasa Melayu</option>
+            <option value="id.indonesian">Bahasa Indonesia</option>
+        </select>
+    </div>
+
+    <div id="downloadArea" style="margin-bottom:20px;">
+        <button onclick="downloadQuranOffline()" id="btnDownload" style="width:100%; padding:14px; background:var(--primary); color:var(--primary-light); border:none; border-radius:14px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(166,119,52,0.2);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download for Offline</span>
+        </button>
+        <div id="downloadProgress" style="display:none; margin-top:10px; font-size:11px; font-weight:600; text-align:center; color:var(--primary);">Initializing...</div>
+    </div>
+
+    <div id="manageDataArea" style="display:none; margin-bottom:20px;">
+        <div style="background:rgba(20, 83, 45, 0.1); border:1px solid rgba(20, 83, 45, 0.2); padding:10px; border-radius:12px; margin-bottom:10px; display:flex; align-items:center; gap:10px;">
+             <span style="font-size:18px;">💾</span>
+             <div style="font-size:12px; color:#14532d; font-weight:600;">Data saved. App runs fast & offline.</div>
+        </div>
+        
+        <button onclick="clearOfflineData()" style="width:100%; padding:10px; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.2); border-radius:12px; font-size:12px; font-weight:700;">
+          🗑️ Delete Offline Data
+        </button>
+    </div>
+
+    <div id="surahList"></div>
+</div>
+
+
+<div id="view-saved" class="view" style="padding: 20px; padding-top: 85px;">
+    <h1 style="font-size:24px; font-weight:800; margin-bottom:20px;">Saved & Notes</h1>
+    
+    <div class="section-header">📑 Bookmarks</div>
+    <div id="bookmarksList" class="card" style="min-height: 50px;"></div>
+
+    <div class="section-header" style="margin-top: 30px;">📝 My Notebook</div>
+    <div id="notebookList">
+        <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px; font-style:italic;">
+            No notes yet. Use the pen button to add one!
+        </div>
+    </div>
+    
+    <div style="height: 80px;"></div>
+</div>
+
+
+    <div id="sidePanelOverlay" onclick="toggleSidePanel()"></div>
+    <aside id="sidePanel">
+        <div class="panel-header">
+            <div id="txt-menu-title" style="font-weight:800">Menu</div>
+            <button onclick="toggleSidePanel()" style="background:none; border:none; color:var(--text);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        <div class="panel-content">
+            <div id="txt-legacy" class="section-header" style="margin-top:0;">Utiliti Lama</div>
+            <a href="settings.html" style="text-decoration:none;">
+    <div class="card" style="display:flex; align-items:center; gap:12px; padding:15px; margin-bottom:20px; border:1px solid var(--primary);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <div>
+            <div style="font-weight:700; color:var(--primary);">App Settings</div>
+            <div style="font-size:11px; color:var(--text-muted);">Prayer methods, Fonts & Audio</div>
+        </div>
+    </div>
+</a>
+
+            <div class="card" style="padding:10px; margin-bottom:25px;">
+                <div id="txt-takwim" style="font-size:13px; font-weight:700; margin-bottom:8px;">Takwim Hijri</div>
+                <div class="iframe-wrap" style="height: 320px;"><iframe src="Takwim-hijri.html" style="width:100%; height:100%; border:none;"></iframe></div>
+            </div>
+
+            <div id="txt-contact" class="section-header">Hubungi & Kredit</div>
+            <a href="https://wa.me/60133128914" target="_blank" style="text-decoration:none;">
+                <div class="card" style="display:flex; align-items:center; background:#25D366; color:white; border:none;">
+                    <span id="txt-whatsapp" style="font-weight:800; font-size:14px;">WhatsApp Feedback</span>
+                </div>
+            </a>
+        </div>
+    </aside>
+
+    
+    <div id="hadithModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:600; display:none; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s ease;">
+        <div class="card" style="width:100%; max-width:400px; margin:0; max-height:80vh; overflow-y:auto; position:relative;">
+            <button onclick="closeHadithModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:24px;">&times;</button>
+            <div style="font-weight:800; font-size:18px; margin-bottom:15px; padding-right:30px;" id="lbl-hadith-title">Hadis Harian</div>
+            
+            <div style="font-style:italic; font-size:15px; margin-bottom:20px; line-height:1.6;" id="hadithTextContent">Loading...</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:12px; font-weight:800; color:var(--primary);" id="hadithSourceContent"></div>
+                <button class="bookmark-btn" id="hadithBookmark" onclick="toggleHadithBookmark(this)"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>
+            </div>
+            <button onclick="nextHadith()" style="width:100%; margin-top:20px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; font-weight:600;">Random Hadith</button>
+        </div>
+    </div>
+
+    <div id="qiblaFloatOverlay">
+        <div id="qiblaFloatModal">
+            <div class="qibla-header-float">
+                <div class="qibla-title-badge">QIBLA FINDER</div>
+            </div>
+            <iframe src="qiblat.html" style="width:100%; height:100%; border:none; border-radius:30px; margin-top:10px;"></iframe>
+            <button onclick="closeQibla()" class="close-float-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="readerModal">
+        <div class="modal-header">
+            <div style="display:flex; flex-direction:column;">
+                <div style="font-weight:800" id="readerTitle">Reader</div>
+                <span id="readerSubtitle" style="font-size:11px; color:var(--text-muted);"></span>
+            </div>
+            <button onclick="closeReader()" style="background:none; border:none; font-size:28px; line-height:1;">&times;</button>
+        </div>
+        <div class="reader-content" id="readerContent" style="flex:1; overflow-y:auto; padding:20px;"></div>
+    </div>
+<div id="locationModal" style="position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; padding:20px;">
+    <div class="card" style="width:100%; max-width:350px; max-height:80vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0;">Select Location</h3>
+            <button onclick="closeLocationModal()" style="background:none; border:none; font-size:24px;">&times;</button>
+        </div>
+        <button onclick="getLocation()" style="width:100%; padding:15px; margin-bottom:10px; border:1px dashed var(--primary); background:var(--primary-light); color:var(--primary); border-radius:12px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"></path><circle cx="12" cy="9" r="3"></circle></svg>
+            Auto Detect (GPS)
+        </button>
+        <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:10px 0;">Major Zones</div>
+        <div id="zoneList" style="display:flex; flex-direction:column; gap:8px;">
+            </div>
+    </div>
+</div>
+<div id="quickNotePanel">
+    <div class="modal-header" style="padding: 15px; background: rgba(var(--primary), 0.05);">
+        <span style="font-weight:800; font-size:13px;">New Note</span>
+        <button onclick="toggleNotePanel()" style="background:none; border:none; font-size:20px;">&times;</button>
+    </div>
+    <div class="note-inputs">
+        <input type="text" id="noteTitleInput" placeholder="Title (e.g. Surah Yasin Reflection)">
+        <textarea id="noteBodyInput" placeholder="Write your thoughts here..."></textarea>
+    </div>
+    <div class="note-actions">
+        <button onclick="saveToNotebook()" class="btn-save-note">
+            <span>Save Note</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        </button>
+    </div>
+</div>
+
+<button id="noteToggleBtn" onclick="toggleNotePanel()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
+</button>
+
+   <nav class="nav-bar">
+    <button class="nav-item active" onclick="switchTab('home', this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span class="nav-label" id="txt-nav-home">Home</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('quran', this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+        <span class="nav-label" id="txt-nav-quran">Quran</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('saved', this)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span class="nav-label" id="txt-nav-saved">Saved</span>
+    </button>
+</nav>
+    <div id="pwaInstall">
+        <div class="pwa-header">
+            <div class="pwa-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            </div>
+            <div class="pwa-info">
+                <div class="pwa-title">Install App</div>
+                <div class="pwa-desc">Install Mukmin.com for offline access and faster performance.</div>
+            </div>
+        </div>
+        
+        <div id="pwa-android" style="display:none;">
+            <button class="btn-pwa-close" onclick="closePWA()">Later</button>
+            <button class="btn-pwa-install" onclick="installPWA()">Install Now</button>
+        </div>
+
+        <div id="pwa-ios" style="display:none;">
+            <div class="ios-step">
+                1. Tap the Share button 
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+            </div>
+            <div class="ios-step">
+                2. Select "Add to Home Screen" 
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            </div>
+            <button class="ios-close" onclick="closePWA()">Close</button>
+        </div>
+    </div>
+    <div id="broadcastModal">
+        <div class="broadcast-card">
+            <div class="broadcast-icon">📢</div>
+            <div class="broadcast-title">Announcement</div>
+            <div class="broadcast-msg" id="broadcastText">...</div>
+            <button class="btn-broadcast-ok" onclick="closeBroadcast()">Got it</button>
+        </div>
+    </div>
+    <div id="noteViewOverlay" onclick="closeNoteView(event)">
+    <div id="noteViewCard" onclick="event.stopPropagation()">
+        <button class="btn-close-view" onclick="closeNoteView()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div class="screenshot-bg">
+            <div class="view-date" id="viewNoteDate">...</div>
+            <div class="view-title" id="viewNoteTitle">...</div>
+            <div class="view-body" id="viewNoteBody">...</div>
+            
+            <div class="view-watermark">
+                <div class="brand-mark">
+                    <span style="color:var(--primary);">Mukmin.com</span>
+                </div>
+                <div style="font-size:10px; opacity:0.5;">Personal Note</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="focusModal" class="focus-overlay" onclick="closeFocusModal(event)">
+    <div class="focus-card screenshot-target" onclick="event.stopPropagation()">
+        
+        <button class="btn-close-focus" onclick="closeFocusModal()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        
+        <div class="focus-icon-wrapper" id="fIcon">✨</div>
+        <div class="focus-title" id="fTitle">Title</div>
+        <div class="focus-cat" id="fCat">Category</div>
+        
+        <div style="width:100%;">
+            <div class="focus-body arabic" id="fBodyAr" style="display:none;"></div>
+            <div class="focus-body" id="fBody">Description...</div>
+        </div>
+        
+        <div class="focus-ref" id="fRef">Ref: Source</div>
+        
+        <div class="screenshot-brand" id="brandWatermark">
+            <div class="brand-flex">
+                <div class="brand-name">MUKMIN.COM</div>
+                <div style="font-size:10px; opacity:0.7;">Daily Islamic App</div>
+            </div>
+        </div>
+        
+        <div class="focus-actions">
+            <button class="btn-focus btn-outline" id="btnExtraAction" onclick="extraActionClick()" style="display:none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> 
+                Shuffle
+            </button>
+            <button class="btn-focus btn-primary" onclick="shareFocusCard()" id="btnShare">
+                <span id="shareSpin" style="display:none; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top:2px solid #fff; border-radius:50%; animation:spin 1s linear infinite;"></span>
+                <span id="shareIcon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></span>
+                <span id="shareTxt">Share Card</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    /* =========================================
+       1. CONFIGURATION & STATE MANAGEMENT
+       ========================================= */
+    function safeParse(key, fallback) {
+        try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : fallback; } catch (e) { return fallback; }
+    }
+
+    const savedCoords = safeParse('wsl_coords', null);
+    
+window.SURAH_CACHE = {}; 
+
+    // Global State
+    window.STATE = { 
+        lat: savedCoords ? savedCoords.lat : 3.1390, 
+        lon: savedCoords ? savedCoords.lon : 101.6869, 
+        prayerTimes: {}, 
+        theme: localStorage.getItem('wsl_theme') || 'light', 
+        lang: localStorage.getItem('wsl_lang') || 'en',
+        bookmarks: safeParse('wsl_bookmarks', []), 
+        notified: safeParse('wsl_notified', {}) 
+    };
+
+    const prayerDisplayMap = { Imsak: "Imsak", Fajr: "Subuh", Dhuhr: "Zohor", Asr: "Asar", Maghrib: "Maghrib", Isha: "Isyak" };
+    
+    const HIJRI_MONTHS = {
+        en: ["Muharram","Safar","Rabi' al-Awwal","Rabi' al-Thani","Jumada al-Ula","Jumada al-Akhirah","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"],
+        ms: ["Muharram","Safar","Rabiul Awal","Rabiul Akhir","Jamadil Awal","Jamadil Akhir","Rejab","Syaaban","Ramadan","Syawal","Zulkaedah","Zulhijjah"]
+    };
+
+          const TRANSLATIONS = {
+        en: {
+            greetingMorning: "Good Morning", greetingAfternoon: "Good Afternoon", greetingEvening: "Good Evening",
+            currentLoc: "Current Location", savedLoc: "Saved Location", defaultLoc: "Kuala Lumpur",
+            catTools: "🛠️ Tools & Ibadah",
+            // NEW KEYS
+            tracker: "Daily Tracker", 
+            encyclopedia: "Quran Encyclopedia",
+            // END NEW KEYS
+            catKnowledge: "📚 Knowledge & Wisdom", catLifestyle: "✨ Extras",
+            mainFeatures: "Main Features", dailyHadith: "Daily Hadith", qibla: "Qibla Finder", 
+            duas: "Daily Duas", guide: "Guides", vibes: "Positive Vibes", kisah: "25 Prophets", quiz: "Islamic Quiz",
+            legacy: "Other Utils", contact: "Contact & Credits", navHome: "Home",
+            noBookmarks: "No saved items.", next: "NEXT",
+            menu: "Menu", savedTitle: "Saved", quranTitle: "Al Quran"
+        },
+        ms: {
+            greetingMorning: "Selamat Pagi", greetingAfternoon: "Selamat Tengahari", greetingEvening: "Selamat Malam",
+            currentLoc: "Lokasi Semasa", savedLoc: "Lokasi Disimpan", defaultLoc: "Kuala Lumpur",
+            catTools: "🛠️ Alatan & Ibadah",
+            // NEW KEYS
+            tracker: "Mutabaah Amal",
+            encyclopedia: "Info Al-Quran",
+            // END NEW KEYS
+            catKnowledge: "📚 Ilmu & Hikmah", catLifestyle: "✨ Ekstra",
+            mainFeatures: "Ciri Utama", dailyHadith: "Hadis Harian", qibla: "Cari Kiblat", 
+            duas: "Doa Harian", guide: "Panduan", vibes: "Vibes Positif", kisah: "Kisah 25 Nabi", quiz: "Kuiz Islamik",
+            legacy: "Utiliti Lain", contact: "Hubungi & Kredit", navHome: "Utama",
+            noBookmarks: "Tiada simpanan.", next: "SETERUSNYA",
+            menu: "Menu", savedTitle: "Disimpan", quranTitle: "Al-Quran"
+        }
+    };
+
+
+    const HADITH_DB = [
+        { en: "The best among you is the one who learns the Quran and teaches it.", ms: "Sebaik-baik kamu adalah orang yang belajar Al-Quran dan mengajarkannya.", src: "Bukhari" },
+        { en: "Actions are judged by intentions.", ms: "Sesungguhnya setiap amalan itu bergantung kepada niat.", src: "Bukhari & Muslim" },
+        { en: "None of you truly believes until he loves for his brother what he loves for himself.", ms: "Tidak sempurna iman seseorang kamu sehingga dia mengasihi saudaranya sepertimana dia mengasihi dirinya sendiri.", src: "Bukhari & Muslim" },
+        { en: "He who is not merciful to others, will not be treated mercifully.", ms: "Sesiapa yang tidak menyayangi, dia tidak akan disayangi.", src: "Muslim" },
+        { en: "A good word is a charity.", ms: "Perkataan yang baik adalah sedekah.", src: "Bukhari & Muslim" },
+        { en: "Cleanliness is half of faith.", ms: "Kebersihan itu sebahagian daripada iman.", src: "Muslim" },
+        { en: "Make things easy and do not make them difficult, cheer the people up by conveying glad tidings to them and do not repulse (them).", ms: "Permudahkanlah dan jangan menyukarkan, berilah khabar gembira dan jangan membuat orang lari.", src: "Bukhari" },
+        { en: "Smiling in the face of your brother is charity.", ms: "Senyummu di hadapan saudaramu adalah sedekah.", src: "Tirmidhi" },
+        { en: "Allah does not look at your shapes or bodies, but He looks at your hearts.", ms: "Sesungguhnya Allah tidak melihat kepada rupa dan harta kamu, tetapi Allah melihat kepada hati dan amalan kamu.", src: "Muslim" },
+        { en: "Be in this world as if you were a stranger or a traveler.", ms: "Jadilah kamu di dunia ini seakan-akan orang asing atau pengembara.", src: "Bukhari" },
+        { en: "Seeking knowledge is a duty upon every Muslim.", ms: "Menuntut ilmu adalah kewajipan bagi setiap Muslim.", src: "Ibn Majah" },
+        { en: "Exchange gifts, you will love one another.", ms: "Saling memberi hadiahlah kamu, nescaya kamu akan saling berkasih sayang.", src: "Al-Bukhari (Adab)" },
+        { en: "Do not get angry, and Paradise is yours.", ms: "Janganlah kamu marah, maka bagimu Syurga.", src: "Tabrani" },
+        { en: "Fear Allah wherever you are.", ms: "Bertakwalah kepada Allah di mana sahaja kamu berada.", src: "Tirmidhi" }
+    ];
+
+    const azanAudio = new Audio('azan.mp3'); 
+    const audioPlayer = new Audio(); 
+    let currentPlayBtn = null;       
+    let heroInterval = null; 
+    /* =========================================
+       2. INITIALIZATION & UI HANDLERS
+       ========================================= */
+    window.addEventListener('DOMContentLoaded', () => {
+        applyTheme(); 
+        updateLanguageUI(); 
+        updateGreeting(); 
+        sanitizeBookmarks(); 
+        calculateLocalTimes(); 
+        getLocation(); 
+        renderBookmarksList();
+        updateLastReadUI(); 
+        
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const h = document.getElementById('stickyHeader');
+            if(window.scrollY > 40) h.classList.add('scrolled'); else h.classList.remove('scrolled');
+        });
+
+        // Enable Audio Context on first interaction
+        document.body.addEventListener('click', () => { 
+            if (azanAudio.paused) { azanAudio.play().then(() => { azanAudio.pause(); azanAudio.currentTime = 0; }).catch(console.log); } 
+            if(('Notification' in window) && Notification.permission !== 'granted') Notification.requestPermission();
+        }, {once:true});
+
+        // Initialize Hero Canvas
+        setTimeout(() => { resizeCanvas(); animateCosmos(); }, 100);
+    });
+
+    function toggleTheme() {
+        window.STATE.theme = window.STATE.theme === 'light' ? 'dark' : 'light';
+        localStorage.setItem('wsl_theme', window.STATE.theme);
+        applyTheme();
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if(metaTheme) metaTheme.setAttribute("content", window.STATE.theme === 'light' ? '#A67734' : '#121212');
+    }
+
+    function applyTheme() { document.documentElement.setAttribute('data-theme', window.STATE.theme); }
+
+    function toggleLang() { 
+        window.STATE.lang = window.STATE.lang === 'en' ? 'ms' : 'en'; 
+        localStorage.setItem('wsl_lang', window.STATE.lang); 
+        updateLanguageUI(); 
+        updateGreeting(); 
+        calculateLocalTimes(); 
+    }
+    
+    function updateLanguageUI() {
+        const t = TRANSLATIONS[window.STATE.lang];
+        const langBtn = document.getElementById('langBtn');
+        if(langBtn) langBtn.textContent = window.STATE.lang.toUpperCase();
+        
+        // Manual Map: ID -> Translation Key
+        const keyMap = {
+            'cat-tools': 'catTools',
+            'cat-knowledge': 'catKnowledge',
+            'cat-lifestyle': 'catLifestyle',
+            'txt-tool-tracker': 'tracker',
+'txt-tool-ency': 'encyclopedia',
+            'txt-tool-qibla': 'qibla',
+            'txt-tool-duas': 'duas',
+            'txt-tool-guide': 'guide',
+            'txt-tool-vibes': 'vibes',
+            'txt-tool-kisah': 'kisah',
+            'txt-tool-quiz': 'quiz',
+            'txt-tool-hadith': 'dailyHadith', // Fixed key mismatch
+            'txt-menu-title': 'menu',
+            'txt-legacy': 'legacy',
+            'txt-contact': 'contact',
+            'txt-nav-home': 'navHome',
+            'txt-nav-quran': 'quranTitle', // Mapped to existing key
+            'txt-nav-saved': 'savedTitle', // Mapped to existing key
+            'txt-saved-title': 'savedTitle',
+            'txt-quran-title': 'quranTitle',
+            'lbl-hadith-title': 'dailyHadith'
+        };
+        
+        for (const [id, key] of Object.entries(keyMap)) {
+            const el = document.getElementById(id);
+            if (el && t[key]) el.textContent = t[key];
+        }
+    }
+
+
+    function updateGreeting() {
+        const h = new Date().getHours();
+        const t = TRANSLATIONS[window.STATE.lang];
+        let g = t.greetingEvening; if(h < 12) g = t.greetingMorning; else if(h < 18) g = t.greetingAfternoon;
+        const greetEl = document.getElementById('greetings');
+        if(greetEl) greetEl.textContent = `Assalamualaikum, ${g}`;
+    }
+
+        function switchTab(id, btn) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-'+id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        btn.classList.add('active');
+        
+        if(id === 'quran') loadQuran();
+        if(id === 'saved') {
+            renderBookmarksList(); // Existing bookmarks
+            renderNotebook();      // NEW: Render notes
+        }
+    }
+
+
+        function toggleSidePanel() { 
+        const panel = document.getElementById('sidePanel');
+        const overlay = document.getElementById('sidePanelOverlay');
+        
+        // Only add history if we are OPENING it
+        if (panel && !panel.classList.contains('open')) {
+            addHistoryState(); // <--- ADD THIS LINE
+        }
+        
+        if(panel) panel.classList.toggle('open'); 
+        if(overlay) overlay.classList.toggle('open'); 
+    }
+
+
+    /* =========================================
+       3. PRAYER CALCULATION ENGINE
+       ========================================= */
+    const PrayerCalc = {
+        calc: function(lat, lng, timezone, date) {
+            let julianDate = this.julian(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            return {
+                Imsak: this.computeTime(19.5, julianDate, lat, lng, timezone, 'fajr') - (10/60), 
+                Fajr: this.computeTime(20, julianDate, lat, lng, timezone, 'fajr'),
+                Dhuhr: this.computeTime(0, julianDate, lat, lng, timezone, 'dhuhr'),
+                Asr: this.computeTime(0, julianDate, lat, lng, timezone, 'asr'),
+                Maghrib: this.computeTime(0.833, julianDate, lat, lng, timezone, 'maghrib'),
+                Isha: this.computeTime(18, julianDate, lat, lng, timezone, 'isha')
+            };
+        },
+        julian: function(year, month, day) {
+            if (month <= 2) { year -= 1; month += 12; }
+            let A = Math.floor(year / 100);
+            let B = 2 - A + Math.floor(A / 4);
+            return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + B - 1524.5;
+        },
+        computeTime: function(angle, jd, lat, lng, tz, type) {
+            let n = jd - 2451545.0;
+            let g = 357.529 + 0.98560028 * n;
+            let q = 280.459 + 0.98564736 * n;
+            let L = q + 1.915 * Math.sin(g * Math.PI/180) + 0.020 * Math.sin(2 * g * Math.PI/180);
+            let e = 23.439 - 0.00000036 * n;
+            let RA = Math.atan2(Math.cos(e * Math.PI/180) * Math.sin(L * Math.PI/180), Math.cos(L * Math.PI/180)) * 180/Math.PI;
+            RA = RA / 15; if(RA < 0) RA += 24;
+            let D = Math.asin(Math.sin(e * Math.PI/180) * Math.sin(L * Math.PI/180)) * 180/Math.PI;
+            let EqT = q/15 - RA;
+            let HA = 0;
+            let latRad = lat * Math.PI/180;
+            let dRad = D * Math.PI/180;
+            if(type === 'dhuhr') { HA = 0; } 
+            else if (type === 'asr') {
+                let alt = Math.atan(1 / (1 + Math.tan(Math.abs(lat - D) * Math.PI/180)));
+                HA = Math.acos((Math.sin(alt) - Math.sin(latRad)*Math.sin(dRad)) / (Math.cos(latRad)*Math.cos(dRad))) * 180/Math.PI;
+            } else {
+                let factor = (type === 'maghrib' || type === 'fajr' && angle < 1) ? 0.833 : angle;
+                let alt = -factor * Math.PI/180; 
+                let cosHA = (Math.sin(alt) - Math.sin(latRad)*Math.sin(dRad)) / (Math.cos(latRad)*Math.cos(dRad));
+                HA = (cosHA < -1 || cosHA > 1) ? 0 : Math.acos(cosHA) * 180/Math.PI;
+            }
+            let time = 12 + EqT;
+            if (type === 'fajr') time = time - HA/15;
+            else if (type !== 'dhuhr') time = time + HA/15;
+            time = time + tz - lng/15;
+            return (time + 24) % 24; 
+        },
+        getHijriDate: function(date) {
+            let jd = this.julian(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            let l = jd - 1948440 + 10632;
+            let n = Math.floor((l - 1) / 10631);
+            let l1 = l - 10631 * n + 354;
+            let j = (Math.floor((10985 - l1) / 5316)) * (Math.floor((50 * l1) / 17719)) + (Math.floor(l1 / 5670)) * (Math.floor((43 * l1) / 15238));
+            let l2 = l1 - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) - (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
+            let m = Math.floor((24 * l2) / 709);
+            let d = l2 - Math.floor((709 * m) / 24);
+            let y = 30 * n + j - 30;
+            return { day: d, month: m - 1, year: y };
+        }
+    };
+
+    /* --- ENHANCED LOCATION LOGIC --- */
+
+/* --- UPGRADED GLOBAL LOCATION & REVERSE GEOCODING --- */
+
+function updateLocationUI(text, isSearching = false) {
+    const badge = document.getElementById('locationBadge');
+    const nameEl = document.getElementById('locationName');
+    
+    // Safety check if element exists
+    if(nameEl) nameEl.textContent = text;
+    
+    if(badge) {
+        if(isSearching) {
+            badge.classList.add('searching');
+            // If searching, we might want to prevent clicks or show status
+        } else {
+            badge.classList.remove('searching');
+        }
+    }
+}
+
+/* --- ROBUST GEOLOCATION ENGINE --- */
+
+function getLocation() {
+    closeLocationModal(); 
+    updateLocationUI("Detecting...", true); 
+
+    if (!navigator.geolocation) {
+        alert("GPS not supported by this browser.");
+        updateLocationUI("Select Location 📍", false);
+        return;
+    }
+
+    // 1. Try High Accuracy First (GPS)
+    const highAccOptions = { 
+        enableHighAccuracy: true, 
+        timeout: 10000, // Wait 10 seconds max
+        maximumAge: 0 
+    };
+
+    // 2. Fallback to Low Accuracy (Wifi/Cell Tower)
+    const lowAccOptions = { 
+        enableHighAccuracy: false, 
+        timeout: 15000, // Wait 15 seconds max
+        maximumAge: 60000 
+    };
+
+    const onSuccess = async (p) => {
+        const lat = p.coords.latitude; 
+        const lon = p.coords.longitude;
+        window.STATE.lat = lat; 
+        window.STATE.lon = lon;
+        
+        // Save coordinates immediately
+        localStorage.setItem('wsl_coords', JSON.stringify({ lat, lon, name: "GPS Location" }));
+        calculateLocalTimes(); // Update prayer times immediately
+        
+       // ... inside onSuccess function ...
+
+// Try to get City Name (Reverse Geocoding)
+try {
+    updateLocationUI("Finding City...", true);
+    
+    // FIX: Add a unique User-Agent or language param to avoid blocking
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`, {
+        headers: {
+            'Accept-Language': 'en'
+        }
+    });
+    
+    if (!res.ok) throw new Error("API Error");
+
+    const data = await res.json();
+    
+    // Safer check for city name
+    const addr = data.address;
+    const cityName = addr.city || addr.town || addr.district || addr.county || "GPS Location";
+    
+    localStorage.setItem('wsl_coords', JSON.stringify({ lat, lon, name: cityName }));
+    updateLocationUI(cityName, false);
+    
+} catch(e) {
+    // Fallback if API fails (so it doesn't stay stuck on "Finding City...")
+    console.warn("City name lookup failed, using coords", e);
+    const fallbackName = `GPS (${lat.toFixed(2)}, ${lon.toFixed(2)})`;
+    localStorage.setItem('wsl_coords', JSON.stringify({ lat, lon, name: fallbackName }));
+    updateLocationUI(fallbackName, false);
+}
+};
+
+    const onErrorHigh = (err) => {
+        console.warn("High Accuracy Failed. Trying Low Accuracy...", err);
+        // Retry with Low Accuracy
+        navigator.geolocation.getCurrentPosition(onSuccess, onErrorFinal, lowAccOptions);
+    };
+
+    const onErrorFinal = (err) => { 
+        console.warn("GPS Failed:", err);
+        let msg = "Could not find location.";
+        
+        if(err.code === 1) msg = "Please allow location access in your browser settings.";
+        else if(err.code === 2) msg = "GPS signal weak. Try moving outdoors.";
+        else if(err.code === 3) msg = "GPS timeout. Try manual search.";
+
+        alert(msg);
+        updateLocationUI("Select Location 📍", false);
+        setTimeout(() => openLocationModal(), 500);
+    };
+
+    // Fire the High Accuracy Request
+    navigator.geolocation.getCurrentPosition(onSuccess, onErrorHigh, highAccOptions);
+}
+
+
+/* --- NOTEBOOK SYSTEM LOGIC --- */
+
+// 1. Initialize State
+window.STATE.notebook = safeParse('mukmin_notebook', []);
+
+// 2. Toggle Panel
+function toggleNotePanel() {
+    const p = document.getElementById('quickNotePanel');
+    const b = document.getElementById('noteToggleBtn');
+    
+    if (p.classList.contains('active')) {
+        p.classList.remove('active');
+        b.style.opacity = '1';
+        b.style.pointerEvents = 'auto';
+    } else {
+        p.classList.add('active');
+        b.style.opacity = '0';
+        b.style.pointerEvents = 'none';
+        setTimeout(() => document.getElementById('noteTitleInput').focus(), 100);
+    }
+}
+
+// 3. Save Function
+function saveToNotebook() {
+    const title = document.getElementById('noteTitleInput').value.trim();
+    const body = document.getElementById('noteBodyInput').value.trim();
+    
+    if (!body) { alert("Please write something first."); return; }
+    
+    const newNote = {
+        id: Date.now(), // Unique ID
+        title: title || "Untitled Note",
+        body: body,
+        date: new Date().toLocaleDateString() + " • " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    };
+    
+    // Add to start of array
+    window.STATE.notebook.unshift(newNote);
+    localStorage.setItem('mukmin_notebook', JSON.stringify(window.STATE.notebook));
+    
+    // Reset UI
+    document.getElementById('noteTitleInput').value = "";
+    document.getElementById('noteBodyInput').value = "";
+    toggleNotePanel();
+    
+    // Refresh List if on Saved Tab
+    renderNotebook();
+    
+    // Simple feedback
+    if(navigator.vibrate) navigator.vibrate(50);
+}
+/* --- UPGRADED NOTEBOOK LOGIC --- */
+
+// 1. Render List (Truncated Preview)
+function renderNotebook() {
+    const container = document.getElementById('notebookList');
+    if (!container) return;
+    
+    if (window.STATE.notebook.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px; font-style:italic;">No notes yet. Use the pen button to add one!</div>`;
+        return;
+    }
+    
+    let html = '';
+    window.STATE.notebook.forEach(note => {
+        const safeTitle = note.title.replace(/</g, "&lt;");
+        const safeBody = note.body.replace(/</g, "&lt;");
+        
+        // Note: The whole card is now clickable to VIEW
+        html += `
+        <div class="note-card" onclick="viewNote(${note.id})">
+            <div class="note-card-title">${safeTitle}</div>
+            <div class="note-card-date">${note.date}</div>
+            <div class="note-card-body">${safeBody}</div>
+            
+            <button class="btn-delete-note" onclick="event.stopPropagation(); deleteNote(${note.id})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+        </div>`;
+    });
+    
+    container.innerHTML = html;
+}
+
+// 2. Open Note in "Instagram Mode"
+window.viewNote = function(id) {
+    const note = window.STATE.notebook.find(n => n.id === id);
+    if (!note) return;
+
+    document.getElementById('viewNoteTitle').textContent = note.title;
+    document.getElementById('viewNoteDate').textContent = note.date;
+    document.getElementById('viewNoteBody').textContent = note.body;
+
+    const overlay = document.getElementById('noteViewOverlay');
+    const card = document.getElementById('noteViewCard');
+    
+    overlay.style.display = 'flex';
+    // Small delay to trigger CSS transition
+    setTimeout(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'scale(1)';
+    }, 10);
+}
+
+// 3. Close Modal
+window.closeNoteView = function(e) {
+    // If e is passed, it means we clicked the background overlay
+    if (e && e.target.id !== 'noteViewOverlay') return;
+
+    const overlay = document.getElementById('noteViewOverlay');
+    const card = document.getElementById('noteViewCard');
+    
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+        
+        overlay.style.display = 'none';
+    }, 300);
+}
+
+// 4. Delete Logic (Unchanged but ensures list refresh)
+function deleteNote(id) {
+    if(!confirm("Delete this note?")) return;
+    window.STATE.notebook = window.STATE.notebook.filter(n => n.id !== id);
+    localStorage.setItem('mukmin_notebook', JSON.stringify(window.STATE.notebook));
+    renderNotebook();
+}
+
+
+// 5. Hook into existing initialization
+window.addEventListener('DOMContentLoaded', () => {
+    // ... existing init code ...
+    renderNotebook(); 
+});
+
+/* --- FLOATING NOTE LOGIC --- */
+const notePanel = document.getElementById('quickNotePanel');
+const noteBtn = document.getElementById('noteToggleBtn');
+const noteInput = document.getElementById('userNoteInput');
+const noteStatus = document.getElementById('noteSaveStatus');
+
+// Load saved note on startup
+window.addEventListener('DOMContentLoaded', () => {
+    const savedNote = localStorage.getItem('mukmin_user_note');
+    if (savedNote && noteInput) {
+        noteInput.value = savedNote;
+    }
+});
+
+function toggleNote() {
+    // Simple toggle class
+    const isOpen = notePanel.classList.contains('active');
+    
+    if (isOpen) {
+        notePanel.classList.remove('active');
+        noteBtn.style.opacity = '1';
+        noteBtn.style.pointerEvents = 'auto';
+    } else {
+        notePanel.classList.add('active');
+        // Hide the floating button to make it look like it expanded into the card
+        noteBtn.style.opacity = '0';
+        noteBtn.style.pointerEvents = 'none';
+        // Auto focus for immediate typing
+        setTimeout(() => noteInput.focus(), 100);
+    }
+}
+
+function saveUserNote() {
+    const content = noteInput.value;
+    localStorage.setItem('mukmin_user_note', content);
+    
+    // Visual Feedback
+    noteStatus.textContent = "Saving...";
+    noteStatus.style.color = "var(--primary)";
+    
+    // Debounce the "Saved" status
+    if (window.saveTimeout) clearTimeout(window.saveTimeout);
+    window.saveTimeout = setTimeout(() => {
+        noteStatus.textContent = "Saved";
+        noteStatus.style.color = "var(--text-muted)";
+    }, 800);
+}
+
+function manualSelectLoc(lat, lon, name) {
+    window.STATE.lat = lat;
+    window.STATE.lon = lon;
+    localStorage.setItem('wsl_coords', JSON.stringify({lat, lon, name})); 
+    
+    // Update UI clearly with the city name
+    updateLocationUI(name, false);
+    
+    calculateLocalTimes(); 
+    closeLocationModal();
+}
+
+
+
+    function calculateLocalTimes() {
+        const date = new Date();
+        const tz = date.getTimezoneOffset() / -60;
+        const raw = PrayerCalc.calc(window.STATE.lat, window.STATE.lon, tz, date);
+        const fmt = (t) => { let h=Math.floor(t), m=Math.floor((t-h)*60); return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; };
+        window.STATE.prayerTimes = { Imsak: fmt(raw.Imsak), Fajr: fmt(raw.Fajr), Dhuhr: fmt(raw.Dhuhr), Asr: fmt(raw.Asr), Maghrib: fmt(raw.Maghrib), Isha: fmt(raw.Isha) };
+        renderHeroPrayers(); updateHero();
+    }
+
+    function renderHeroPrayers() {
+        const order = ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'];
+        const nDiv = document.getElementById('prayerNames'); const tDiv = document.getElementById('prayerTimes');
+        if(!nDiv || !tDiv) return;
+        nDiv.innerHTML = ''; tDiv.innerHTML = '';
+        order.forEach(k => {
+            nDiv.innerHTML += `<div>${prayerDisplayMap[k].substring(0,3)}</div>`;
+            tDiv.innerHTML += `<div>${window.STATE.prayerTimes[k]}</div>`;
+        });
+    }
+
+    /* =========================================
+       4. HERO & COSMIC VISUALS (Advanced Engine)
+       ========================================= */
+    const cvs = document.getElementById('cosmosCanvas');
+    const ctx = cvs ? cvs.getContext('2d') : null;
+    let stars = [], shootingStars = [], width, height;
+
+    function resizeCanvas() {
+        if(!cvs) return;
+        width = cvs.width = cvs.offsetWidth;
+        height = cvs.height = cvs.offsetHeight;
+        initStars();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    class Star {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.size = Math.random() * 1.2; 
+            this.blinkSpeed = 0.005 + Math.random() * 0.01;
+            this.alpha = Math.random() * 0.8;
+            this.blinkDir = 1;
+        }
+        update() {
+            this.alpha += this.blinkSpeed * this.blinkDir;
+            if(this.alpha >= 0.8 || this.alpha <= 0.2) this.blinkDir *= -1;
+        }
+        draw() {
+            if(!ctx) return;
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+
+    class ShootingStar {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * width; this.y = 0;
+            this.len = Math.random() * 80 + 20;
+            this.speed = Math.random() * 15 + 10;
+            this.active = false;
+        }
+        trigger() { this.active = true; this.x = Math.random() * width; this.y = Math.random() * (height/4); }
+        update() {
+            if(!this.active) return;
+            this.x -= this.speed; this.y += this.speed;
+            if(this.x < 0 || this.y > height) this.active = false;
+        }
+        draw() {
+            if(!this.active || !ctx) return;
+            const grad = ctx.createLinearGradient(this.x, this.y, this.x + this.len, this.y - this.len);
+            grad.addColorStop(0, "rgba(255,255,255,1)");
+            grad.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.strokeStyle = grad; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x + this.len, this.y - this.len); ctx.stroke();
+        }
+    }
+
+    function initStars() {
+        stars = []; for(let i=0; i<100; i++) stars.push(new Star());
+        shootingStars = [new ShootingStar()];
+    }
+
+    function animateCosmos() {
+        if(!ctx) return;
+        ctx.clearRect(0,0,width,height);
+        stars.forEach(s => { s.update(); s.draw(); });
+        if(Math.random() < 0.003) {
+            const ss = shootingStars.find(s => !s.active);
+            if(ss) ss.trigger();
+        }
+        shootingStars.forEach(s => { s.update(); s.draw(); });
+        requestAnimationFrame(animateCosmos);
+    }
+
+    function updateHero() {
+        if(heroInterval) clearInterval(heroInterval);
+        const tick = () => {
+            const now = new Date();
+            const totalMins = (now.getHours() * 60) + now.getMinutes();
+            
+            // Text Updates
+            const timeEl = document.getElementById('heroTime');
+            if(timeEl) timeEl.textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: true});
+            
+            const dateEl = document.getElementById('heroDate');
+            if(dateEl) dateEl.textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'short'});
+            
+            const hObj = PrayerCalc.getHijriDate(now);
+            const mList = HIJRI_MONTHS[window.STATE.lang];
+            const hijriEl = document.getElementById('hijriDate');
+            if(hijriEl) hijriEl.textContent = `${hObj.day} ${mList[hObj.month]} ${hObj.year}`;
+
+            // Notification & Countdown Logic
+            let minDiff = Infinity; let nextKey = 'Fajr';
+            const timings = window.STATE.prayerTimes;
+            
+            ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(k => {
+                if(!timings[k]) return;
+                const [h,m] = timings[k].split(':').map(Number);
+                const pMins = (h * 60) + m;
+                const notifKey = `${k}_${now.toDateString()}`; 
+
+                // Azan Trigger
+                if (totalMins === pMins && !window.STATE.notified[notifKey]) {
+                    window.STATE.notified[notifKey] = true;
+                    localStorage.setItem('wsl_notified', JSON.stringify(window.STATE.notified)); 
+                    if(!audioPlayer.paused) audioPlayer.pause();
+                    azanAudio.play().catch(e => console.log('Audio Blocked'));
+                    if (Notification.permission === 'granted') new Notification(`Time for ${prayerDisplayMap[k]}`);
+                }
+
+                let tDate = new Date(); tDate.setHours(h,m,0,0);
+                if(tDate < now) tDate.setDate(tDate.getDate()+1);
+                const diff = tDate - now;
+                if(diff < minDiff) { minDiff = diff; nextKey = k; }
+            });
+
+
+                       // Update Countdown UI
+            const countEl = document.getElementById('countdown');
+            const nextEl = document.getElementById('nextPrayer');
+            
+            if (minDiff !== Infinity) { // <--- Added missing opening line
+                const hh = Math.floor(minDiff/3600000).toString().padStart(2,'0');
+                const mm = Math.floor((minDiff % 3600000) / 60000).toString().padStart(2,'0');
+                const ss = Math.floor((minDiff % 60000) / 1000).toString().padStart(2,'0');
+                countEl.textContent = `- ${hh}:${mm}:${ss}`;
+            } // <--- Now this bracket is correct
+
+
+
+            if(nextEl) nextEl.textContent = `${TRANSLATIONS[window.STATE.lang].next}: ${prayerDisplayMap[nextKey]}`;
+
+            // Update Visual States (Sun/Moon/Clouds)
+            const skyBg = document.getElementById('skyBg');
+            const anchor = document.getElementById('celestialAnchor');
+            const cvsElem = document.getElementById('cosmosCanvas');
+            const birdLayer = document.getElementById('birdLayer');
+
+            if(skyBg && anchor) {
+                const sunriseMin = 420; // 7:00 AM
+                const sunsetMin = 1140; // 7:00 PM
+                let isDay = (totalMins >= sunriseMin && totalMins < sunsetMin);
+
+                if (isDay) {
+                    const percent = (totalMins - sunriseMin) / (sunsetMin - sunriseMin);
+                    anchor.style.transform = `rotate(${-90 + (percent * 180)}deg)`;
+                    
+                    skyBg.className = 'sky-container is-sun';
+                    if(percent < 0.15) skyBg.classList.add('state-fajr'); 
+                    else if(percent > 0.85) skyBg.classList.add('state-maghrib'); 
+                    else if(percent > 0.60) skyBg.classList.add('state-asr'); 
+                    else skyBg.classList.add('state-dhuhr');
+                    
+                    if(birdLayer) birdLayer.style.opacity = '1';
+                    if(cvsElem) cvsElem.style.opacity = '0';
+                } else {
+                    let elapsed = (totalMins >= sunsetMin) ? (totalMins - sunsetMin) : ((totalMins + 1440) - sunsetMin);
+                    anchor.style.transform = `rotate(${90 - (elapsed / 720 * 180)}deg)`;
+                    
+                    skyBg.className = 'sky-container state-isha is-moon';
+                    if(birdLayer) birdLayer.style.opacity = '0';
+                    if(cvsElem) cvsElem.style.opacity = '0.9'; // Show stars
+                }
+            }
+        };
+        tick(); heroInterval = setInterval(tick, 1000);
+    }
+
+    /* =========================================
+       5. OFFLINE QURAN ENGINE (IndexedDB)
+       ========================================= */
+    const dbName = "MukminQuranDB";
+    const dbVersion = 1;
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, dbVersion);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains("quranData")) {
+                    db.createObjectStore("quranData", { keyPath: "id" });
+                }
+            };
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onerror = (event) => reject(event.target.error);
+        });
+    }
+
+    async function saveToDB(key, data) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("quranData", "readwrite");
+            const store = tx.objectStore("quranData");
+            store.put({ id: key, content: data });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    async function getFromDB(key) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("quranData", "readonly");
+            const store = tx.objectStore("quranData");
+            const request = store.get(key);
+            request.onsuccess = () => resolve(request.result ? request.result.content : null);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async function deleteFromDB(key) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("quranData", "readwrite");
+            const store = tx.objectStore("quranData");
+            store.delete(key);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    /* =========================================
+       6. QURAN UI LOGIC
+       ========================================= */
+        async function loadQuran() {
+        const listContainer = document.getElementById('surahList');
+        const lang = document.getElementById('quranLangSelect').value;
+        
+        // 1. Check Memory Cache
+        if(window.SURAH_LIST_CACHE) {
+            renderSurahList(window.SURAH_LIST_CACHE);
+            updateOfflineUI(true);
+            return;
+        }
+
+        // 2. Check Offline DB
+        try {
+            const offlineData = await getFromDB(`full_quran_${lang}`);
+            if (offlineData && offlineData.surahs) {
+                window.SURAH_LIST_CACHE = offlineData.surahs;
+                renderSurahList(offlineData.surahs);
+                updateOfflineUI(true);
+                return;
+            }
+        } catch(e) { console.warn("DB access error", e); }
+
+        // 3. Fetch from API
+        updateOfflineUI(false); 
+        
+        if(listContainer.children.length === 0) {
+            // [FIX] Check for internet connection first
+            if(!navigator.onLine) {
+                 listContainer.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);"><h3>📶 No Internet</h3><p>Please connect to internet to download Quran data.</p></div>`;
+                 return;
+            }
+
+            listContainer.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><div class="spinner"></div><div>Fetching Surah List...</div></div>`;
+            try {
+                const res = await fetch('https://api.alquran.cloud/v1/surah');
+                const data = await res.json();
+                if(data.code === 200) {
+                    window.SURAH_LIST_CACHE = data.data;
+                    renderSurahList(data.data);
+                }
+            } catch(e) {
+                listContainer.innerHTML = `<div style="text-align:center; padding:30px; color:red;"><b>Connection Failed</b><br><button onclick="loadQuran()" style="margin-top:10px; padding:8px 16px; border-radius:8px; border:none; background:#eee;">Try Again</button></div>`;
+            }
+        }
+    }
+
+
+    function renderSurahList(data) {
+        const list = document.getElementById('surahList');
+        if(!list) return;
+        let html = '';
+        data.forEach(s => {
+            const safeName = s.englishName.replace(/'/g, "\\'");
+            html += `<div class="surah-item searchable-item" data-search="${s.englishName.toLowerCase()} ${s.name} ${s.number}" onclick="openSurah(${s.number}, '${safeName}')">
+                <div class="surah-num">${s.number}</div>
+                <div style="flex:1">
+                    <div style="font-weight:700; font-size:15px;">${s.englishName}</div>
+                    <div style="font-size:12px; opacity:0.6;">${s.name} • ${s.numberOfAyahs} Ayat</div>
+                </div>
+            </div>`;
+        });
+        list.innerHTML = html;
+        filterSurahList();
+    }
+
+    window.filterSurahList = function() {
+        const input = document.getElementById('surahSearch');
+        if(!input) return;
+        const term = input.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const items = document.getElementsByClassName('searchable-item');
+        Array.from(items).forEach(item => {
+            const data = item.getAttribute('data-search').toLowerCase().replace(/[^a-z0-9]/g, '');
+            item.style.display = data.includes(term) ? 'flex' : 'none';
+        });
+    }
+
+    window.resetQuranData = function() {
+        window.SURAH_LIST_CACHE = null;
+        loadQuran();
+    }
+
+    // Download Handler
+    window.downloadQuranOffline = async function() {
+        const btn = document.getElementById('btnDownload');
+        const progress = document.getElementById('downloadProgress');
+        const lang = document.getElementById('quranLangSelect').value;
+        if(btn) btn.disabled = true;
+        if(progress) progress.style.display = "block";
+        
+        try {
+            const [listRes, arRes, trRes] = await Promise.all([
+                fetch('https://api.alquran.cloud/v1/surah'),
+                fetch('https://api.alquran.cloud/v1/quran/quran-uthmani'),
+                fetch(`https://api.alquran.cloud/v1/quran/${lang}`)
+            ]);
+            const listData = await listRes.json();
+            const arData = await arRes.json();
+            const trData = await trRes.json();
+
+            if (listData.code === 200 && arData.code === 200 && trData.code === 200) {
+                const offlinePack = { surahs: listData.data, arabic: arData.data.surahs, translation: trData.data.surahs, lang: lang };
+                await saveToDB(`full_quran_${lang}`, offlinePack);
+                if(progress) progress.textContent = "✅ Completed!";
+                setTimeout(() => { 
+                    if(progress) progress.style.display = 'none'; 
+                    if(btn) btn.disabled = false; 
+                    updateOfflineUI(true); 
+                    loadQuran(); 
+                }, 1500);
+            }
+        } catch (e) { 
+            alert("Download failed. Check internet connection."); 
+            if(btn) btn.disabled = false; 
+        }
+    }
+
+        function updateOfflineUI(isOffline) {
+        const dlArea = document.getElementById('downloadArea');
+        const manageArea = document.getElementById('manageDataArea');
+        const indicator = document.getElementById('offlineIndicator');
+        
+        // Logic: If offline data exists, show the "Manage" area (Delete button)
+        // If NO offline data, show the "Download" button
+        if(dlArea) dlArea.style.display = isOffline ? 'none' : 'block';
+        if(manageArea) manageArea.style.display = isOffline ? 'block' : 'none';
+        
+        // The green badge at the top
+        if(indicator) {
+            indicator.style.display = isOffline ? 'block' : 'none';
+            indicator.innerHTML = '<span style="font-size:10px; background:#dcfce7; color:#14532d; padding:4px 8px; border-radius:10px; font-weight:700;">✅ OFFLINE READY</span>';
+        }
+    }
+
+    // RENAMED FUNCTION FOR CLARITY
+    window.clearOfflineData = async function() {
+        const lang = document.getElementById('quranLangSelect').value;
+        // Added clearer warning
+        if(confirm("⚠️ WARNING: This will DELETE your saved Quran data.\n\nYou will need internet to read again.\n\nAre you sure?")) {
+            await deleteFromDB(`full_quran_${lang}`);
+            window.SURAH_LIST_CACHE = null;
+            updateOfflineUI(false); // Switch back to "Download" mode
+            loadQuran(); // Reload list from API
+        }
+    }
+
+
+    /* =========================================
+       7. READER & SURAH LOGIC
+       ========================================= */
+          async function openSurah(num, name) {
+        addHistoryState(); // <--- ADD THIS LINE
+        const lang = document.getElementById('quranLangSelect').value; 
+        const m = document.getElementById('readerModal');
+        const c = document.getElementById('readerContent');
+        m.classList.add('open');
+        document.getElementById('readerTitle').textContent = name;
+        document.getElementById('readerSubtitle').textContent = `Surah ${num}`;
+        c.innerHTML = '<div style="text-align:center; padding:40px;">Loading...</div>';
+
+        // 1. Try Offline DB
+        try {
+            const offlineData = await getFromDB(`full_quran_${lang}`);
+            // Safety Check added here:
+            if (offlineData && offlineData.arabic && offlineData.arabic[num-1]) {
+                const trData = (offlineData.translation && offlineData.translation[num-1]) ? offlineData.translation[num-1].ayahs : null;
+                renderAyahs(num, name, offlineData.arabic[num-1].ayahs, trData);
+                return;
+            }
+        } catch(e) {}
+
+        // 2. Try Memory Cache
+        const cacheKey = `${num}_${lang}`;
+        if(SURAH_CACHE[cacheKey]) {
+            renderAyahs(num, name, SURAH_CACHE[cacheKey].ar, SURAH_CACHE[cacheKey].tr);
+            return;
+        }
+
+        // 3. Fetch from API
+        try {
+            const [r1, r2] = await Promise.all([
+                fetch(`https://api.alquran.cloud/v1/surah/${num}`), 
+                fetch(`https://api.alquran.cloud/v1/surah/${num}/${lang}`)
+            ]);
+            const d1 = await r1.json(); 
+            const d2 = await r2.json();
+            SURAH_CACHE[cacheKey] = { ar: d1.data.ayahs, tr: d2.data.ayahs };
+            renderAyahs(num, name, d1.data.ayahs, d2.data.ayahs);
+        } catch(e) { c.innerHTML = `<div style="text-align:center; padding:50px;"><b>No Internet & No Offline Data</b></div>`; }
+    }
+
+
+        
+    function playAyah(url, btn) {
+        const ayahBlock = btn.closest('.ayah-block');
+        
+        // Pause/Stop Logic
+        if (currentPlayBtn === btn) {
+            if (audioPlayer.paused) { 
+                audioPlayer.play(); 
+                btn.innerHTML = '||'; 
+                ayahBlock.classList.add('playing'); 
+            } else { 
+                audioPlayer.pause(); 
+                btn.innerHTML = '▶'; 
+                ayahBlock.classList.remove('playing'); 
+            }
+            return;
+        }
+
+        // Reset previous button
+        if (currentPlayBtn) { 
+            currentPlayBtn.innerHTML = '▶'; 
+            const oldBlock = currentPlayBtn.closest('.ayah-block'); 
+            if(oldBlock) oldBlock.classList.remove('playing'); 
+        }
+
+        // Play New
+        currentPlayBtn = btn; 
+        audioPlayer.src = url;
+        btn.innerHTML = '||'; 
+        ayahBlock.classList.add('playing');
+        
+        audioPlayer.play().catch(e => { 
+            alert("Internet required for audio."); 
+            btn.innerHTML = '▶'; 
+            ayahBlock.classList.remove('playing'); 
+        });
+
+        // Auto-play Next Ayah
+        audioPlayer.onended = () => {
+            btn.innerHTML = '▶'; 
+            ayahBlock.classList.remove('playing');
+            const next = ayahBlock.nextElementSibling;
+            if (next && next.classList.contains('ayah-block')) {
+                // Find the play button in the next block and click it
+                const nextBtn = next.querySelector('button[onclick*="playAyah"]');
+                if(nextBtn) nextBtn.click();
+            }
+        };
+    }
+
+    // --- CORRECTED RENDER AYAHS FUNCTION ---
+    function renderAyahs(num, name, arAyahs, trAyahs) {
+        const c = document.getElementById('readerContent');
+        const reciterId = localStorage.getItem('wsl_reciter') || 'ar.alafasy';
+        let html = (num!==1 && num!==9) ? '<div style="text-align:center;font-family:Amiri;font-size:26px;margin:20px 0;color:var(--primary);">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '';
+            
+        arAyahs.forEach((a, i) => {
+            const trans = (trAyahs && trAyahs[i]) ? trAyahs[i].text : '';
+            const saved = window.STATE.bookmarks.some(b => b.id === `ayah_${num}_${a.numberInSurah}`);
+            const audioUrl = `https://cdn.islamic.network/quran/audio/128/${reciterId}/${a.number}.mp3`;
+            
+            // Safe encoding
+            const safeAr = encodeURIComponent(a.text).replace(/'/g, "\\'");
+const safeTr = encodeURIComponent(trans).replace(/'/g, "\\'");
+            
+            const safeName = name.replace(/'/g, "\\'");
+
+            html += `<div class="ayah-block" id="ayah-${num}-${a.numberInSurah}" onclick="openAyahFocus('${safeName}', ${a.numberInSurah}, decodeURIComponent('${safeAr}'), decodeURIComponent('${safeTr}'))">
+                    <div class="ayah-tools">
+                        <span style="font-size:12px; font-weight:800;">${num}:${a.numberInSurah}</span>
+                        <div style="display:flex; gap:8px;">
+                            <button class="bookmark-btn" onclick="event.stopPropagation(); playAyah('${audioUrl}', this)">▶</button>
+                            <button class="bookmark-btn ${saved ? 'saved' : ''}" onclick="event.stopPropagation(); togAyah(this, ${num}, ${a.numberInSurah}, '${safeAr}', '${safeTr}', '${safeName}')">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="ayah-arabic">${a.text}</div>
+                    <div class="ayah-trans">${trans}</div>
+                </div>`;
+        });
+        c.innerHTML = html;
+    }
+
+ 
+
+    /* =========================================
+       8. UTILITY FUNCTIONS (Modals, Tools)
+       ========================================= */
+    function closeReader() { document.getElementById('readerModal').classList.remove('open'); }
+    
+        function openReader(t, s, f) {
+        addHistoryState(); // <--- ADD THIS LINE
+        document.getElementById('readerTitle').textContent = t;
+        document.getElementById('readerSubtitle').textContent = s;
+        document.getElementById('readerContent').innerHTML = `<iframe src="${f}" style="width:100%; height:100%; border:none;"></iframe>`;
+        document.getElementById('readerModal').classList.add('open');
+    }
+
+// --- ADD THESE NEW FUNCTIONS ---
+window.openTracker = () => openReader("Mutabaah Amal", "Tracker Ibadah Harian", "tracker.html");
+window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "kelebihan_alquran.html");
+
+    window.openExternalPanduan = () => openReader("Pustaka Panduan", "Islamic Guides", "panduan.html");
+    window.openDuas = () => openReader("Himpunan Doa", "Daily Duas", "doa.html");
+    window.openAsmaul = () => openReader("Asmaul Husna", "99 Nama Allah", "asmaul.html");
+    window.openSmartVibes = () => openReader("Positive Vibes", "Mood & Tasbih", "vibes.html");
+    window.openKisahNabi = () => openReader("Kisah 25 Rasul", "Sirah Anbiya", "kisah.html");
+    window.openQuiz = () => openReader("Islamic Quiz", "Test Your Knowledge", "quiz.html");
+    window.openHadith40 = () => openReader("Hadis 40", "Imam Nawawi", "hadith40.html");
+    window.openKutub = () => openReader("Kitab Sahih", "Bukhari & Muslim", "kutub.html");
+    window.openAsbab = () => openReader("Asbabun Nuzul", "Kisah Di Sebalik Ayat", "asbab.html");
+
+        window.openQibla = () => { 
+        addHistoryState(); // <--- ADD THIS LINE
+        const iframe = document.querySelector('#qiblaFloatModal iframe');
+        if(!iframe.src) iframe.src = "qiblat.html";
+        document.getElementById('qiblaFloatOverlay').style.display = 'flex'; 
+    };
+    window.closeQibla = () => { document.getElementById('qiblaFloatOverlay').style.display = 'none'; };
+
+    // Hadith Logic
+    function openHadithModal() { document.getElementById('hadithModal').style.display = 'flex'; nextHadith(); }
+    function closeHadithModal() { document.getElementById('hadithModal').style.display = 'none'; }
+
+        // Update your existing nextHadith function
+        window.nextHadith = function() {
+        window.currentHadithId = null; // Reset tracker
+        const btn = document.getElementById('hadithBookmark');
+        if(btn) btn.classList.remove('saved'); 
+
+        const h = HADITH_DB[Math.floor(Math.random() * HADITH_DB.length)];
+        // Strip quotes if they exist in the DB to keep text clean
+        const rawText = window.STATE.lang === 'ms' ? h.ms : h.en;
+        const text = rawText.replace(/^"|"$/g, ''); 
+
+        document.getElementById('hadithTextContent').textContent = text;
+        document.getElementById('hadithSourceContent').textContent = h.src;
+        
+        // Check if this specific text is already saved using the helper
+        const safeId = generateHadithId(text);
+        const isSaved = window.STATE.bookmarks.some(x => x.id === safeId);
+        
+        if(isSaved) {
+            btn.classList.add('saved');
+            window.currentHadithId = safeId;
+        }
+    }
+
+
+    // Update your existing closeHadithModal function
+    function closeHadithModal() { 
+        document.getElementById('hadithModal').style.display = 'none'; 
+        window.currentHadithId = null; // Reset tracker on close
+    }
+
+
+                window.toggleHadithBookmark = function(btn) {
+        const t = document.getElementById('hadithTextContent').textContent;
+        const src = document.getElementById('hadithSourceContent').textContent;
+        
+        // Use the helper so the ID is always the same for this text
+        // If we are viewing a specific saved ID, use that. Otherwise generate one.
+        const id = window.currentHadithId ? window.currentHadithId : generateHadithId(t);
+        
+        const idx = window.STATE.bookmarks.findIndex(x => x.id === id);
+        
+        if(idx > -1) { 
+            // REMOVE (Untick)
+            window.STATE.bookmarks.splice(idx, 1); 
+            btn.classList.remove('saved'); 
+            window.currentHadithId = null; // Clear tracker
+        } else { 
+            // ADD (Tick)
+            window.STATE.bookmarks.push({id, type:'hadith', text:t, src:src}); 
+            btn.classList.add('saved'); 
+            window.currentHadithId = id; // Set tracker
+        }
+        
+        localStorage.setItem('wsl_bookmarks', JSON.stringify(window.STATE.bookmarks));
+        renderBookmarksList(); // Update list immediately
+    }
+
+    // Helper to create a SAFE, consistent ID from any text
+    function generateHadithId(text) {
+        // Removes all spaces and symbols, keeps only letters/numbers, takes first 20 chars
+        return 'hadith_' + text.replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+    }
+    function sanitizeBookmarks() {
+        // 1. Get current bookmarks
+        let saved = window.STATE.bookmarks;
+        let originalLength = saved.length;
+        
+        // 2. Filter out "Bad" Hadith IDs (IDs with spaces or quotes are corrupt)
+        window.STATE.bookmarks = saved.filter(item => {
+            if (item.type === 'hadith') {
+                // If ID contains spaces, quotes, or weird symbols -> DELETE IT
+                if (/[^a-zA-Z0-9_]/.test(item.id)) {
+                    return false; 
+                }
+            }
+            return true;
+        });
+
+        // 3. If we deleted anything, save the clean list back to storage
+        if (window.STATE.bookmarks.length !== originalLength) {
+            localStorage.setItem('wsl_bookmarks', JSON.stringify(window.STATE.bookmarks));
+            console.log("Cleaned up corrupted bookmarks.");
+            renderBookmarksList(); // Refresh UI immediately
+        }
+    }
+
+
+    // Bookmarking Logic
+    window.togAyah = function(btn, s, a, ar, tr, name) {
+        ar = decodeURIComponent(ar); tr = decodeURIComponent(tr);
+        const id = `ayah_${s}_${a}`;
+        localStorage.setItem('wsl_last_read', JSON.stringify({ id, surahNum: s, ayahNum: a, surahName: name }));
+        updateLastReadUI();
+        const idx = window.STATE.bookmarks.findIndex(x => x.id === id);
+        if(idx > -1) { window.STATE.bookmarks.splice(idx, 1); btn.classList.remove('saved'); }
+        else { window.STATE.bookmarks.push({id, type:'ayah', surahNum:s, ayahNum:a, arText:ar, trText:tr, surahName:name}); btn.classList.add('saved'); }
+        localStorage.setItem('wsl_bookmarks', JSON.stringify(window.STATE.bookmarks));
+        renderBookmarksList();
+    };
+
+        function renderBookmarksList() {
+        const l = document.getElementById('bookmarksList');
+        if (!l) return;
+        
+        if (window.STATE.bookmarks.length === 0) { 
+            l.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:20px;">No saved items.</div>`; 
+            return; 
+        }
+        
+        l.innerHTML = '';
+        window.STATE.bookmarks.forEach(b => {
+            if (b.type === 'ayah') {
+                // Quran Item
+                l.innerHTML += `<div class="surah-item" onclick="jumpToAyah(${b.surahNum}, '${b.surahName}', ${b.ayahNum})">
+                        <div class="surah-num" style="font-size:10px;">${b.surahNum}:${b.ayahNum}</div>
+                        <div style="flex:1;">
+                            <b style="font-size:14px;">${b.surahName}</b><br>
+                            <small style="color:var(--text-muted);">${b.trText.substring(0,40)}...</small>
+                        </div>
+                    </div>`;
+            } else if (b.type === 'hadith') {
+                // Hadith Item (Clicking this now calls openSavedHadithById)
+                l.innerHTML += `<div class="surah-item" onclick="openSavedHadithById('${b.id}')">
+                    <div class="surah-num">
+                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    </div>
+                    <div style="flex:1;">
+                        <b style="font-size:14px;">Hadis: ${b.src}</b><br>
+                        <small style="color:var(--text-muted);">${b.text.substring(0, 40)}...</small>
+                    </div>
+                    <div style="color:var(--primary);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                </div>`;
+            }
+        });
+    }
+        window.openSavedHadithById = function(id) {
+        const item = window.STATE.bookmarks.find(x => x.id === id);
+        if(!item) return;
+        
+        window.currentHadithId = id; // IMPORTANT: Track this specific ID
+        
+        document.getElementById('hadithTextContent').textContent = item.text;
+        document.getElementById('hadithSourceContent').textContent = item.src;
+        
+        const btn = document.getElementById('hadithBookmark');
+        if(btn) btn.classList.add('saved');
+        
+        document.getElementById('hadithModal').style.display = 'flex';
+    }
+
+
+    function updateLastReadUI() {
+        const lr = JSON.parse(localStorage.getItem('wsl_last_read'));
+        const container = document.getElementById('last-read-container');
+        if (lr && container) {
+            container.style.display = 'block';
+            document.getElementById('lr-num').textContent = lr.surahNum;
+            document.getElementById('lr-name').textContent = lr.surahName;
+            document.getElementById('lr-meta').textContent = `Ayat ${lr.ayahNum}`;
+        }
+    }
+
+    window.resumeLastRead = function() {
+        const lr = JSON.parse(localStorage.getItem('wsl_last_read'));
+        if (lr) jumpToAyah(lr.surahNum, lr.surahName, lr.ayahNum);
+    }
+
+    async function jumpToAyah(surahNum, surahName, ayahNum) {
+        switchTab('quran', document.querySelectorAll('.nav-item')[1]);
+        await openSurah(surahNum, surahName);
+        let attempts = 0;
+        const checkScroll = setInterval(() => {
+            const block = document.getElementById(`ayah-${surahNum}-${ayahNum}`);
+            if (block) {
+                block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                block.classList.add('playing');
+                setTimeout(() => block.classList.remove('playing'), 1000);
+                clearInterval(checkScroll);
+            }
+            if(attempts++ > 20) clearInterval(checkScroll);
+        }, 150);
+    }
+    
+    // PWA Logic
+    let dp = null; 
+    window.addEventListener('beforeinstallprompt', e => { 
+        e.preventDefault(); 
+        dp = e; 
+        const pwaEl = document.getElementById('pwaInstall');
+        const androidEl = document.getElementById('pwa-android');
+        if(pwaEl) pwaEl.style.display = 'flex'; 
+        if(androidEl) androidEl.style.display = 'flex'; 
+    }); 
+    window.installPWA = () => { if(dp) dp.prompt(); };
+    window.closePWA = () => { document.getElementById('pwaInstall').style.display = 'none'; };
+
+/* --- SMART TASBIH LOGIC --- */
+let tasbihCounter = parseInt(localStorage.getItem('wsl_tasbih')) || 0;
+document.getElementById('tasbihCount').textContent = tasbihCounter;
+
+function countTasbih() {
+    tasbihCounter++;
+    updateTasbihUI();
+    
+    // Haptic Feedback (Vibration)
+    if(navigator.vibrate) navigator.vibrate(15); 
+    
+    // Animate Button
+    const btn = document.getElementById('btnTasbih');
+    btn.style.transform = "scale(0.9)";
+    setTimeout(() => btn.style.transform = "scale(1)", 100);
+}
+
+function resetTasbih() {
+    // Vibrate to confirm click
+    if(navigator.vibrate) navigator.vibrate(50);
+    
+    tasbihCounter = 0;
+    updateTasbihUI();
+}
+
+
+function updateTasbihUI() {
+    document.getElementById('tasbihCount').textContent = tasbihCounter;
+    localStorage.setItem('wsl_tasbih', tasbihCounter);
+}
+/* --- MANUAL LOCATION LOGIC --- */
+const MALAYSIA_ZONES = [
+    { name: "Kuala Lumpur", lat: 3.1390, lon: 101.6869 },
+    { name: "Putrajaya", lat: 2.9264, lon: 101.6964 },
+    { name: "Johor Bahru", lat: 1.4927, lon: 103.7414 },
+    { name: "Penang (George Town)", lat: 5.4141, lon: 100.3288 },
+    { name: "Kota Bharu", lat: 6.1254, lon: 102.2381 },
+    { name: "Kuala Terengganu", lat: 5.3117, lon: 103.1324 },
+    { name: "Kuantan", lat: 3.8077, lon: 103.3260 },
+    { name: "Ipoh", lat: 4.5975, lon: 101.0901 },
+    { name: "Shah Alam", lat: 3.0738, lon: 101.5183 },
+    { name: "Melaka City", lat: 2.1896, lon: 102.2501 },
+    { name: "Kota Kinabalu", lat: 5.9804, lon: 116.0735 },
+    { name: "Kuching", lat: 1.5533, lon: 110.3592 }
+];
+
+/* --- GLOBAL MANUAL SEARCH ENGINE --- */
+
+// Removed hardcoded MALAYSIA_ZONES to support the whole world
+
+async function searchLocation() {
+    const input = document.getElementById('locSearchInput');
+    const query = input.value.trim();
+    const resultsDiv = document.getElementById('zoneList');
+    
+    if(query.length < 3) {
+        alert("Please enter at least 3 characters");
+        return;
+    }
+    
+    resultsDiv.innerHTML = `<div style="text-align:center; padding:10px; opacity:0.6;">Searching world map...</div>`;
+    
+    try {
+        // Fetch from OpenStreetMap
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        
+        if(data.length === 0) {
+            resultsDiv.innerHTML = `<div style="text-align:center; padding:10px; color:red;">No city found. Try "London" or "Mecca".</div>`;
+            return;
+        }
+        
+        // Render Results
+        resultsDiv.innerHTML = data.map(place => `
+    <button onclick="manualSelectLoc(${place.lat}, ${place.lon}, '${place.display_name.split(',')[0].replace(/'/g, "\\'")}')" 
+    style="text-align:left; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; font-weight:600; cursor:pointer; width:100%; margin-bottom:8px; display:flex; flex-direction:column;">
+        <span style="font-size:14px;">${place.display_name.split(',')[0]}</span>
+        <span style="font-size:10px; opacity:0.6; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">
+            ${place.display_name}
+        </span>
+    </button>
+`).join('');
+
+        
+    } catch(e) {
+        resultsDiv.innerHTML = `<div style="text-align:center; color:red;">Connection Error.</div>`;
+    }
+}
+
+function openLocationModal() {
+    const modal = document.getElementById('locationModal');
+    const list = document.getElementById('zoneList');
+    
+    // Inject the Search UI if it's not there yet
+    // We check if we already added the search bar to avoid duplicates
+    if (!document.getElementById('locSearchInput')) {
+        // Clear previous generic content if needed or just prepend search bar
+        // Ideally, we replace the "Major Zones" text with a Search Bar
+        const container = modal.querySelector('.card');
+        
+        // Find where to insert (after the "Auto Detect" button)
+        // We will rewrite the inner content of the 'zoneList' area and the header above it
+        
+        // Let's look for the element "Major Zones"
+        const elements = container.querySelectorAll('div');
+        elements.forEach(el => {
+            if(el.textContent === 'Major Zones') el.style.display = 'none'; // Hide the old label
+        });
+
+        // Insert Search Input
+        const searchHTML = `
+            <div style="display:flex; gap:8px; margin:15px 0 10px 0;">
+                <input type="text" id="locSearchInput" placeholder="Type city (e.g. London, Cairo)..." 
+                    style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+                <button onclick="searchLocation()" style="padding:0 15px; background:var(--primary); color:#fff; border:none; border-radius:10px; font-weight:700;">Go</button>
+            </div>
+        `;
+        
+        // Insert search bar before the list
+        list.insertAdjacentHTML('beforebegin', searchHTML);
+        
+        // Allow "Enter" key to search
+        setTimeout(() => {
+            document.getElementById('locSearchInput').addEventListener("keypress", function(event) {
+                if (event.key === "Enter") searchLocation();
+            });
+        }, 500);
+    }
+    
+    // Reset list
+    list.innerHTML = `<div style="text-align:center; font-size:11px; opacity:0.5; margin-top:10px;">Search for any city in the world.</div>`;
+    
+    modal.style.display = 'flex';
+}
+
+function closeLocationModal() {
+    document.getElementById('locationModal').style.display = 'none';
+}
+   /* --- FOCUS MODAL LOGIC (Paste in Script) --- */
+/* --- FOCUS MODAL LOGIC (Paste in Script) --- */
+
+// 1. OPEN FOR HADITH
+    window.openHadithModal = function() {
+        addHistoryState(); // <--- ADD THIS LINE
+        const modal = document.getElementById('focusModal');
+
+    
+    // Set Icon & Category
+    document.getElementById('fIcon').textContent = "📜";
+    document.getElementById('fCat').textContent = "DAILY HADITH";
+    
+    // Setup Shuffle Button
+    const btnExtra = document.getElementById('btnExtraAction');
+    btnExtra.style.display = 'flex';
+    window.extraActionClick = renderRandomHadith;
+    
+    renderRandomHadith();
+    modal.classList.add('open');
+}
+
+function renderRandomHadith() {
+    const h = HADITH_DB[Math.floor(Math.random() * HADITH_DB.length)];
+    const text = window.STATE.lang === 'ms' ? h.ms : h.en;
+    
+    document.getElementById('fTitle').textContent = "Hadith of the Day";
+    document.getElementById('fBodyAr').style.display = 'none'; 
+    document.getElementById('fBody').textContent = text;
+    document.getElementById('fRef').textContent = h.src;
+}
+
+// 2. OPEN FOR AYAH (QURAN)
+window.openAyahFocus = function(surahName, ayahNum, arText, trText) {
+    const modal = document.getElementById('focusModal');
+    
+    document.getElementById('fIcon').textContent = "📖";
+    document.getElementById('fTitle').textContent = surahName;
+    document.getElementById('fCat').textContent = `AYAH ${ayahNum}`;
+    
+    const arDiv = document.getElementById('fBodyAr');
+    arDiv.style.display = 'block';
+    arDiv.textContent = arText;
+    
+    document.getElementById('fBody').textContent = trText;
+    document.getElementById('fRef').textContent = "Al-Quran Al-Kareem";
+    
+    // Hide Shuffle
+    document.getElementById('btnExtraAction').style.display = 'none';
+    
+    modal.classList.add('open');
+}
+
+window.closeFocusModal = function(e) {
+    if (e && e.target.id !== 'focusModal' && !e.target.classList.contains('btn-close-focus')) return;
+    document.getElementById('focusModal').classList.remove('open');
+}
+
+// 3. SHARE SCREENSHOT LOGIC
+window.shareFocusCard = async function() {
+    const btnShare = document.getElementById('btnShare');
+    const spin = document.getElementById('shareSpin');
+    const icon = document.getElementById('shareIcon');
+    const card = document.querySelector('.screenshot-target');
+
+    spin.style.display = 'block'; icon.style.display = 'none'; btnShare.style.opacity = '0.7';
+
+    try {
+        const wrapper = document.createElement('div');
+        Object.assign(wrapper.style, {
+            position: 'fixed', top: '0', left: '0', width: '500px',
+            padding: '100px 50px', zIndex: '-1000',
+            background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+        });
+
+        const clone = card.cloneNode(true);
+        clone.style.transform = 'none'; clone.style.margin = '0'; clone.style.boxShadow = '0 30px 60px rgba(0,0,0,0.15)';
+        clone.querySelector('.btn-close-focus').style.display = 'none';
+        clone.querySelector('.focus-actions').style.display = 'none';
+        clone.querySelector('.screenshot-brand').style.display = 'block';
+        
+        wrapper.appendChild(clone);
+        document.body.appendChild(wrapper);
+
+        // Capture
+        const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true });
+        document.body.removeChild(wrapper);
+
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], "share.png", { type: "image/png" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try { await navigator.share({ files: [file] }); } catch(e){}
+            } else {
+                const link = document.createElement('a'); link.download = 'share.png'; link.href = canvas.toDataURL(); link.click();
+            }
+            spin.style.display = 'none'; icon.style.display = 'block'; btnShare.style.opacity = '1';
+        });
+
+    } catch (e) { alert("Error generating image."); spin.style.display = 'none'; icon.style.display = 'block'; }
+}
+/* =========================================
+   BACK BUTTON MANAGER (Fixes Redirect Issue)
+   ========================================= */
+
+// 1. Helper to tell browser we opened a "new page"
+function addHistoryState() {
+    // This creates a fake "history entry" so the back button has something to go back to
+    history.pushState({modal: true}, null, window.location.href);
+}
+
+// 2. Listen for the Back Button press
+window.onpopstate = function(event) {
+    // Check which modals are open and close them
+    const reader = document.getElementById('readerModal');
+    const sidePanel = document.getElementById('sidePanel');
+    const hadith = document.getElementById('hadithModal');
+    const qibla = document.getElementById('qiblaFloatOverlay');
+    const location = document.getElementById('locationModal');
+    const noteView = document.getElementById('noteViewOverlay');
+
+    let handled = false;
+
+    // READER / SURAH
+    if(reader && reader.classList.contains('open')) {
+        closeReader();
+        handled = true;
+    }
+    // SIDE MENU
+    else if(sidePanel && sidePanel.classList.contains('open')) {
+        toggleSidePanel();
+        handled = true;
+    }
+    // HADITH MODAL
+    else if(hadith && hadith.style.display === 'flex') {
+        closeHadithModal();
+        handled = true;
+    }
+    // QIBLA
+    else if(qibla && qibla.style.display === 'flex') {
+        closeQibla();
+        handled = true;
+    }
+    // LOCATION SELECTOR
+    else if(location && location.style.display === 'flex') {
+        closeLocationModal();
+        handled = true;
+    }
+    // SAVED NOTE VIEW
+    else if(noteView && noteView.style.display === 'flex') {
+        closeNoteView();
+        handled = true;
+    }
+
+    // If we closed a modal, we stop here.
+    // If nothing was open, the browser will continue back naturally.
+};
+
+
+
+</script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, update, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQMVNRDYsKHRj_-bwKbFICyN6XseL3CDI",
+        authDomain: "waktusolatlite.firebaseapp.com",
+        databaseURL: "https://waktusolatlite-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "waktusolatlite",
+        storageBucket: "waktusolatlite.firebasestorage.app",
+        messagingSenderId: "86910439082",
+        appId: "1:86910439082:web:e482d01e1451e58179cad3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // --- 1. IDENTIFY USER ---
+    function getUserId() {
+        let id = localStorage.getItem('mukmin_uuid');
+        if (!id) {
+            id = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('mukmin_uuid', id);
+        }
+        return id;
+    }
+    const userId = getUserId();
+    const userRef = ref(db, 'users/' + userId);
+
+    // --- 2. TRACK VISITS (Transaction) ---
+    // Safely increments session count by 1
+    runTransaction(userRef, (currentUserData) => {
+        if (currentUserData) {
+            currentUserData.sessionCount = (currentUserData.sessionCount || 0) + 1;
+            currentUserData.lastActive = Date.now();
+        } else {
+            return {
+                sessionCount: 1,
+                lastActive: Date.now(),
+                firstSeen: Date.now(),
+                isInstalled: false,
+                platform: navigator.platform || 'unknown'
+            };
+        }
+        return currentUserData;
+    });
+
+    // --- 3. TRACK INSTALLS ---
+    window.addEventListener('appinstalled', () => {
+        update(userRef, {
+            isInstalled: true,
+            installDate: Date.now()
+        });
+    });
+
+    // --- 4. CLICK TRACKING ---
+    window.trackClick = (featureName) => {
+        update(userRef, { lastAction: featureName });
+    };
+    
+
+    // --- 5. PWA PROMPT LOGIC (Android/iOS) ---
+    // (This part remains exactly the same as before, handling the UI)
+    let deferredPrompt;
+    const pwaEl = document.getElementById('pwaInstall');
+    
+    function shouldShowPWA() {
+        const lastDismiss = localStorage.getItem('pwa_dismissed_time');
+        if (lastDismiss && (Date.now() - parseInt(lastDismiss)) / 36e5 < 24) return false;
+        return true;
+    }
+        // --- 6. MODERN BROADCAST LISTENER ---
+    const broadcastRef = ref(db, 'broadcast');
+    const modal = document.getElementById('broadcastModal');
+    const msgText = document.getElementById('broadcastText');
+
+    onValue(broadcastRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.active) {
+            const lastMsg = localStorage.getItem('last_broadcast_time');
+            // Show only if it's a NEW message
+            if (!lastMsg || data.timestamp > parseInt(lastMsg)) {
+                msgText.innerText = data.message; // Use innerText to handle newlines
+                modal.style.display = 'flex';
+                
+                // Save this timestamp so we don't show it again
+                // We save it immediately or on close, depending on preference. 
+                // Here we attach it to the close action to ensure they saw it.
+                window.pendingBroadcastTimestamp = data.timestamp;
+            }
+        }
+    });
+
+    window.closeBroadcast = () => {
+        modal.style.display = 'none';
+        if (window.pendingBroadcastTimestamp) {
+            localStorage.setItem('last_broadcast_time', window.pendingBroadcastTimestamp);
+        }
+    };
+    
+    
+    // Android Trigger
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (shouldShowPWA() && pwaEl) {
+            pwaEl.style.display = 'flex';
+            const androidBtn = document.getElementById('pwa-android');
+            if(androidBtn) androidBtn.style.display = 'flex';
+        }
+    });
+
+    // iOS Trigger
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone || (window.matchMedia('(display-mode: standalone)').matches);
+    if (isIOS && !isStandalone && shouldShowPWA()) {
+        if(pwaEl) {
+            pwaEl.style.display = 'flex';
+            const iosDiv = document.getElementById('pwa-ios');
+            if(iosDiv) iosDiv.style.display = 'flex';
+        }
+    }
+
+    window.installPWA = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt = null;
+        }
+        closePWA();
+    };
+
+    window.closePWA = () => {
+        if(pwaEl) pwaEl.style.display = 'none';
+        localStorage.setItem('pwa_dismissed_time', Date.now().toString());
+    };
+</script>
+<script>
+    // REGISTER SERVICE WORKER FOR OFFLINE CACHE
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(reg => console.log('SW Registered!', reg.scope))
+                .catch(err => console.error('SW Failed:', err));
+        });
+    }
+</script>
+</body>
+
+</html>
