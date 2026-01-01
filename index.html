@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#A67734">
     <title>Mukmin.com</title>
     <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <style>
@@ -647,6 +648,68 @@
 .brand-flex { display: flex; justify-content: space-between; align-items: center; }
 .brand-name { font-size: 12px; font-weight: 800; color: var(--primary); letter-spacing: 1px; text-transform: uppercase; }
 
+/* --- SPECIAL TWOLIFE BANNER --- */
+.twolife-banner {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); /* Midnight Blue */
+    border: 1px solid rgba(212, 175, 55, 0.4); /* Gold Border */
+    border-radius: 24px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 15px 40px -10px rgba(15, 23, 42, 0.6);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.twolife-banner:active {
+    transform: scale(0.98);
+}
+
+/* Background Shine Effect */
+.twolife-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.15), transparent 60%);
+    pointer-events: none;
+}
+
+.twolife-content {
+    z-index: 2;
+}
+
+.twolife-title {
+    font-family: 'Cinzel', serif; /* Optional: adds that premium look if font loaded */
+    font-size: 20px;
+    font-weight: 800;
+    color: #D4AF37; /* Gold Text */
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+}
+
+.twolife-desc {
+    font-size: 13px;
+    color: #94a3b8; /* Muted Blue-Grey */
+    font-weight: 500;
+}
+
+.twolife-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #D4AF37;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+}
 
   </style>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -765,6 +828,19 @@
     </div>
     <div style="font-size:11px; opacity:0.9; margin-top:5px; position:relative; z-index:5;">Subhanallah • Alhamdulillah • Allahuakbar</div>
 </div>
+            <div class="twolife-banner" onclick="window.location.href='twolife.html'">
+    <div class="twolife-content">
+        <div class="twolife-title">The Way of Life</div>
+        <div class="twolife-desc">Start your 30-Day Spiritual Journey</div>
+    </div>
+    <div class="twolife-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+        </svg>
+    </div>
+</div>
+
 
 
             
