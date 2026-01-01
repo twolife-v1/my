@@ -1,432 +1,369 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Asbabun Nuzul</title>
+    <title>Asbabun Nuzul Premium</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
     <style>
-        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; }
-        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; }
-        
+        /* --- 1. SHARED THEME VARIABLES --- */
+        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --glass: rgba(255, 255, 255, 0.95); }
+        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --glass: rgba(18, 18, 18, 0.95); }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: background 0.3s; }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; transition: background 0.3s; }
 
-        /* Header & Navigation */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: env(safe-area-inset-top); }
-        .back-btn { background: var(--surface); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text); cursor: pointer; text-decoration: none; transition: 0.2s; }
-        .back-btn:active { transform: scale(0.95); background: var(--border); }
-        .icon-btn-glass { background: var(--surface); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; font-weight: 800; transition: 0.2s; }
+        /* --- 2. HEADER --- */
+        .sticky-header { position: sticky; top: 0; z-index: 50; background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 15px 20px 10px 20px; }
+        .search-input { width: 100%; padding: 12px 12px 12px 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 14px; outline: none; transition: 0.2s; }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; }
 
-        /* Search */
-        .search-wrapper { position: sticky; top: 0; z-index: 10; background: var(--bg); padding-bottom: 10px; }
-        .search-box { width: 100%; padding: 14px 20px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: 'Inter', sans-serif; outline: none; box-shadow: 0 4px 15px rgba(0,0,0,0.03); -webkit-appearance: none; }
-        .search-box:focus { border-color: var(--primary); }
-
-        /* List View */
-        .story-list { display: flex; flex-direction: column; gap: 12px; }
-        .story-card { display: flex; align-items: center; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; cursor: pointer; transition: 0.2s; }
+        /* --- 3. LIST VIEW --- */
+        .container { padding: 15px 20px; }
+        .story-card { display: flex; align-items: center; padding: 16px; background: var(--surface); margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); cursor: pointer; transition: transform 0.1s; }
         .story-card:active { transform: scale(0.98); background: var(--primary-light); }
         
-        /* Surah Badge */
-        .surah-badge { width: 50px; height: 50px; border-radius: 14px; background: var(--primary-light); color: var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); padding: 2px; }
+        .surah-badge { width: 50px; height: 50px; border-radius: 14px; background: var(--primary-light); color: var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05); }
         .surah-badge span { font-size: 8px; opacity: 0.8; text-transform: uppercase; margin-bottom: 2px; }
-        .surah-badge strong { font-size: 10px; font-weight: 800; text-align: center; line-height: 1.1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .surah-badge strong { font-size: 10px; font-weight: 800; text-align: center; line-height: 1.1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
-        .story-content { flex: 1; }
-        .story-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.2; }
-        .story-preview { font-size: 11px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+        .story-info { flex: 1; min-width: 0; }
+        .story-title { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 4px; line-height: 1.2; }
+        .story-preview { font-size: 11px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; opacity: 0.8; }
 
-        /* Reading Mode Overlay */
-        #articleView { position: fixed; inset: 0; background: var(--bg); z-index: 50; padding: 20px; overflow-y: auto; display: none; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .article-body { background: var(--surface); padding: 25px; border-radius: 24px; border: 1px solid var(--border); min-height: 60vh; padding-bottom: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .article-header-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--primary-light); color: var(--primary); font-size: 11px; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .article-body h1 { font-size: 22px; margin-top: 0; margin-bottom: 25px; color: var(--text); line-height: 1.3; }
-        
-        .verse-box { background: var(--bg); border-left: 4px solid var(--primary); padding: 15px; margin-bottom: 25px; border-radius: 12px; }
-        .verse-arabic { font-family: 'Amiri', serif; font-size: 24px; text-align: right; direction: rtl; color: var(--primary); margin-bottom: 10px; line-height: 2.2; }
-        .verse-trans { font-size: 13px; font-style: italic; color: var(--text-muted); line-height: 1.6; }
-        .story-text { font-size: 15px; line-height: 1.8; color: var(--text); white-space: pre-wrap; }
+        /* --- 4. FOCUS MODAL (SCROLLABLE) --- */
+        .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
+        .modal-overlay.open { display: flex; }
+
+        .focus-card { width: 100%; max-width: 400px; background: var(--surface); border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 85vh; position: relative; transform: scale(0.9); opacity: 0; transition: all 0.3s; overflow: hidden; }
+        .modal-overlay.open .focus-card { transform: scale(1); opacity: 1; }
+
+        .focus-scroll-area { padding: 30px 25px; overflow-y: auto; flex: 1; text-align: center; scrollbar-width: none; }
+        .focus-scroll-area::-webkit-scrollbar { display: none; }
+
+        .focus-icon { width: 50px; height: 50px; border-radius: 16px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px auto; }
+        .focus-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); font-weight: 800; margin-bottom: 5px; }
+        .focus-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 20px; line-height: 1.3; }
+        .focus-arabic { font-family: 'Amiri', serif; font-size: 24px; line-height: 2.2; color: var(--primary); margin-bottom: 10px; width: 100%; direction: rtl; background: var(--bg); padding: 10px; border-radius: 12px; border-left: 3px solid var(--primary); }
+        .focus-verse-trans { font-size: 13px; font-style: italic; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+        .focus-story { font-size: 15px; color: var(--text); line-height: 1.7; margin-bottom: 25px; text-align: left; width: 100%; white-space: pre-wrap; font-family: 'Inter', sans-serif; }
+
+        .screenshot-brand { display: none; margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; width: 100%; }
+        .brand-flex { display: flex; justify-content: space-between; align-items: center; }
+        .brand-name { font-size: 12px; font-weight: 800; color: var(--primary); letter-spacing: 1px; text-transform: uppercase; }
+
+        .focus-actions { padding: 15px 25px; background: var(--surface); border-top: 1px solid var(--border); display: flex; gap: 10px; width: 100%; z-index: 10; }
+        .btn-action { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--text); color: var(--bg); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-close { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--bg); border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 20; }
+
+        .spin { animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <a href="index.html" onclick="if(window.history.length > 1){window.history.back(); return false;}" class="back-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </a>
-        <div style="font-weight:800; font-size:16px;" id="pageTitle">Asbabun Nuzul</div>
-        <button class="icon-btn-glass" onclick="toggleLang()" id="langBtn">EN</button>
+    <div class="sticky-header">
+        <div class="search-box" style="position:relative; margin-bottom: 5px;">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search Surah..." onkeyup="filterList()">
+        </div>
     </div>
 
-    <div id="listView">
-        <div class="search-wrapper">
-            <input type="text" class="search-box" id="searchInput" placeholder="Cari surah..." onkeyup="filterList()">
-        </div>
-        <div class="story-list" id="listContainer"></div>
-    </div>
+    <div class="container" id="listContainer"></div>
 
-    <div id="articleView">
-        <div class="header">
-            <button class="back-btn" onclick="closeArticle()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
-            <div style="font-weight:700; font-size:14px; opacity:0.8;">Reading Mode</div>
-            <div style="width:40px;"></div>
-        </div>
-        <div class="article-body">
-            <div class="article-header-badge" id="artVerse">...</div>
-            <div id="verseContainer" class="verse-box">
-                <div id="artArabic" class="verse-arabic"></div>
-                <div id="artVerseTrans" class="verse-trans"></div>
+    <div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="focus-card screenshot-target" onclick="event.stopPropagation()">
+            <button class="btn-close" onclick="closeModal()">&times;</button>
+            <div class="focus-scroll-area">
+                <div class="focus-icon">📜</div>
+                <div class="focus-cat" id="mVerse">SURAH : AYAH</div>
+                <div class="focus-title" id="mTitle">Story Title</div>
+                <div class="focus-arabic" id="mArab">...</div>
+                <div class="focus-verse-trans" id="mTrans">...</div>
+                <div class="focus-story" id="mStory">...</div>
+                <div class="screenshot-brand">
+                    <div class="brand-flex">
+                        <div class="brand-name">MUKMIN.COM</div>
+                        <div style="font-size:10px; opacity:0.7;">Asbabun Nuzul</div>
+                    </div>
+                </div>
             </div>
-            <h1 id="artTitle">...</h1>
-            <div id="artContent" class="story-text"></div>
+            <div class="focus-actions">
+                <button class="btn-action btn-outline" id="btnPlay" onclick="toggleAudio()">
+                    <span id="iconPlay">▶</span> <span>Audio</span>
+                </button>
+                <button class="btn-action btn-primary" id="btnShare" onclick="shareCard()">
+                    <svg class="spin" id="shareSpin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                    <svg id="shareIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                    <span>Share</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // State Management
-        const savedTheme = localStorage.getItem('wsl_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        let currentLang = localStorage.getItem('wsl_lang') || 'en';
-        let currentStory = null; 
-
-        const UI_TEXT = {
-            en: { title: "Asbabun Nuzul", search: "Search Surah..." },
-            ms: { title: "Asbabun Nuzul", search: "Cari Surah..." }
-        };
-
-        // --- EXPANDED DATABASE ---
+        // --- DATASET: 55 AUTHENTIC STORIES ---
         const ASBAB_DB = [
-            {
-                surah: "Al-Fatihah", ayah: "1-7", arabic: "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
-                verseTrans: { ms: "Dengan nama Allah, Yang Maha Pemurah...", en: "In the name of Allah..." },
-                title: { ms: "Permulaan Wahyu Yang Lengkap", en: "The First Complete Revelation" },
-                story: { ms: "Malaikat Jibril mengajar Nabi SAW surah ini sebagai pembukaan Al-Quran.", en: "Angel Gabriel taught this Surah to the Prophet (SAW) as the opening of the Quran." }
-            },
-            {
-                surah: "Ad-Duha", ayah: "1-3", arabic: "مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ",
-                verseTrans: { ms: "Tuhanmu tidak meninggalkanmu dan tidak benci kepadamu...", en: "Your Lord has not taken leave of you, nor has He detested [you]." },
-                title: { ms: "Terhentinya Wahyu Seketika", en: "The Pause in Revelation" },
-                story: { 
-                    ms: "Wahyu tidak turun kepada Nabi SAW selama beberapa hari (ada riwayat kata 15 hari). Wanita musyrik (isteri Abu Lahab) mengejek: 'Syaitan (Tuhan) Muhammad telah meninggalkannya.' Nabi berasa sedih, lalu Allah menurunkan surah ini untuk memujuk baginda.",
-                    en: "Revelation paused for several days. A polytheist woman (Abu Lahab's wife) mocked: 'Muhammad's devil (God) has forsaken him.' The Prophet felt sad, so Allah revealed this Surah to comfort him." 
-                }
-            },
-            {
-                surah: "Al-Ikhlas", ayah: "1-4", arabic: "قُلْ هُوَ اللَّهُ أَحَدٌ",
-                verseTrans: { ms: "Katakanlah: Dia Allah, Yang Maha Esa.", en: "Say: He is Allah, [who is] One." },
-                title: { ms: "Pertanyaan Tentang Nasab Tuhan", en: "Question about God's Lineage" },
-                story: { 
-                    ms: "Orang musyrik datang kepada Nabi SAW dan bertanya: 'Wahai Muhammad, terangkan kepada kami nasab (keturunan) Tuhanmu. Adakah Dia dari emas atau perak?' Maka turunlah surah ini menjelaskan sifat Allah.",
-                    en: "Polytheists came to the Prophet (SAW) and asked: 'O Muhammad, describe to us the lineage of your Lord. Is He made of gold or silver?' So this Surah was revealed explaining Allah's attributes." 
-                }
-            },
-            {
-                surah: "Al-Falaq & An-Nas", ayah: "1-5", arabic: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ",
-                verseTrans: { ms: "Katakanlah: Aku berlindung kepada Tuhan yang menguasai subuh...", en: "Say: I seek refuge in the Lord of daybreak..." },
-                title: { ms: "Sihir Terhadap Nabi SAW", en: "Magic on the Prophet" },
-                story: { 
-                    ms: "Seorang Yahudi bernama Labid bin Al-A'sam telah menyihir Nabi SAW menggunakan rambut baginda yang diikat pada sikat dan diletakkan di dalam perigi. Jibril memberitahu lokasi itu, dan surah Mu'awwidzatain (Falaq & Nas) turun untuk merungkaikan sihir tersebut.",
-                    en: "A Jew named Labid bin Al-A'sam cast a spell on the Prophet (SAW) using his hair tied to a comb and placed it in a well. Jibril revealed the location, and the Mu'awwidzatain (Falaq & Nas) were revealed to break the spell." 
-                }
-            },
-            {
-                surah: "Yasin", ayah: "77-79", arabic: "وَضَرَبَ لَنَا مَثَلًا وَنَسِيَ خَلْقَهُ",
-                verseTrans: { ms: "Dan dia membuat perumpamaan bagi Kami; dan dia lupa kepada kejadiannya sendiri...", en: "And he presents for Us an example and forgets his [own] creation..." },
-                title: { ms: "Cabaran Tulang Reput", en: "The Rotten Bone Challenge" },
-                story: { 
-                    ms: "Ubayy bin Khalaf datang membawa tulang yang telah reput dan hancur, lalu meramasnya di hadapan Nabi SAW sambil berkata: 'Siapakah yang boleh menghidupkan tulang yang telah hancur ini?' Allah menurunkan ayat ini menjawab bahawa Tuhan yang menciptanya kali pertama mampu menghidupkannya semula.",
-                    en: "Ubayy bin Khalaf brought a rotten, crumbling bone and crushed it in front of the Prophet (SAW), asking: 'Who can give life to these bones when they have rotted?' Allah revealed this verse answering that He who created it the first time can resurrect it." 
-                }
-            },
-            {
-                surah: "Al-Hujurat", ayah: "1-2", arabic: "يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَرْفَعُوا أَصْوَاتَكُمْ",
-                verseTrans: { ms: "Wahai orang beriman! Janganlah kamu meninggikan suaramu...", en: "O you who have believed, do not raise your voices..." },
-                title: { ms: "Pertengkaran Abu Bakr & Umar", en: "Abu Bakr & Umar Arguing" },
-                story: { 
-                    ms: "Abu Bakr dan Umar r.a berselisih pendapat di hadapan Nabi SAW mengenai pelantikan ketua rombongan Bani Tamim. Suara mereka menjadi tinggi sehingga turun ayat ini menegur adab bercakap di hadapan Rasulullah.",
-                    en: "Abu Bakr and Umar (RA) disagreed in front of the Prophet (SAW) regarding appointing a leader for the Bani Tamim delegation. Their voices rose, so this verse was revealed teaching proper etiquette when speaking before the Messenger." 
-                }
-            },
-            {
-                surah: "At-Takathur", ayah: "1-2", arabic: "أَلْهَاكُمُ التَّكَاثُرُ",
-                verseTrans: { ms: "Kamu telah dilalaikan oleh perlumbaan memperbanyakkan (harta/keturunan)...", en: "Competition in increase diverts you..." },
-                title: { ms: "Bermegah-megah Antara Kabilah", en: "Boasting Between Tribes" },
-                story: { 
-                    ms: "Dua kabilah Ansar (Bani Harithah & Bani Harith) saling berbangga-bangga dengan jumlah ahli dan harta mereka, sehingga mereka pergi ke kubur untuk mengira ahli keluarga yang telah mati demi menunjukkan siapa lebih ramai.",
-                    en: "Two Ansar tribes (Bani Harithah & Bani Harith) boasted against each other about their numbers and wealth. They even went to the graveyard to count their dead to prove who had more members." 
-                }
-            },
-            {
-                surah: "Al-Mujadilah", ayah: "1", arabic: "قَدْ سَمِعَ اللَّهُ قَوْلَ الَّتِي تُجَادِلُكَ فِي zَوْجِهَا",
-                verseTrans: { ms: "Sesungguhnya Allah telah mendengar perkataan wanita yang bersoal jawab denganmu mengenai suaminya...", en: "Certainly has Allah heard the speech of the one who argues with you concerning her husband..." },
-                title: { ms: "Wanita Yang Mengadu (Khaulah)", en: "The Woman Who Pleaded (Khaulah)" },
-                story: { 
-                    ms: "Khaulah binti Tha'labah mengadu kepada Nabi SAW bahawa suaminya telah menyamakannya dengan ibunya (Zihar - satu bentuk penceraian Arab jahiliyah). Dia merayu kepada Allah tentang nasib anak-anaknya. Allah mendengar rayuannya dari atas tujuh petala langit.",
-                    en: "Khaulah bint Tha'labah complained to the Prophet (SAW) that her husband had equated her to his mother (Zihar - a form of divorce). She pleaded to Allah regarding the fate of her children. Allah heard her plea from above the seven heavens." 
-                }
-            },
-            {
-                surah: "At-Tahrim", ayah: "1", arabic: "يَا أَيُّهَا النَّبِيُّ لِمَ تُحَرِّمُ مَا أَحَلَّ اللَّهُ لَكَ",
-                verseTrans: { ms: "Wahai Nabi! Mengapa engkau mengharamkan apa yang Allah halalkan bagimu...", en: "O Prophet, why do you prohibit [yourself from] what Allah has made lawful for you..." },
-                title: { ms: "Peristiwa Madu", en: "The Honey Incident" },
-                story: { 
-                    ms: "Nabi SAW meminum madu di rumah isteri baginda Zainab binti Jahsy. Aisyah dan Hafsah r.a merancang untuk mengatakan mulut baginda berbau 'Maghafir' (sejenis getah berbau). Nabi kemudian bersumpah tidak akan minum madu lagi. Allah menegur baginda agar tidak mengharamkan yang halal.",
-                    en: "The Prophet (SAW) drank honey at Zainab bint Jahsh's house. Aisha and Hafsa (RA) plotted to say his mouth smelled of 'Maghafir' (a smelly gum). The Prophet vowed never to drink honey again. Allah reprimanded him not to forbid what is lawful." 
-                }
-            },
-            {
-                surah: "Al-Baqarah", ayah: "142", arabic: "سَيَقُولُ السُّفَهَاءُ مِنَ النَّاسِ مَا وَلَّاهُمْ عَن قِبْلَتِهِمُ",
-                verseTrans: { ms: "Orang-orang bodoh akan bertanya: Apakah yang memalingkan mereka dari kiblatnya...", en: "The foolish among the people will say, 'What has turned them away from their qiblah...'" },
-                title: { ms: "Pertukaran Kiblat", en: "The Change of Qiblah" },
-                story: { 
-                    ms: "Nabi SAW dan umat Islam pada mulanya bersolat menghadap Baitul Maqdis selama 16-17 bulan. Baginda sentiasa menoleh ke langit mengharap kiblat diubah ke Kaabah. Maka Allah menurunkan ayat ini untuk menukarkan arah kiblat.",
-                    en: "The Prophet (SAW) and Muslims prayed towards Jerusalem for 16-17 months. He used to look towards the sky hoping for a change. Allah then revealed this verse to change the direction to the Kaaba." 
-                }
-            },
-            {
-                surah: "Al-Kafirun", ayah: "1-6", arabic: "قُلْ يَا أَيُّهَا الْكَافِرُونَ",
-                verseTrans: { ms: "Katakanlah (wahai Muhammad): Wahai orang-orang kafir!", en: "Say, 'O disbelievers!'" },
-                title: { ms: "Tawaran Giliran Beribadah", en: "Proposal to Alternate Worship" },
-                story: { 
-                    ms: "Pihak Quraisy menawarkan satu perjanjian kepada Nabi SAW: 'Kamu sembah tuhan kami setahun, dan kami sembah Tuhanmu setahun.' Surah ini turun sebagai penolakan tegas terhadap kompromi dalam akidah.",
-                    en: "The Quraysh proposed a deal: 'You worship our gods for a year, and we worship yours for a year.' This Surah was revealed as a firm rejection of compromising faith." 
-                }
-            },
-            {
-                surah: "Al-Ma'un", ayah: "1-3", arabic: "أَرَأَيْتَ الَّذِي يُكَذِّبُ بِالدِّينِ",
-                verseTrans: { ms: "Tahukah engkau orang yang mendustakan agama?", en: "Have you seen the one who denies the Recompense?" },
-                title: { ms: "Sifat Abu Sufyan / Abu Jahl", en: "Characteristics of Oppressors" },
-                story: { 
-                    ms: "Dikatakan ayat ini turun mengenai Abu Sufyan yang menyembelih unta, tetapi apabila seorang anak yatim datang meminta sedikit daging, dia menghalaunya dengan kasar menggunakan tongkat.",
-                    en: "It is said this verse was revealed regarding Abu Sufyan who slaughtered a camel, but when an orphan asked for some meat, he harshly drove him away with a stick." 
-                }
-            },
-            {
-                surah: "An-Nasr", ayah: "1-3", arabic: "إِذَا جَاءَ نَصْرُ اللَّهِ وَالْفَتْحُ",
-                verseTrans: { ms: "Apabila datang pertolongan Allah dan kemenangan...", en: "When the victory of Allah has come and the conquest..." },
-                title: { ms: "Khabar Kewafatan Nabi SAW", en: "Tidings of the Prophet's Death" },
-                story: { 
-                    ms: "Surah ini turun selepas Pembukaan Kota Mekah. Para sahabat gembira, namun Ibnu Abbas dan Umar r.a menangis kerana memahami surah ini menandakan tugas Nabi SAW sudah selesai dan ajal baginda sudah dekat.",
-                    en: "This Surah was revealed after the Conquest of Mecca. While most companions rejoiced, Ibn Abbas and Umar (RA) wept, realizing it signaled the completion of the Prophet's mission and his approaching end." 
-                }
-            },
-            {
-                surah: "Al-Humazah", ayah: "1", arabic: "وَيْلٌ لِّكُلِّ هُمَزَةٍ لُّمَزَةٍ",
-                verseTrans: { ms: "Kecelakaanlah bagi setiap pengumpat dan pencela.", en: "Woe to every scorner and mocker." },
-                title: { ms: "Ejekan Akhnas bin Syariq", en: "Mockery by Akhnas bin Shariq" },
-                story: { 
-                    ms: "Ayat ini turun mengenai Akhnas bin Syariq, seorang kaya yang sering mengumpat dan menghina Nabi SAW di hadapan orang ramai. Ada juga riwayat menyebut Umayyah bin Khalaf.",
-                    en: "This verse was revealed regarding Akhnas bin Shariq, a wealthy man who frequently backbit and insulted the Prophet (SAW). Some narrations mention Umayyah bin Khalaf." 
-                }
-            },
-            {
-                surah: "Al-Fil", ayah: "1-5", arabic: "أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ",
-                verseTrans: { ms: "Tidakkah engkau mengetahui...", en: "Have you not considered..." },
-                title: { ms: "Runtuhnya Tentera Abrahah", en: "Destruction of Abrahah's Army" },
-                story: { ms: "Kisah tentera bergajah yang cuba meruntuhkan Kaabah.", en: "The story of the elephant army that tried to destroy the Kaaba." }
-            },
-            {
-                surah: "Al-Kautsar", ayah: "1-3", arabic: "إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ",
-                verseTrans: { ms: "Sesungguhnya Kami telah memberi mu...", en: "Indeed, We have granted you..." },
-                title: { ms: "Penghibur Hati Nabi", en: "Consolation for the Prophet" },
-                story: { ms: "Turun selepas kewafatan anak lelaki Nabi SAW.", en: "Revealed after the passing of the Prophet's son." }
-            },
-            {
-                surah: "Al-Alaq", ayah: "1-5", arabic: "اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ",
-                verseTrans: { ms: "Bacalah dengan nama Tuhanmu...", en: "Recite in the name of your Lord..." },
-                title: { ms: "Wahyu Pertama di Gua Hira", en: "First Revelation in Cave Hira" },
-                story: { 
-                    ms: "Nabi SAW didatangi Jibril ketika sedang bersendirian (tahannuth) di Gua Hira. Jibril memeluk baginda dan berkata 'Iqra!' (Baca!) sebanyak tiga kali sehingga turunlah 5 ayat pertama ini.",
-                    en: "Jibril visited the Prophet (SAW) while he was meditating in Cave Hira. Jibril embraced him and said 'Iqra!' (Read!) three times until these first 5 verses were revealed." 
-                }
-            },
-            {
-                surah: "Al-Qadr", ayah: "1-5", arabic: "إِنَّا أَنزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ",
-                verseTrans: { ms: "Sesungguhnya Kami telah menurunkannya pada malam Lailatul Qadr.", en: "Indeed, We sent it down during the Night of Decree." },
-                title: { ms: "Pahala Umat Terdahulu", en: "Rewards of Previous Nations" },
-                story: { 
-                    ms: "Nabi SAW menceritakan tentang seorang Bani Israil yang berjihad selama 1,000 bulan tanpa henti. Sahabat berasa kecil hati dengan amal mereka. Allah menurunkan surah ini untuk memberi peluang pahala yang lebih besar dalam satu malam.",
-                    en: "The Prophet (SAW) mentioned a man from the Children of Israel who performed Jihad for 1,000 months. The companions felt their deeds were insignificant. Allah revealed this Surah offering a better reward in just one night." 
-                }
-            },
-            {
-                surah: "An-Nur", ayah: "11-20", arabic: "إِنَّ الَّذِينَ جَاءُوا بِالْإِفْكِ عُصْبَةٌ مِّنكُمْ",
-                verseTrans: { ms: "Sesungguhnya orang-orang yang membawa berita dusta itu...", en: "Indeed, those who came with falsehood are a group among you..." },
-                title: { ms: "Fitnah Terhadap Saiditina Aisyah", en: "Slander Against Aisha (RA)" },
-                story: { 
-                    ms: "Berlaku peristiwa Al-Ifki di mana Aisyah r.a difitnah melakukan maksiat. Wahyu terhenti seketika menyebabkan Nabi SAW sangat sedih. Akhirnya Allah menurunkan ayat ini untuk menyucikan maruah Aisyah.",
-                    en: "The Event of Slander (Al-Ifki) occurred where Aisha (RA) was falsely accused. Revelation paused, leaving the Prophet (SAW) in deep sorrow. Finally, Allah revealed these verses to exonerate her." 
-                }
-            },
-             {
-                surah: "Al-Baqarah", ayah: "189", arabic: "يَسْأَلُونَكَ عَنِ الْأَهِلَّةِ ۖ قُلْ هِيَ مَوَاقِيتُ لِلنَّاسِ وَالْحَجِّ",
-                verseTrans: { ms: "Mereka bertanya kepadamu tentang anak-anak bulan...", en: "They ask you, [O Muhammad], about the new moons..." },
-                title: { ms: "Fungsi Fasa Bulan", en: "Purpose of Moon Phases" },
-                story: { 
-                    ms: "Mu'adh bin Jabal bertanya: 'Wahai Rasulullah, mengapa bulan bermula kecil seperti benang, kemudian membesar sehingga bulat, kemudian mengecil kembali?' Allah menjawab bahawa ia adalah panduan waktu bagi manusia.",
-                    en: "Mu'adh bin Jabal asked: 'O Messenger of Allah, why does the moon start thin, grow full, then shrink again?' Allah replied that it serves as a measurement of time for mankind." 
-                }
-            },
-            {
-                surah: "Al-Hasyr", ayah: "9", arabic: "وَيُؤْثِرُونَ عَلَىٰ أَنفُسِهِمْ وَلَوْ كَانَ بِهِمْ خَصَاصَةٌ",
-                verseTrans: { ms: "...dan mereka mengutamakan (orang-orang Muhajirin) daripada diri mereka sendiri...", en: "...and give [them] preference over themselves, even though they are in privation..." },
-                title: { ms: "Keluarga Ansar Yang Pemurah", en: "The Generous Ansar Family" },
-                story: { 
-                    ms: "Seorang tetamu datang kepada Nabi SAW namun baginda tiada makanan. Seorang lelaki Ansar membawa tetamu itu pulang. Walaupun hanya ada makanan untuk anak-anaknya, dia dan isterinya mematikan lampu dan berpura-pura makan supaya tetamu itu kenyang.",
-                    en: "A guest came to the Prophet (SAW) who had no food. An Ansari man took the guest home. Despite having only enough for his children, he and his wife turned off the light and pretended to eat so the guest could eat his fill." 
-                }
-            },
-            {
-                surah: "Al-Ahzab", ayah: "56", arabic: "إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ",
-                verseTrans: { ms: "Sesungguhnya Allah dan malaikat-malaikat-Nya berselawat untuk Nabi...", en: "Indeed, Allah and His angels confer blessing upon the Prophet..." },
-                title: { ms: "Perintah Berselawat", en: "Order to Send Blessings" },
-                story: { 
-                    ms: "Para sahabat bertanya: 'Wahai Rasulullah, kami sudah tahu bagaimana memberi salam kepadamu, tetapi bagaimana cara kami berselawat?' Maka turunlah ayat ini dan Nabi mengajar Selawat Ibrahimiyah.",
-                    en: "The companions asked: 'O Messenger of Allah, we know how to greet you, but how should we send blessings upon you?' This verse was revealed, and the Prophet taught the Ibrahimiyah Salawat." 
-                }
-            },
-            {
-                surah: "Al-Kahfi", ayah: "23-24", arabic: "وَلَا تَقُولَنَّ لِشَيْءٍ إِنِّي فَاعِلٌ ذَٰلِكَ غَدًا * إِلَّا أَن يَشَاءَ اللَّهُ",
-                verseTrans: { ms: "Dan janganlah engkau berkata mengenai sesuatu: 'Aku akan melakukannya esok'. Melainkan (dengan menambah): 'Jika dikehendaki Allah'.", en: "And never say of anything, 'I will do that tomorrow,' Except [when adding], 'If Allah wills.'" },
-                title: { ms: "Kepentingan Mengucap InshaAllah", en: "The Importance of InshaAllah" },
-                story: { 
-                    ms: "Kaum Quraisy bertanya 3 soalan kepada Nabi SAW (tentang Pemuda Gua, Zulkarnain, & Roh). Nabi menjawab: 'Datanglah esok, aku akan beritahu' tanpa menyebut InshaAllah. Wahyu terhenti selama 15 hari sebagai pengajaran.",
-                    en: "Quraysh asked the Prophet (SAW) 3 questions. He replied: 'Come tomorrow, I will tell you' without saying InshaAllah. Revelation was delayed for 15 days as a lesson." 
-                }
-            },
-            {
-                surah: "At-Taubah", ayah: "113", arabic: "مَا كَانَ لِلنَّبِيِّ وَالَّذِينَ آمَنُوا أَن يَسْتَغْفِرُوا لِلْمُشْرِكِينَ",
-                verseTrans: { ms: "Tidaklah dibenarkan bagi Nabi dan orang-orang yang beriman meminta ampun bagi orang-orang musyrik...", en: "It is not for the Prophet and those who have believed to ask forgiveness for the polytheists..." },
-                title: { ms: "Permohonan Ampun Untuk Abu Talib", en: "Asking Forgiveness for Abu Talib" },
-                story: { 
-                    ms: "Apabila bapa saudara Nabi SAW, Abu Talib meninggal dalam keadaan tidak beriman, Nabi berkata: 'Aku akan meminta ampun bagimu selagi tidak dilarang.' Maka Allah menurunkan ayat ini untuk melarang perbuatan tersebut.",
-                    en: "When the Prophet's uncle, Abu Talib, died as a non-believer, the Prophet said: 'I will keep asking forgiveness for you until I am forbidden.' Allah then revealed this verse to forbid it." 
-                }
-            },
-            {
-                surah: "Al-Muddathir", ayah: "1-2", arabic: "يَا أَيُّهَا الْمُدَّثِّرُ * قُمْ فَأَنذِرْ",
-                verseTrans: { ms: "Wahai orang yang berselimut! Bangunlah, lalu berilah peringatan!", en: "O you who covers himself [with a garment], Arise and warn." },
-                title: { ms: "Perintah Berdakwah Secara Terbuka", en: "Order for Public Preaching" },
-                story: { 
-                    ms: "Nabi SAW pulang ke rumah dalam keadaan gementar selepas melihat Jibril di langit. Baginda meminta diselimutkan. Lalu Allah menurunkan ayat ini memerintahkan baginda memulakan dakwah.",
-                    en: "The Prophet (SAW) returned home trembling after seeing Jibril in the sky. He asked to be covered. Allah then revealed this verse, ordering him to begin his preaching." 
-                }
-            },
-            {
-                surah: "Al-Mutaffifin", ayah: "1", arabic: "وَيْلٌ لِّلْمُطَفِّفِينَ",
-                verseTrans: { ms: "Kecelakaan besar bagi orang-orang yang curang (dalam timbangan).", en: "Woe to those who give less [than due]." },
-                title: { ms: "Kecurangan Penduduk Madinah", en: "Dishonesty of Madinah Dwellers" },
-                story: { 
-                    ms: "Apabila Nabi SAW tiba di Madinah, penduduknya adalah orang yang paling teruk dalam menimbang barang. Selepas ayat ini turun, mereka menjadi orang yang paling jujur dalam berniaga.",
-                    en: "When the Prophet (SAW) arrived in Madinah, the people were among the worst in weights and measures. After this verse was revealed, they became the most honest in trade." 
-                }
-            },
-            {
-                surah: "Abasa", ayah: "1", arabic: "عَبَسَ وَتَوَلَّىٰ",
-                verseTrans: { ms: "Dia memasamkan muka...", en: "The Prophet frowned..." },
-                title: { ms: "Teguran Abdullah Ummi Maktum", en: "Reprimand regarding Abdullah Ummi Maktum" },
-                story: { ms: "Teguran Allah apabila Nabi SAW berpaling dari orang buta demi pembesar Quraisy.", en: "Allah's reprimand when the Prophet turned away from a blind man to speak to leaders." }
-            },
-            {
-                surah: "Al-Masad", ayah: "1", arabic: "تَبَّتْ يَدَا أَبِي لَهَبٍ",
-                verseTrans: { ms: "Binasalah tangan Abu Lahab...", en: "Perish the hands of Abu Lahab..." },
-                title: { ms: "Penentangan Abu Lahab", en: "Resistance of Abu Lahab" },
-                story: { ms: "Balasan kepada kutukan Abu Lahab di Bukit Safa.", en: "Response to Abu Lahab's curse at Mount Safa." }
-            },
-            {
-                surah: "Al-Layl", ayah: "1-4", arabic: "وَاللَّيْلِ إِذَا يَغْشَىٰ",
-                verseTrans: { ms: "Demi malam apabila menutupi (cahaya siang)...", en: "By the night when it covers..." },
-                title: { ms: "Abu Bakr Memerdekakan Bilal", en: "Abu Bakr Freeing Bilal" },
-                story: { 
-                    ms: "Umayyah bin Khalaf menyeksa Bilal r.a yang beriman. Abu Bakr membeli dan memerdekakan Bilal. Orang musyrik berkata Abu Bakr berbuat demikian kerana terhutang budi, namun ayat ini turun menjelaskan keikhlasan Abu Bakr semata-mata kerana Allah.",
-                    en: "Umayyah bin Khalaf tortured Bilal (RA) for his faith. Abu Bakr bought and freed him. Polytheists claimed Abu Bakr did it to repay a debt, but this verse was revealed clarifying his sincerity was solely for Allah." 
-                }
-            },
-            {
-                surah: "Al-Munafiqun", ayah: "8", arabic: "يَقُولُونَ لَئِن رَّجَعْنَا إِلَى الْمَدِينَةِ لَيُخْرِجَنَّ الْأَعَزُّ مِنْهَا الْأَذَلَّ",
-                verseTrans: { ms: "Mereka berkata: Jika kita kembali ke Madinah, orang yang mulia pasti akan mengusir orang yang hina...", en: "They say, 'If we return to al-Madinah, the more honored [for power] will surely expel therefrom the more humble.'" },
-                title: { ms: "Keangkuhan Abdullah bin Ubayy", en: "Arrogance of Abdullah bin Ubayy" },
-                story: { 
-                    ms: "Dalam satu ekspedisi, Abdullah bin Ubayy (Ketua Munafik) menghina kaum Muhajirin dan menggelar dirinya 'Yang Mulia' dan Nabi sebagai 'Yang Hina'. Zaid bin Arqam melaporkan hal ini. Abdullah bersumpah dia tidak berkata demikian, namun Allah menurunkan ayat ini membenarkan kata-kata Zaid.",
-                    en: "During an expedition, Abdullah bin Ubayy (Leader of Hypocrites) insulted the Muhajirin, calling himself 'The Honored' and the Prophet 'The Humble'. Zaid bin Arqam reported this. Abdullah swore he didn't say it, but Allah revealed this verse confirming Zaid's report." 
-                }
-            }
+            // JUZ 30 & POPULAR
+            { id: 1, surah: "Al-Fatihah", ayah: "1-7", arabic: "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", verseTrans: { ms: "Dengan nama Allah...", en: "In the name of Allah..." }, title: { ms: "Wahyu Lengkap Pertama", en: "First Complete Revelation" }, story: { ms: "Malaikat Jibril mengajar Nabi SAW surah ini sebagai pembukaan Al-Quran.", en: "Angel Gabriel taught this Surah to the Prophet (SAW) as the opening of the Quran." } },
+            { id: 2, surah: "Al-Alaq", ayah: "1-5", arabic: "اقْرَأْ بِاسْمِ رَبِّكَ", verseTrans: { ms: "Bacalah dengan nama Tuhanmu...", en: "Read in the name of your Lord..." }, title: { ms: "Wahyu Pertama", en: "First Revelation" }, story: { ms: "Jibril memeluk Nabi di Gua Hira dan berkata 'Iqra!' (Baca!) sebanyak 3 kali.", en: "Jibril embraced the Prophet in Cave Hira saying 'Iqra!' (Read!) three times." } },
+            { id: 3, surah: "Al-Muddathir", ayah: "1-2", arabic: "يَا أَيُّهَا الْمُدَّثِّرُ", verseTrans: { ms: "Wahai orang berselimut...", en: "O you who covers himself..." }, title: { ms: "Perintah Dakwah", en: "Order to Preach" }, story: { ms: "Nabi pulang gementar dari Gua Hira minta diselimutkan. Turun ayat perintah berdakwah.", en: "Prophet returned trembling from Hira asking to be covered. Order to preach was revealed." } },
+            { id: 4, surah: "Ad-Duha", ayah: "1-3", arabic: "مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ", verseTrans: { ms: "Tuhanmu tidak meninggalkanmu...", en: "Your Lord has not forsaken you..." }, title: { ms: "Terhentinya Wahyu", en: "Pause in Revelation" }, story: { ms: "Wahyu terhenti lama. Wanita musyrik mengejek: 'Tuhan Muhammad telah meninggalkannya.' Nabi bersedih, lalu Allah menurunkan surah ini.", en: "Revelation paused. A polytheist woman mocked: 'Muhammad's Lord has left him.' The Prophet was sad, so Allah revealed this." } },
+            { id: 5, surah: "Al-Ikhlas", ayah: "1-4", arabic: "قُلْ هُوَ اللَّهُ أَحَدٌ", verseTrans: { ms: "Katakanlah: Dia Allah, Yang Esa.", en: "Say: He is Allah, One." }, title: { ms: "Nasab Tuhan", en: "Lineage of God" }, story: { ms: "Musyrikin bertanya: 'Terangkan nasab Tuhanmu. Adakah dari emas atau perak?' Maka turunlah surah ini.", en: "Polytheists asked: 'Describe your Lord's lineage. Is He gold or silver?' Thus this Surah was revealed." } },
+            { id: 6, surah: "Al-Falaq", ayah: "1-5", arabic: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ", verseTrans: { ms: "Aku berlindung kepada Tuhan subuh...", en: "I seek refuge in the Lord of dawn..." }, title: { ms: "Sihir Labid", en: "Magic of Labid" }, story: { ms: "Seorang Yahudi menyihir Nabi SAW menggunakan rambut baginda. Jibril memberitahu lokasi sihir itu.", en: "A Jew cast a spell on the Prophet (SAW). Jibril revealed the location to break the spell." } },
+            { id: 7, surah: "Al-Kafirun", ayah: "1-6", arabic: "قُلْ يَا أَيُّهَا الْكَافِرُونَ", verseTrans: { ms: "Wahai orang kafir!", en: "O disbelievers!" }, title: { ms: "Tawaran Giliran Ibadah", en: "Worship Deal" }, story: { ms: "Quraisy menawarkan: 'Sembah tuhan kami setahun, kami sembah Tuhanmu setahun.' Surah ini menolak tawaran itu.", en: "Quraysh proposed: 'Worship our gods for a year, we worship yours for a year.' This Surah rejected it." } },
+            { id: 8, surah: "Al-Kautsar", ayah: "1-3", arabic: "إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ", verseTrans: { ms: "Kami memberimu Al-Kautsar...", en: "We gave you Al-Kautsar..." }, title: { ms: "Ejekan Terputus Keturunan", en: "Mockery of Lineage" }, story: { ms: "Apabila anak lelaki Nabi wafat, musyrik mengejek baginda 'abtar' (terputus). Allah menurunkan surah ini sebagai penghibur.", en: "When the Prophet's son died, they mocked him as 'cut off'. Allah revealed this as consolation." } },
+            { id: 9, surah: "Al-Fil", ayah: "1-5", arabic: "أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ", verseTrans: { ms: "Tidakkah engkau lihat...", en: "Have you not seen..." }, title: { ms: "Tentera Bergajah", en: "Elephant Army" }, story: { ms: "Kisah tentera Abrahah yang ingin meruntuhkan Kaabah tetapi dimusnahkan oleh burung Ababil.", en: "The story of Abrahah's army trying to destroy the Kaaba but destroyed by Ababil birds." } },
+            { id: 10, surah: "Al-Masad", ayah: "1", arabic: "تَبَّتْ يَدَا أَبِي لَهَبٍ", verseTrans: { ms: "Binasalah tangan Abu Lahab...", en: "Perish the hands of Abu Lahab..." }, title: { ms: "Kutukan Abu Lahab", en: "Abu Lahab's Curse" }, story: { ms: "Di Bukit Safa, Abu Lahab menjerit kepada Nabi: 'Celakalah kamu! Adakah untuk ini kamu kumpulkan kami?'", en: "At Mount Safa, Abu Lahab shouted at the Prophet: 'May you perish! Is this why you gathered us?'" } },
+            { id: 11, surah: "Abasa", ayah: "1", arabic: "عَبَسَ وَتَوَلَّىٰ", verseTrans: { ms: "Dia memasamkan muka...", en: "He frowned and turned..." }, title: { ms: "Teguran Si Buta", en: "The Blind Man" }, story: { ms: "Nabi berpaling daripada Abdullah Ummi Maktum (buta) kerana melayan pembesar Quraisy. Allah menegur baginda.", en: "The Prophet turned away from a blind man to speak to Quraysh leaders. Allah reprimanded him." } },
+            { id: 12, surah: "Al-Ma'un", ayah: "1-3", arabic: "أَرَأَيْتَ الَّذِي يُكَذِّبُ بِالدِّينِ", verseTrans: { ms: "Tahukah pendusta agama?", en: "Have you seen the denier?" }, title: { ms: "Abu Sufyan Menghalau", en: "Abu Sufyan Repels" }, story: { ms: "Abu Sufyan menyembelih unta, anak yatim minta daging, dia halau dengan tongkat.", en: "Abu Sufyan slaughtered a camel, an orphan asked for meat, he drove him away with a stick." } },
+            { id: 13, surah: "Al-Humazah", ayah: "1", arabic: "وَيْلٌ لِّكُلِّ هُمَزَةٍ", verseTrans: { ms: "Celakalah pengumpat...", en: "Woe to every scorner..." }, title: { ms: "Ejekan Akhnas Syariq", en: "Mockery of Akhnas" }, story: { ms: "Akhnas bin Syariq selalu mengejek dan mengumpat Nabi bila bertemu.", en: "Akhnas bin Shariq used to mock and backbite the Prophet whenever they met." } },
+            { id: 14, surah: "At-Takathur", ayah: "1", arabic: "أَلْهَاكُمُ التَّكَاثُرُ", verseTrans: { ms: "Kamu dilalaikan kemegahan...", en: "Competition diverts you..." }, title: { ms: "Bermegah Kabilah", en: "Boasting Tribes" }, story: { ms: "Dua kabilah Ansar saling berbangga harta dan keturunan sehingga mengira orang mati di kubur.", en: "Two tribes boasted of wealth/numbers until they counted the dead in graves." } },
+            { id: 15, surah: "Al-Qadr", ayah: "1", arabic: "إِنَّا أَنزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ", verseTrans: { ms: "Kami turunkan di Lailatul Qadr...", en: "Sent it on Night of Decree..." }, title: { ms: "Pahala 1000 Bulan", en: "1000 Months Reward" }, story: { ms: "Sahabat rasa amalan mereka sedikit berbanding umat terdahulu yang hidup lama. Allah beri Lailatul Qadar.", en: "Companions felt their deeds were few compared to long-lived past nations. Allah gave Night of Decree." } },
+            
+            // KEY STORIES (BAQARAH, IMRAN, NISA)
+            { id: 16, surah: "Al-Baqarah", ayah: "142", arabic: "سَيَقُولُ السُّفَهَاءُ...", verseTrans: { ms: "Orang bodoh bertanya...", en: "The foolish will ask..." }, title: { ms: "Pertukaran Kiblat", en: "Change of Qiblah" }, story: { ms: "Nabi sering menadah tangan ke langit memohon kiblat ditukar dari Baitul Maqdis ke Kaabah.", en: "The Prophet often looked to the sky hoping the Qiblah would change from Jerusalem to the Kaaba." } },
+            { id: 17, surah: "Al-Baqarah", ayah: "189", arabic: "يَسْأَلُونَكَ عَنِ الْأَهِلَّةِ", verseTrans: { ms: "Mereka tanya tentang anak bulan...", en: "They ask about new moons..." }, title: { ms: "Fungsi Bulan", en: "Phases of Moon" }, story: { ms: "Sahabat bertanya kenapa bulan bermula kecil, membesar, lalu mengecil? Jawabnya: Ia penentu waktu.", en: "Companions asked why the moon waxes and wanes. Answer: It is for measuring time." } },
+            { id: 18, surah: "Al-Baqarah", ayah: "219", arabic: "يَسْأَلُونَكَ عَنِ الْخَمْرِ", verseTrans: { ms: "Mereka tanya arak...", en: "Ask about wine..." }, title: { ms: "Pertanyaan Arak", en: "Alcohol Question" }, story: { ms: "Umar dan sahabat minta penjelasan tentang arak. Ini peringkat awal sebelum haram mutlak.", en: "Umar asked for clarification on alcohol. This was an early stage before total ban." } },
+            { id: 19, surah: "Ali Imran", ayah: "190", arabic: "إِنَّ فِي خَلْقِ السَّمَاوَاتِ", verseTrans: { ms: "Sesungguhnya dalam penciptaan langit...", en: "Indeed in creation of heavens..." }, title: { ms: "Tangisan Nabi", en: "Prophet's Tears" }, story: { ms: "Bilal melihat Nabi menangis solat malam. Nabi berkata: 'Celakalah orang yang membaca ayat ini tapi tidak berfikir.'", en: "Bilal saw the Prophet crying in prayer. The Prophet said: 'Woe to he who reads this and does not reflect.'" } },
+            { id: 20, surah: "An-Nisa", ayah: "58", arabic: "إِنَّ اللَّهَ يَأْمُرُكُمْ أَن تُؤَدُّوا الْأَمَانَاتِ", verseTrans: { ms: "Allah suruh tunai amanah...", en: "Allah commands trust..." }, title: { ms: "Kunci Kaabah", en: "Key of Kaaba" }, story: { ms: "Selepas Fathul Mekah, Nabi memulangkan kunci Kaabah kepada Uthman bin Talhah walaupun Ali r.a memintanya.", en: "After Mecca's conquest, the Prophet returned the Kaaba key to Uthman bin Talhah, despite Ali asking for it." } },
+            
+            // SOCIAL, LEGAL & PROPHETS
+            { id: 21, surah: "Al-Maidah", ayah: "90", arabic: "إِنَّمَا الْخَمْرُ وَالْمَيْسِرُ...", verseTrans: { ms: "Arak dan judi adalah kotor...", en: "Intoxicants and gambling are defilement..." }, title: { ms: "Haram Arak Mutlak", en: "Total Alcohol Ban" }, story: { ms: "Umar r.a berdoa agar Allah memberi penjelasan jelas tentang arak selepas insiden orang mabuk dalam solat.", en: "Umar prayed for a clear ruling on alcohol after incidents of drunkenness in prayer." } },
+            { id: 22, surah: "An-Nur", ayah: "11", arabic: "إِنَّ الَّذِينَ جَاءُوا بِالْإِفْكِ", verseTrans: { ms: "Mereka yang membawa berita dusta...", en: "Those who brought the lie..." }, title: { ms: "Fitnah Aisyah", en: "Slander of Aisha" }, story: { ms: "Aisyah difitnah curang (Al-Ifk). Nabi sedih sehingga turun ayat ini membersihkan nama Aisyah.", en: "Aisha was falsely accused (Al-Ifk). The Prophet was grieved until this verse exonerated her." } },
+            { id: 23, surah: "An-Nur", ayah: "30", arabic: "قُل لِّلْمُؤْمِنِينَ يَغُضُّوا", verseTrans: { ms: "Katakan pada lelaki tunduk pandangan...", en: "Tell men to lower gaze..." }, title: { ms: "Jaga Pandangan", en: "Lowering Gaze" }, story: { ms: "Seorang lelaki di Madinah berjalan sambil memandang wanita sehingga terlanggar tembok.", en: "A man in Madinah walked while staring at a woman until he hit a wall." } },
+            { id: 24, surah: "Al-Hujurat", ayah: "1", arabic: "لَا تَرْفَعُوا أَصْوَاتَكُمْ", verseTrans: { ms: "Jangan tinggikan suara...", en: "Do not raise voices..." }, title: { ms: "Suara Tinggi", en: "Raised Voices" }, story: { ms: "Abu Bakr dan Umar berselisih suara di depan Nabi. Turun ayat menegur adab.", en: "Abu Bakr and Umar raised voices in front of the Prophet. This verse taught etiquette." } },
+            { id: 25, surah: "Al-Hujurat", ayah: "6", arabic: "يَا أَيُّهَا الَّذِينَ آمَنُوا إِن جَاءَكُمْ فَاسِقٌ", verseTrans: { ms: "Jika datang orang fasik...", en: "If a wicked person comes..." }, title: { ms: "Berita Palsu Walid", en: "Walid's Fake News" }, story: { ms: "Walid bin Uqbah lapor Bani Mustaliq murtad. Khalid al-Walid siasat, rupanya mereka sedang solat.", en: "Walid claimed Bani Mustaliq apostated. Khalid investigated and found them praying." } },
+            { id: 26, surah: "Al-Hujurat", ayah: "12", arabic: "وَلَا يَغْتَب بَّعْضُكُم بَعْضًا", verseTrans: { ms: "Jangan mengumpat...", en: "Do not backbite..." }, title: { ms: "Mengumpat Sahabat", en: "Backbiting" }, story: { ms: "Dua orang sahabat mengumpat Salman al-Farisi kerana lambat masak. Allah samakan dengan makan daging saudara.", en: "Two companions backbit Salman regarding food. Allah likened it to eating brother's flesh." } },
+            { id: 27, surah: "Al-Hujurat", ayah: "13", arabic: "إِنَّ أ—كْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ", verseTrans: { ms: "Yang mulia adalah yang bertakwa...", en: "Most noble is most righteous..." }, title: { ms: "Kemuliaan Bilal", en: "Bilal's Honor" }, story: { ms: "Apabila Bilal azan di atas Kaabah, bangsawan mengejek. Allah membalas kemuliaan bukan pada keturunan.", en: "When Bilal called Azan on Kaaba, nobles mocked. Allah replied honor lies in piety." } },
+            { id: 28, surah: "Yusuf", ayah: "3", arabic: "نَحْنُ نَقُصُّ عَلَيْكَ", verseTrans: { ms: "Kami ceritakan kisah terbaik...", en: "We relate best stories..." }, title: { ms: "Pertanyaan Yahudi", en: "Jews' Question" }, story: { ms: "Yahudi menyuruh musyrikin tanya Nabi tentang kisah Yusuf pindah ke Mesir.", en: "Jews told polytheists to ask Prophet about Joseph moving to Egypt." } },
+            { id: 29, surah: "Al-Kahfi", ayah: "23", arabic: "وَلَا تَقُولَنَّ لِشَيْءٍ...", verseTrans: { ms: "Jangan kata 'Aku buat esok'...", en: "Don't say 'I'll do it tomorrow'..." }, title: { ms: "Lupa InshaAllah", en: "Forgot InshaAllah" }, story: { ms: "Nabi ditanya Ashabul Kahfi. Jawab 'Esok beritahu' tanpa InshaAllah. Wahyu henti 15 hari.", en: "Asked about Cave Sleepers, Prophet said 'Tomorrow' without InshaAllah. Revelation paused 15 days." } },
+            { id: 30, surah: "Yasin", ayah: "78", arabic: "مَن يُحْيِي الْعِظَامَ", verseTrans: { ms: "Siapa hidupkan tulang reput?", en: "Who revives rotten bones?" }, title: { ms: "Tulang Reput", en: "Rotten Bone" }, story: { ms: "Ubayy bin Khalaf meramas tulang hancur depan Nabi tanya siapa boleh hidupkannya.", en: "Ubayy bin Khalaf crushed a bone asking Prophet who could possibly revive it." } },
+            { id: 31, surah: "Al-Mujadilah", ayah: "1", arabic: "قَدْ سَمِعَ اللَّهُ...", verseTrans: { ms: "Allah mendengar wanita...", en: "Allah heard the woman..." }, title: { ms: "Wanita Mengadu (Zihar)", en: "Woman's Plea" }, story: { ms: "Khaulah mengadu suaminya menyamakannya dengan ibunya (Zihar). Allah mendengar rayuannya.", en: "Khaulah complained her husband committed Zihar. Allah heard her plea." } },
+            { id: 32, surah: "At-Tahrim", ayah: "1", arabic: "لِمَ تُحَرِّمُ مَا أَحَلَّ اللَّهُ", verseTrans: { ms: "Kenapa haramkan yang halal...", en: "Why forbid lawful..." }, title: { ms: "Peristiwa Madu", en: "Honey Incident" }, story: { ms: "Nabi mengharamkan madu ke atas dirinya demi menjaga hati isteri-isterinya.", en: "Prophet forbade honey for himself to please his wives." } },
+            { id: 33, surah: "Al-Munafiqun", ayah: "8", arabic: "لَيُخْرِجَنَّ الْأَعَزُّ", verseTrans: { ms: "Yang mulia usir yang hina...", en: "Mightier expel humbler..." }, title: { ms: "Kata Abdullah Ubayy", en: "Abdullah Ubayy" }, story: { ms: "Ketua Munafik kata dia akan halau Nabi dari Madinah. Allah bongkar kata-katanya.", en: "Hypocrite Leader said he'd expel Prophet. Allah exposed his words." } },
+            { id: 34, surah: "At-Takathur", ayah: "1", arabic: "أَلْهَاكُمُ التَّكَاثُرُ", verseTrans: { ms: "Kamu dilalaikan kemegahan...", en: "Competition diverts..." }, title: { ms: "Bermegah Kabilah", en: "Boasting Tribes" }, story: { ms: "Dua kabilah Ansar saling berbangga harta hingga kira orang mati di kubur.", en: "Two tribes boasted of wealth/numbers until they counted dead in graves." } },
+            { id: 35, surah: "Al-Layl", ayah: "1", arabic: "وَاللَّيْلِ إِذَا يَغْشَىٰ", verseTrans: { ms: "Demi malam...", en: "By the night..." }, title: { ms: "Pembebasan Bilal", en: "Freeing Bilal" }, story: { ms: "Abu Bakr membebaskan Bilal. Musyrikin kata dia buat sebab terhutang budi. Ayat ini menafikannya.", en: "Abu Bakr freed Bilal. Polytheists claimed he owed a favor. Verse denied it." } },
+            { id: 36, surah: "At-Taubah", ayah: "40", arabic: "إِذْ يَقُولُ لِصَاحِبِهِ", verseTrans: { ms: "Jangan bersedih...", en: "Do not grieve..." }, title: { ms: "Gua Thawr", en: "Cave of Thawr" }, story: { ms: "Di Gua Thawr, Abu Bakr takut musuh nampak. Nabi memujuknya 'Allah bersama kita'.", en: "In Cave Thawr, Abu Bakr feared discovery. Prophet said 'Allah is with us'." } },
+            { id: 37, surah: "Al-Ahzab", ayah: "37", arabic: "فَلَمَّا قَضَىٰ زَيْدٌ", verseTrans: { ms: "Bila Zaid selesaikan hajat...", en: "When Zaid concluded..." }, title: { ms: "Perkahwinan Zainab", en: "Zainab's Marriage" }, story: { ms: "Allah memerintahkan Nabi berkahwin dengan Zainab (bekas isteri anak angkat) untuk batal hukum anak angkat.", en: "Allah ordered Prophet to marry Zainab (ex-wife of adopted son) to annul adoption taboos." } },
+            { id: 38, surah: "Al-Ahzab", ayah: "56", arabic: "إِنَّ اللَّهَ وَمَلَائِكَتَهُ", verseTrans: { ms: "Allah berselawat...", en: "Allah sends blessings..." }, title: { ms: "Perintah Selawat", en: "Order of Salawat" }, story: { ms: "Sahabat tanya cara berselawat. Turun ayat ini dan Nabi ajar Selawat Ibrahimiyah.", en: "Companions asked how to bless Prophet. This verse revealed, Prophet taught Ibrahimiyah." } },
+            { id: 39, surah: "Al-Isra", ayah: "85", arabic: "وَيَسْأَلُونَكَ عَنِ الرُّوحِ", verseTrans: { ms: "Mereka tanya tentang Roh...", en: "They ask about Soul..." }, title: { ms: "Rahsia Roh", en: "Mystery of Soul" }, story: { ms: "Yahudi tanya Nabi tentang Roh. Jawapan: 'Roh urusan Tuhanku'.", en: "Jews asked Prophet about Soul. Answer: 'Soul is my Lord's affair'." } },
+            { id: 40, surah: "At-Taubah", ayah: "113", arabic: "مَا كَانَ لِلنَّبِيِّ...", verseTrans: { ms: "Tidak patut Nabi minta ampun...", en: "Prophet shouldn't ask forgiveness..." }, title: { ms: "Abu Talib", en: "Abu Talib" }, story: { ms: "Nabi mahu minta ampun untuk Abu Talib yang mati kafir. Allah melarangnya.", en: "Prophet wanted to ask forgiveness for Abu Talib who died disbeliever. Allah forbade it." } },
+            { id: 41, surah: "Al-Hasyr", ayah: "9", arabic: "وَيُؤْثِرُونَ عَلَىٰ أَنفُسِهِمْ", verseTrans: { ms: "Mereka mengutamakan orang lain...", en: "They prefer others..." }, title: { ms: "Pemurah Ansar", en: "Ansar Altruism" }, story: { ms: "Keluarga Ansar padam lampu, pura-pura makan supaya tetamu kenyang.", en: "Ansar family dimmed lights, pretended to eat so guest could eat full." } },
+            { id: 42, surah: "Al-Mumtahanah", ayah: "1", arabic: "لَا تَتَّخِذُوا عَدُوِّي...", verseTrans: { ms: "Jangan jadikan musuh-Ku teman...", en: "Don't take My enemy as friend..." }, title: { ms: "Surat Hatib", en: "Hatib's Letter" }, story: { ms: "Hatib hantar surat rahsia ke Mekah tentang rancangan Nabi. Allah bongkar.", en: "Hatib sent secret letter to Mecca about Prophet's plan. Allah revealed it." } },
+            { id: 43, surah: "As-Saff", ayah: "2", arabic: "لِمَ تَقُولُونَ مَا لَا تَفْعَلُونَ", verseTrans: { ms: "Kenapa cakap tak buat...", en: "Why say what you don't do..." }, title: { ms: "Cakap Tak Serupa Bikin", en: "Empty Words" }, story: { ms: "Ada orang kata 'Kalau kami tahu amalan paling disukai, kami buat'. Bila diperintah Jihad, mereka benci.", en: "People said 'If we knew best deed we'd do it'. When Jihad ordered, they disliked it." } },
+            { id: 44, surah: "Al-Qalam", ayah: "4", arabic: "وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ", verseTrans: { ms: "Engkau berakhlak agung...", en: "You are of great character..." }, title: { ms: "Akhlak Nabi", en: "Prophet's Character" }, story: { ms: "Musyrikin tuduh Nabi gila. Allah jawab dengan memuji akhlak baginda.", en: "Polytheists called Prophet mad. Allah replied by praising his character." } },
+            { id: 45, surah: "Al-Balad", ayah: "1", arabic: "لَا أُقْسِمُ بِهَٰذَا الْبَلَدِ", verseTrans: { ms: "Aku bersumpah dengan negeri ini...", en: "I swear by this city..." }, title: { ms: "Mekah", en: "Makkah" }, story: { ms: "Allah memuliakan Mekah tempat kelahiran Nabi dan tempat baginda dihalalkan berjuang.", en: "Allah honored Makkah, Prophet's birth place and where he was allowed to fight." } },
+            { id: 46, surah: "An-Nisa", ayah: "105", arabic: "لِتَحْكُمَ بَيْنَ النَّاسِ", verseTrans: { ms: "Hukum antara manusia...", en: "Judge between people..." }, title: { ms: "Pencuri Perisai", en: "Shield Thief" }, story: { ms: "Seorang Ansar mencuri perisai dan tuduh Yahudi. Nabi hampir percaya Ansar, tapi Allah dedah kebenaran.", en: "Ansar stole shield, framed a Jew. Prophet almost believed Ansar, Allah exposed truth." } },
+            { id: 47, surah: "Al-Anfal", ayah: "1", arabic: "يَسْأَلُونَكَ عَنِ الْأَنفَالِ", verseTrans: { ms: "Mereka tanya harta rampasan...", en: "They ask about spoils..." }, title: { ms: "Harta Badar", en: "Badr Spoils" }, story: { ms: "Selepas Perang Badar, sahabat berselisih tentang pembahagian harta. Allah ambil alih pembahagian.", en: "After Badr, companions argued over spoils. Allah took over distribution." } },
+            { id: 48, surah: "Al-Mutaffifin", ayah: "1", arabic: "وَيْلٌ لِّلْمُطَفِّفِينَ", verseTrans: { ms: "Celaka penipu timbangan...", en: "Woe to cheaters..." }, title: { ms: "Penipu Timbangan", en: "Weighing Fraud" }, story: { ms: "Penduduk Madinah suka curang dalam timbangan. Ayat ini turun, mereka terus berubah jujur.", en: "Madinah people cheated in weights. Verse revealed, they became honest." } },
+            { id: 49, surah: "At-Taghabun", ayah: "14", arabic: "إِنَّ مِنْ أَزْوَاجِكُمْ...", verseTrans: { ms: "Isteri anak jadi musuh...", en: "Wives children enemies..." }, title: { ms: "Halangan Keluarga", en: "Family Obstacles" }, story: { ms: "Ada lelaki nak berhijrah tapi dihalang isteri dan anak menangis. Dia tak jadi pergi.", en: "Men wanted to migrate but wives/children cried stopping them. They stayed." } },
+            { id: 50, surah: "Al-Insyirah", ayah: "1", arabic: "أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ", verseTrans: { ms: "Bukankah Kami lapangkan...", en: "Did We not expand..." }, title: { ms: "Pujuk Nabi", en: "Comforting Prophet" }, story: { ms: "Musyrikin mengejek kemiskinan Nabi. Allah turunkan surah ini janji kesenangan selepas kesusahan.", en: "Polytheists mocked Prophet's poverty. Allah revealed this promising ease after hardship." } },
+            { id: 51, surah: "At-Tin", ayah: "4", arabic: "لَقَدْ خَلَقْنَا الْإِنسَانَ", verseTrans: { ms: "Kami cipta manusia...", en: "Created man..." }, title: { ms: "Kejadian Sempurna", en: "Perfect Creation" }, story: { ms: "Menolak anggapan musyrik bahawa manusia tiada tujuan. Allah cipta sebaik-baik kejadian.", en: "Rejecting polytheist view man has no purpose. Allah created in best stature." } },
+            { id: 52, surah: "Al-Bayyinah", ayah: "1", arabic: "لَمْ يَكُنِ الَّذِينَ كَفَرُوا", verseTrans: { ms: "Orang kafir tidak akan...", en: "Disbelievers would not..." }, title: { ms: "Menanti Bukti", en: "Waiting for Proof" }, story: { ms: "Ahli Kitab janji akan iman bila Nabi akhir zaman datang. Bila datang, mereka ingkar.", en: "People of Book promised to believe when Prophet comes. When he came, they denied." } },
+            { id: 53, surah: "Az-Zalzalah", ayah: "7", arabic: "فَمَن يَعْمَلْ مِثْقَالَ ذَرَّةٍ", verseTrans: { ms: "Sebesar zarah...", en: "Atom's weight..." }, title: { ms: "Sedekah Kecil", en: "Small Charity" }, story: { ms: "Orang rasa dosa kecil tak apa, pahala kecil tak guna. Ayat ini kata semua dikira.", en: "People thought small sins okay, small deeds useless. Verse says all count." } },
+            { id: 54, surah: "Al-Qari'ah", ayah: "1", arabic: "الْقَارِعَةُ", verseTrans: { ms: "Hari Kiamat...", en: "The Calamity..." }, title: { ms: "Dahsyat Kiamat", en: "Horror of Judgment" }, story: { ms: "Peringatan tentang hari di mana manusia seperti kelkatu dan gunung seperti bulu.", en: "Warning of day when people are like moths and mountains like wool." } },
+            { id: 55, surah: "Al-Adiyat", ayah: "1", arabic: "وَالْعَادِيَاتِ ضَبْحًا", verseTrans: { ms: "Demi kuda perang...", en: "By the racers..." }, title: { ms: "Kuda Perang", en: "War Horses" }, story: { ms: "Pasukan perang Nabi lambat pulang, munafik kata dah mati. Allah bersumpah dengan kuda mereka.", en: "Prophet's expedition late returning, hypocrites said dead. Allah swore by their horses." } }
         ];
 
-        function init() { updateUI(); renderList(); }
-        
-        function toggleLang() { 
-            currentLang = currentLang === 'en' ? 'ms' : 'en'; 
-            localStorage.setItem('wsl_lang', currentLang); 
-            updateUI(); 
+        // --- STATE & INIT ---
+        let lang = localStorage.getItem('wsl_lang') || 'en';
+        let currentId = null;
+        let synth = window.speechSynthesis;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncTheme();
             renderList();
-            
-            if(currentStory && document.getElementById('articleView').style.display === 'block') {
-                populateArticleData(currentStory);
-            }
+            updateTexts();
+        });
+
+        window.addEventListener('storage', (e) => {
+            if(e.key === 'wsl_theme') syncTheme();
+            if(e.key === 'wsl_lang') { lang = e.newValue; updateTexts(); renderList(); if(currentId) openModal(currentId); }
+        });
+
+        function syncTheme() {
+            const t = localStorage.getItem('wsl_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
         }
 
-        function updateUI() { 
-            document.getElementById('pageTitle').textContent = UI_TEXT[currentLang].title; 
-            document.getElementById('searchInput').placeholder = UI_TEXT[currentLang].search; 
-            document.getElementById('langBtn').textContent = currentLang.toUpperCase(); 
+        function updateTexts() {
+            document.getElementById('searchInput').placeholder = lang === 'ms' ? "Cari Surah..." : "Search Surah...";
         }
 
+        // --- RENDER LIST ---
+        window.filterList = renderList; 
         function renderList() {
-            const list = document.getElementById('listContainer');
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            list.innerHTML = '';
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const listDiv = document.getElementById('listContainer');
             
-            const filtered = ASBAB_DB.filter(s => s.title[currentLang].toLowerCase().includes(query) || s.surah.toLowerCase().includes(query));
-            
-            if(filtered.length === 0) { 
-                list.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-muted); opacity:0.7;">${currentLang==='en'?'No result found':'Tiada hasil ditemui'}</div>`; 
-                return; 
+            const filtered = ASBAB_DB.filter(d => {
+                const title = lang === 'ms' ? d.title.ms : d.title.en;
+                return title.toLowerCase().includes(q) || d.surah.toLowerCase().includes(q);
+            });
+
+            if(filtered.length === 0) {
+                listDiv.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-style:italic;">Nothing found.</div>`;
+                return;
             }
-            
-            filtered.forEach(s => {
-                const el = document.createElement('div');
-                el.className = 'story-card';
-                el.onclick = () => openStory(s);
-                el.innerHTML = `
+
+            listDiv.innerHTML = filtered.map(d => {
+                const title = lang === 'ms' ? d.title.ms : d.title.en;
+                const prev = lang === 'ms' ? d.story.ms : d.story.en;
+                
+                return `
+                <div class="story-card" onclick="openModal(${d.id})">
                     <div class="surah-badge">
                         <span>SURAH</span>
-                        <strong>${s.surah}</strong>
+                        <strong>${d.surah.split(' ')[0]}</strong>
                     </div>
-                    <div class="story-content">
-                        <div class="story-title">${s.title[currentLang]}</div>
-                        <div class="story-preview">${s.story[currentLang]}</div>
-                    </div>`;
-                list.appendChild(el);
-            });
+                    <div class="story-info">
+                        <div class="story-title">${title}</div>
+                        <div class="story-preview">${prev}</div>
+                    </div>
+                    <div style="color:var(--text-muted); opacity:0.5;">›</div>
+                </div>`;
+            }).join('');
         }
 
-        function filterList() { renderList(); }
-
-        function openStory(s) {
-            currentStory = s;
-            populateArticleData(s);
-            document.getElementById('articleView').style.display = 'block';
+        // --- MODAL LOGIC ---
+        window.openModal = (id) => {
+            const d = ASBAB_DB.find(x => x.id === id);
+            if(!d) return;
+            currentId = id;
+            
+            document.getElementById('mVerse').textContent = `${d.surah} : ${d.ayah}`;
+            document.getElementById('mTitle').textContent = lang === 'ms' ? d.title.ms : d.title.en;
+            document.getElementById('mArab').textContent = d.arabic;
+            document.getElementById('mTrans').textContent = `"${lang === 'ms' ? d.verseTrans.ms : d.verseTrans.en}"`;
+            document.getElementById('mStory').textContent = lang === 'ms' ? d.story.ms : d.story.en;
+            
+            resetAudioBtn();
+            document.getElementById('detailModal').classList.add('open');
         }
 
-        function populateArticleData(s) {
-            document.getElementById('artVerse').textContent = `${s.surah} : ${s.ayah}`;
-            document.getElementById('artArabic').textContent = s.arabic;
-            document.getElementById('artVerseTrans').textContent = `"${s.verseTrans[currentLang]}"`;
-            document.getElementById('artTitle').textContent = s.title[currentLang];
-            document.getElementById('artContent').textContent = s.story[currentLang];
+        window.closeModal = (e) => {
+            if(e && e.target.id !== 'detailModal' && !e.target.classList.contains('btn-close')) return;
+            document.getElementById('detailModal').classList.remove('open');
+            if(synth.speaking) synth.cancel();
         }
 
-        function closeArticle() { 
-            document.getElementById('articleView').style.display = 'none'; 
-            currentStory = null;
+        // --- AUDIO ---
+        window.toggleAudio = () => {
+            const d = ASBAB_DB.find(x => x.id === currentId);
+            const btn = document.getElementById('btnPlay');
+            
+            if(synth.speaking) {
+                synth.cancel();
+                resetAudioBtn();
+            } else {
+                btn.style.borderColor = "var(--primary)";
+                btn.style.color = "var(--primary)";
+                document.getElementById('iconPlay').textContent = "||";
+                
+                const u = new SpeechSynthesisUtterance(d.arabic);
+                u.lang = 'ar-SA';
+                u.rate = 0.8;
+                u.onend = resetAudioBtn;
+                synth.speak(u);
+            }
         }
 
-        init();
+        function resetAudioBtn() {
+            const btn = document.getElementById('btnPlay');
+            btn.style.borderColor = "var(--border)";
+            btn.style.color = "var(--text)";
+            document.getElementById('iconPlay').textContent = "▶";
+        }
+
+        // --- SCREENSHOT & SHARE (Robust Fix + Opacity + Scrolling) ---
+        window.shareCard = async function() {
+            const btn = document.getElementById('btnShare');
+            const spin = document.getElementById('shareSpin');
+            const icon = document.getElementById('shareIcon');
+            const card = document.querySelector('.screenshot-target');
+
+            if(spin) spin.style.display = 'block'; 
+            if(icon) icon.style.display = 'none'; 
+            if(btn) btn.style.opacity = '0.7';
+
+            try {
+                const wrapper = document.createElement('div');
+                const scrollY = window.scrollY;
+
+                Object.assign(wrapper.style, {
+                    position: 'absolute', top: scrollY + 'px', left: '0', width: '100%', height: '100vh', 
+                    zIndex: '10000', background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'Inter', sans-serif"
+                });
+
+                const clone = card.cloneNode(true);
+                clone.style.transform = 'scale(1)'; 
+                clone.style.margin = '0'; 
+                clone.style.opacity = '1'; 
+                clone.style.boxShadow = '0 30px 60px rgba(0,0,0,0.15)';
+                clone.style.maxHeight = 'none'; 
+                
+                const scrollArea = clone.querySelector('.focus-scroll-area');
+                if(scrollArea) { scrollArea.style.overflow = 'visible'; scrollArea.style.height = 'auto'; }
+                
+                clone.querySelector('.btn-close').style.display = 'none';
+                clone.querySelector('.focus-actions').style.display = 'none';
+                clone.querySelector('.screenshot-brand').style.display = 'block';
+                
+                const loadingText = document.createElement('div');
+                loadingText.innerText = "Generating Image...";
+                loadingText.style.cssText = "position:absolute; bottom:50px; font-weight:bold; color:var(--primary); font-size:14px;";
+                wrapper.appendChild(loadingText);
+
+                wrapper.appendChild(clone);
+                document.body.appendChild(wrapper);
+
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const canvas = await html2canvas(wrapper, { 
+                    scale: 2, useCORS: true, backgroundColor: null,
+                    scrollX: 0, scrollY: -scrollY,
+                    windowWidth: document.documentElement.offsetWidth,
+                    windowHeight: document.documentElement.offsetHeight
+                });
+                
+                document.body.removeChild(wrapper);
+
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], "mukmin_asbab.png", { type: "image/png" });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try { await navigator.share({ files: [file] }); } catch(e) {}
+                    } else {
+                        const link = document.createElement('a');
+                        link.download = 'mukmin_asbab.png';
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    }
+                    if(spin) spin.style.display = 'none'; 
+                    if(icon) icon.style.display = 'block'; 
+                    if(btn) btn.style.opacity = '1';
+                });
+
+            } catch (e) {
+                console.error(e);
+                alert("Error generating image.");
+                if(spin) spin.style.display = 'none'; 
+                if(icon) icon.style.display = 'block'; 
+                if(btn) btn.style.opacity = '1';
+                const w = document.querySelector('div[style*="z-index: 10000"]');
+                if(w) document.body.removeChild(w);
+            }
+        }
     </script>
 </body>
 </html>
