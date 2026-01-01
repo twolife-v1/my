@@ -2,637 +2,947 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#A67734">
-    <title>Ultimate Guides | Mukmin.com</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pustaka Ilmu - 100+ Articles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root[data-theme="light"] { --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; --border:#E5E7EB; --shadow: 0 4px 20px rgba(0,0,0,0.05); --card-bg: rgba(255, 255, 255, 0.8); }
-        :root[data-theme="dark"] { --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; --border:#374151; --shadow: 0 4px 20px rgba(0,0,0,0.3); --card-bg: rgba(30, 30, 30, 0.8); }
+        /* --- THEME VARIABLES --- */
+        :root[data-theme="light"] { 
+            --primary: #855e2e; --primary-light: #fdf8f2; 
+            --bg: #f3f4f6; --surface: #ffffff; 
+            --text: #1f2937; --text-muted: #6b7280; 
+            --border: #e5e7eb; --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        :root[data-theme="dark"] { 
+            --primary: #d4af37; --primary-light: #2a2215; 
+            --bg: #111827; --surface: #1f2937; 
+            --text: #f9fafb; --text-muted: #9ca3af; 
+            --border: #374151; --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+        }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: background 0.3s; min-height: 100vh; }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 90px; }
 
-        /* HEADER & HERO */
-        .sticky-header { position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 15px 20px; padding-top: max(15px, env(safe-area-inset-top)); border-bottom: 1px solid transparent; transition: 0.2s; }
-        .sticky-header.scrolled { border-color: var(--border); background: rgba(var(--bg), 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        /* --- UI COMPONENTS --- */
+        .app-header { background: var(--surface); padding: 15px 20px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding-top: max(15px, env(safe-area-inset-top)); }
+        .brand { font-family: 'Amiri', serif; font-size: 20px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .icon-btn { background: transparent; border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text); cursor: pointer; }
         
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .back-btn { background: var(--surface); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text); cursor: pointer; text-decoration: none; box-shadow: var(--shadow); transition: 0.2s; }
-        .back-btn:active { transform: scale(0.95); }
+        /* Nav & Search */
+        .search-container { padding: 15px 20px 10px 20px; background: var(--bg); position: sticky; top: 65px; z-index: 40; }
+        .search-box { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); outline: none; font-size: 15px; box-shadow: var(--shadow); }
+        .search-box:focus { border-color: var(--primary); }
         
-        /* SPOTLIGHT BANNER */
-        .spotlight-wrapper { padding: 0 20px; margin-bottom: 20px; }
-        .spotlight-card { 
-            background: linear-gradient(135deg, var(--primary), #8b6020); 
-            border-radius: 24px; padding: 20px; color: white; position: relative; overflow: hidden; 
-            box-shadow: 0 10px 30px -5px rgba(166, 119, 52, 0.4); cursor: pointer;
+        .nav-scroller { display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 15px 20px; scrollbar-width: none; -ms-overflow-style: none; }
+        .nav-scroller::-webkit-scrollbar { display: none; }
+        .nav-pill { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); white-space: nowrap; cursor: pointer; transition: 0.2s; }
+        .nav-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* Grid & Cards */
+        .library-stats { padding: 0 20px 10px 20px; font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+        .library-grid { padding: 0 20px; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        
+        .book-card { background: var(--surface); border-radius: 14px; padding: 14px; display: flex; align-items: center; border: 1px solid var(--border); cursor: pointer; transition: transform 0.1s; position: relative; }
+        .book-card:active { transform: scale(0.98); background: var(--primary-light); }
+        .book-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 12px; flex-shrink: 0; }
+        .book-info { flex: 1; min-width: 0; }
+        .book-title { font-weight: 700; font-size: 14px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tag { padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; font-size: 9px; display: inline-block; }
+
+        /* Category Colors */
+        .tag-asas { background: #ccfbf1; color: #0f766e; }
+        .tag-fardhu { background: #e0f2fe; color: #0369a1; }
+        .tag-sunat { background: #ffedd5; color: #c2410c; }
+        .tag-sirah { background: #fef9c3; color: #854d0e; }
+        .tag-tokoh { background: #fae8ff; color: #86198f; }
+        .tag-surah { background: #fce7f3; color: #be185d; }
+        .tag-doa { background: #ede9fe; color: #6d28d9; }
+        .tag-adab { background: #dcfce7; color: #15803d; }
+        
+        :root[data-theme="dark"] .tag-asas { background: #115e59; color: #99f6e4; }
+        :root[data-theme="dark"] .tag-fardhu { background: #075985; color: #bae6fd; }
+        :root[data-theme="dark"] .tag-sunat { background: #7c2d12; color: #fdba74; }
+        :root[data-theme="dark"] .tag-sirah { background: #713f12; color: #fef08a; }
+        :root[data-theme="dark"] .tag-tokoh { background: #701a75; color: #f5d0fe; }
+        :root[data-theme="dark"] .tag-surah { background: #831843; color: #fbcfe8; }
+        :root[data-theme="dark"] .tag-doa { background: #5b21b6; color: #ddd6fe; }
+        :root[data-theme="dark"] .tag-adab { background: #166534; color: #bbf7d0; }
+
+        /* --- CENTERED MODAL STYLE (Matches Hadis Harian) --- */
+        #readerModal {
+            position: fixed; inset: 0; z-index: 500;
+            background: rgba(0, 0, 0, 0.75); /* Dark Overlay */
+            backdrop-filter: blur(4px);      /* Blur Effect */
+            display: none; align-items: center; justify-content: center;
+            padding: 20px;
         }
-        .spotlight-card::before { content:''; position: absolute; top:-50%; left:-50%; width: 200%; height: 200%; background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E"); opacity: 0.6; pointer-events: none; }
-        
-        .spotlight-badge { background: rgba(255,255,255,0.25); font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; backdrop-filter: blur(4px); letter-spacing: 1px; }
-        .spotlight-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .spotlight-sub { font-size: 13px; opacity: 0.9; }
-
-        /* MODE SWITCHER */
-        .mode-wrapper { padding: 0 20px; margin-bottom: 15px; }
-        .mode-switch { display: flex; background: var(--surface); padding: 5px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); }
-        .mode-btn { flex: 1; border: none; background: none; padding: 12px; font-weight: 700; font-size: 13px; color: var(--text-muted); cursor: pointer; border-radius: 12px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .mode-btn.active { color: var(--primary); background: var(--primary-light); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-
-        /* SEARCH & CATS */
-        .search-wrapper { padding: 0 20px 10px 20px; }
-        .search-box { width: 100%; padding: 14px 20px; padding-left: 45px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") no-repeat 15px center; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: 0.3s; }
-        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(166, 119, 52, 0.1); }
-
-        .cat-scroller { display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 15px 20px; scrollbar-width: none; -ms-overflow-style: none; }
-        .cat-scroller::-webkit-scrollbar { display: none; }
-        .cat-pill { padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 600; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); transition: 0.2s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .cat-pill.active { background: var(--text); color: var(--bg); border-color: var(--text); transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-
-        /* LIST */
-        .guide-list { display: flex; flex-direction: column; gap: 12px; padding: 0 20px; }
-        .guide-card { 
-            display: flex; align-items: center; padding: 16px; 
-            background: var(--card-bg); border: 1px solid var(--border); 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-            position: relative; overflow: hidden;
-        }
-        .guide-card:active { transform: scale(0.98); background: var(--primary-light); }
-        
-        .card-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--bg); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-right: 15px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .card-content { flex: 1; min-width: 0; }
-        .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-meta { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); }
-        
-        .fav-btn { z-index: 5; padding: 8px; background: none; border: none; cursor: pointer; color: var(--border); transition: 0.2s; }
-        .fav-btn.active { color: #ef4444; transform: scale(1.2); }
-        .fav-btn svg { width: 22px; height: 22px; fill: currentColor; }
-
-        /* TAGS COLORS */
-        .tag-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .cat-asas .tag-dot { background: #0f766e; } .cat-fardhu .tag-dot { background: #0284C7; }
-        .cat-sunat .tag-dot { background: #C2410C; } .cat-umum .tag-dot { background: #9333EA; }
-        .cat-harian .tag-dot { background: #166534; } .cat-sosial .tag-dot { background: #075985; }
-
-        /* READER MODAL */
-        #articleView { 
-            position: fixed; inset: 0; background: var(--bg); z-index: 200; 
-            display: none; flex-direction: column;
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .reader-nav { padding: 15px 20px; padding-top: max(15px, env(safe-area-inset-top)); display: flex; justify-content: space-between; align-items: center; background: var(--surface); border-bottom: 1px solid var(--border); }
-        .reader-controls { display: flex; gap: 10px; }
-        .control-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 14px; cursor: pointer; }
-        
-        .reader-scroll { flex: 1; overflow-y: auto; padding: 25px 20px 100px 20px; scroll-behavior: smooth; }
-        
-        .article-body { max-width: 650px; margin: 0 auto; transition: font-size 0.2s; }
-        .article-body h1 { font-size: 28px; margin-top: 0; margin-bottom: 10px; color: var(--primary); font-family: 'Amiri', serif; line-height: 1.3; }
-        .article-body h2 { font-size: 1.1em; margin-top: 30px; margin-bottom: 12px; border-left: 4px solid var(--primary); padding-left: 15px; font-weight: 800; color: var(--text); }
-        .article-body p, .article-body li { font-size: 1em; line-height: 1.7; color: var(--text); margin-bottom: 15px; opacity: 0.9; }
-        .article-body ol { padding-left: 20px; }
-        
-        /* SPECIAL BLOCKS */
-        .ar-text { 
-            font-family: 'Amiri', serif; font-size: 1.8em; color: var(--primary); 
-            margin: 25px 0; text-align: right; line-height: 2.2; 
-            background: var(--surface); padding: 15px; border-radius: 16px; 
-            border: 1px dashed var(--border);
-        }
-        .dalil-box {
-            background: var(--primary-light); padding: 20px; border-radius: 16px;
-            margin: 25px 0; position: relative; border: 1px solid rgba(166, 119, 52, 0.1);
-        }
-        .dalil-box::before {
-            content: "💡"; position: absolute; top: -12px; left: 20px; 
-            background: var(--bg); padding: 0 5px; font-size: 20px;
+        #readerModal.open {
+            display: flex; animation: fadeIn 0.25s ease-out;
         }
 
-        /* HIGHLIGHT */
-        .highlight { background: #fde047; color: black; padding: 0 2px; border-radius: 2px; }
-        :root[data-theme="dark"] .highlight { background: #854d0e; color: white; }
+        /* The Card Box inside the modal */
+        .reader-card {
+            width: 100%; max-width: 500px;
+            height: 85vh; /* Maximum height */
+            background: var(--surface); 
+            border-radius: 24px; 
+            display: flex; flex-direction: column; 
+            overflow: hidden; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            transform: scale(0.95); opacity: 0;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { to { transform: scale(1); opacity: 1; } }
+
+        /* Header & Content Adjustments */
+        .reader-header {
+            padding: 15px 20px; background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+        }
+        .reader-content {
+            flex: 1; overflow-y: auto; padding: 25px 20px;
+            overscroll-behavior: contain;
+        }
+
+        /* --- CONTENT STYLING --- */
+        .step-list { padding-left: 20px; margin: 10px 0; line-height: 1.6; }
+        .step-list li { margin-bottom: 8px; }
+        .bold-term { color: var(--primary); font-weight: 700; }
+        .arabic-text { font-family: 'Amiri', serif; font-size: 20px; color: var(--primary); margin: 5px 0; display:block; }
+        .highlight-box { background: var(--primary-light); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-top: 15px; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translate(-50%, 20px); background: #1f2937; color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 8px 20px 20px 20px; display: flex; justify-content: space-around; z-index: 40; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 10px; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item svg { width: 24px; height: 24px; margin-bottom: 2px; }
+        .saved-badge { position: absolute; top: 10px; right: 10px; color: var(--primary); display: none; }
+        .book-card.saved .saved-badge { display: block; }
     </style>
 </head>
 <body>
 
-    <div class="sticky-header" id="mainHeader">
-        <div class="header-top">
-            <a href="index.html" class="back-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </a>
-            <div style="font-weight:800; font-size:16px;" id="pageTitle">Knowledge</div>
-            <button class="back-btn" onclick="toggleLang()" id="langBtn" style="font-size:11px; font-weight:800;">EN</button>
+    <div class="app-header">
+        <div class="brand"><span>📚</span> Pustaka Ilmu</div>
+        <div style="display:flex; gap:10px;">
+            <button class="icon-btn" onclick="toggleLang()" id="langBtn" style="font-weight:700; font-size:11px;">EN</button>
+            <button class="icon-btn" onclick="toggleTheme()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
         </div>
     </div>
 
-    <div id="listView">
+    <div id="mainView">
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="Cari artikel..." onkeyup="renderLibrary()">
+        </div>
+
+        <div class="nav-scroller" id="catContainer"></div>
         
-        <div class="spotlight-wrapper" id="spotlightArea">
-            <div class="spotlight-card" onclick="openSpotlight()">
-                <div class="spotlight-badge" id="spotlightBadge">DAILY READ</div>
-                <div class="spotlight-title" id="spotlightTitle">Loading...</div>
-                <div class="spotlight-sub" id="spotlightSub">Tap to read today's wisdom</div>
-            </div>
-        </div>
-
-        <div class="mode-wrapper">
-            <div class="mode-switch">
-                <button class="mode-btn active" onclick="switchSection('ibadah')" id="btn-ibadah">Guides</button>
-                <button class="mode-btn" onclick="switchSection('adab')" id="btn-adab">Etiquette</button>
-                <button class="mode-btn" onclick="switchSection('fav')" id="btn-fav">Favorites</button>
-            </div>
-        </div>
-
-        <div class="search-wrapper">
-            <input type="text" class="search-box" id="searchInput" placeholder="Search topics..." onkeyup="filterGuides()">
-        </div>
-
-        <div class="cat-scroller" id="catContainer"></div>
-
-        <div class="guide-list" id="guideListContainer"></div>
+        <div class="library-stats" id="libStats">Loading...</div>
+        <div class="library-grid" id="libraryGrid"></div>
     </div>
 
-    <div id="articleView">
-        <div class="reader-nav">
-            <button class="back-btn" onclick="closeArticle()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
-            
-            <div class="reader-controls">
-                <button class="control-btn" onclick="adjustFont(-1)">A-</button>
-                <button class="control-btn" onclick="adjustFont(1)">A+</button>
-                <button class="control-btn" onclick="shareArticle()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                </button>
+    <div id="savedView" style="display:none; padding-top:20px;">
+        <div style="padding:0 20px; margin-bottom:15px;">
+            <h2 style="margin:0; font-family:'Amiri',serif; color:var(--primary);">Koleksi Saya</h2>
+        </div>
+        <div class="library-grid" id="savedGrid"></div>
+    </div>
+
+    <div id="readerModal">
+        <div class="reader-card">
+            <div class="reader-header">
+                <button class="icon-btn" onclick="closeReader()">✕</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="icon-btn" onclick="adjustFont()">A+</button>
+                    <button class="icon-btn" onclick="toggleSaveCurrent()" id="bookmarkBtn">♥</button>
+                </div>
+            </div>
+            <div class="reader-content">
+                <h1 id="artTitle" style="font-family:'Amiri',serif; color:var(--primary); text-align:center; margin-top:0;"></h1>
+                <div id="artContent" class="article-text"></div>
             </div>
         </div>
-        <div class="reader-scroll">
-            <div class="article-body" id="articleBody">
-                <h1 id="artTitle">...</h1>
-                <div id="artContent"></div>
-            </div>
+    </div>
+
+    <div id="toast" class="toast">Saved</div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchView('home')" id="nav-home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Library</span>
+        </div>
+        <div class="nav-item" onclick="switchView('saved')" id="nav-saved">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            <span>Saved</span>
         </div>
     </div>
 
     <script>
-        // 1. STATE MANAGEMENT
-        const STATE = {
-            lang: localStorage.getItem('wsl_lang') || 'en',
-            theme: localStorage.getItem('wsl_theme') || 'light',
-            section: 'ibadah',
-            cat: 'all',
-            favorites: JSON.parse(localStorage.getItem('wsl_fav_guides') || '[]'),
-            fontSize: 16,
-            spotlightIndex: -1
+        // --- 1. CONFIGURATION ---
+        let state = {
+            lang: localStorage.getItem('p100_lang') || 'ms',
+            theme: localStorage.getItem('p100_theme') || 'light',
+            saved: JSON.parse(localStorage.getItem('p100_saved')) || [],
+            currentCat: 'all',
+            currentId: null,
+            fontSize: 17
         };
 
-        // Apply Theme
-        document.documentElement.setAttribute('data-theme', STATE.theme);
-
-        // 2. DATA SOURCE
-        const ALL_DATA = [
-            // --- ASAS (Basics) ---
-            { 
-                id: 'g01', section: 'ibadah', cat: 'asas', icon: '☪️',
-                title: { ms: "Rukun Islam (5 Perkara)", en: "5 Pillars of Islam" },
-                content: {
-                    ms: `<ol><li><strong>Syahadah:</strong> Mengucap dua kalimah syahadah.</li><li><strong>Solat:</strong> Menunaikan solat 5 waktu sehari semalam.</li><li><strong>Puasa:</strong> Berpuasa di bulan Ramadhan.</li><li><strong>Zakat:</strong> Mengeluarkan zakat (fitrah & harta).</li><li><strong>Haji:</strong> Menunaikan haji bagi yang mampu.</li></ol>`,
-                    en: `<ol><li><strong>Shahada:</strong> Declaration of faith.</li><li><strong>Salah:</strong> Prayer 5 times a day.</li><li><strong>Sawm:</strong> Fasting in Ramadan.</li><li><strong>Zakat:</strong> Almsgiving.</li><li><strong>Hajj:</strong> Pilgrimage to Mecca if able.</li></ol>`
-                }
-            },
-            { 
-                id: 'g02', section: 'ibadah', cat: 'asas', icon: '❤️',
-                title: { ms: "Rukun Iman (6 Perkara)", en: "6 Pillars of Faith" },
-                content: {
-                    ms: `<ol><li>Beriman kepada Allah.</li><li>Beriman kepada Malaikat.</li><li>Beriman kepada Kitab.</li><li>Beriman kepada Rasul.</li><li>Beriman kepada Hari Kiamat.</li><li>Beriman kepada Qada' & Qadar.</li></ol>`,
-                    en: `<ol><li>Belief in Allah.</li><li>Belief in Angels.</li><li>Belief in Books.</li><li>Belief in Prophets.</li><li>Belief in Judgment Day.</li><li>Belief in Divine Decree.</li></ol>`
-                }
-            },
-            { 
-                id: 'g03', section: 'ibadah', cat: 'asas', icon: '✨',
-                title: { ms: "Sifat 20 Allah", en: "20 Attributes of Allah" },
-                content: {
-                    ms: `<p>Sifat wajib bagi Allah yang perlu diketahui:</p><ol><li>Wujud (Ada)</li> <li>Qidam (Sedia)</li> <li>Baqa (Kekal)</li><li>Mukhalafatuhu lil hawadith</li><li>Qiyamuhu binafsihi</li><li>Wahdaniat (Esa)</li> <li>Qudrat (Berkuasa)</li><li>Iradat (Berkehendak)</li> <li>Ilmun (Mengetahui)</li><li>Hayat (Hidup)</li> <li>Sama' (Mendengar)</li><li>Basar (Melihat)</li> <li>Kalam (Berkata-kata)</li></ol>`,
-                    en: `<p>The obligatory attributes of Allah:</p><ol><li>Wujud (Existence)</li> <li>Qidam (Pre-existence)</li> <li>Baqa (Eternity)</li><li>Mukhalafatuhu lil hawadith</li><li>Qiyamuhu binafsihi</li><li>Wahdaniat (Oneness)</li> <li>Qudrat (Power)</li><li>Iradat (Will)</li> <li>Ilmun (Knowledge)</li><li>Hayat (Life)</li> <li>Sama' (Hearing)</li><li>Basar (Sight)</li> <li>Kalam (Speech)</li></ol>`
-                }
-            },
-            // --- FARDHU ---
-            { 
-                id: 'g04', section: 'ibadah', cat: 'fardhu', icon: '💧',
-                title: { ms: "Cara Wudhu Sempurna", en: "Perfect Wudhu Guide" },
-                content: {
-                    ms: `<h2>Rukun Wudhu</h2><ol><li>Niat</li><li>Muka</li><li>Tangan hingga siku</li><li>Menyapu sedikit kepala</li><li>Kaki hingga buku lali</li><li>Tertib</li></ol><div class="ar-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَصْغَرِ لِلَّهِ تَعَالَى</div><p>Ertinya: "Sahaja aku mengangkat hadas kecil kerana Allah Taala."</p>`,
-                    en: `<h2>Pillars of Wudhu</h2><ol><li>Intention</li><li>Face</li><li>Arms to elbows</li><li>Wiping head</li><li>Feet to ankles</li><li>Order</li></ol><div class="ar-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَصْغَرِ لِلَّهِ تَعَالَى</div>`
-                }
-            },
-            { 
-                id: 'g05', section: 'ibadah', cat: 'fardhu', icon: '🚿',
-                title: { ms: "Mandi Wajib", en: "Ghusl (Major Ablution)" },
-                content: {
-                    ms: `<h2>Rukun Mandi</h2><p>1. Niat dalam hati ketika air menyentuh tubuh pertama kali.<br>2. Meratakan air ke seluruh badan, rambut dan lipatan.</p><div class="ar-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَكْبَرِ لِلَّهِ تَعَالَى</div>`,
-                    en: `<h2>Pillars of Ghusl</h2><p>1. Intention when water touches the body.<br>2. Ensuring water reaches every part of the body.</p><div class="ar-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَكْبَرِ لِلَّهِ تَعَالَى</div>`
-                }
-            },
-            { 
-                id: 'g06', section: 'ibadah', cat: 'fardhu', icon: '🕌',
-                title: { ms: "13 Rukun Solat", en: "13 Pillars of Prayer" },
-                content: {
-                    ms: `<ol><li>Niat</li><li>Berdiri tegak</li><li>Takbiratul Ihram</li><li>Al-Fatihah</li><li>Rukuk</li><li>Iktidal</li><li>Sujud</li><li>Duduk Antara 2 Sujud</li><li>Duduk Tahiyat Akhir</li><li>Baca Tahiyat Akhir</li><li>Selawat atas Nabi</li><li>Salam yang pertama</li><li>Tertib</li></ol>`,
-                    en: `<ol><li>Intention</li><li>Standing</li><li>Takbiratul Ihram</li><li>Al-Fatihah</li><li>Ruku'</li><li>Iktidal</li><li>Sujud</li><li>Sitting Between Sujoods</li><li>Final Sitting</li><li>Final Tashahhud</li><li>Salawat</li><li>First Salam</li><li>Order</li></ol>`
-                }
-            },
-            // --- SUNAT ---
-            { 
-                id: 'g07', section: 'ibadah', cat: 'sunat', icon: '☀️',
-                title: { ms: "Solat Sunat Dhuha", en: "Dhuha Prayer" },
-                content: {
-                    ms: `<h2>Waktu</h2><p>20 minit lepas syuruk hingga sebelum Zohor.</p><h2>Niat</h2><div class="ar-text">أُصَلِّي سُنَّةَ الضُّحَى رَكْعَتَيْنِ لِلَّهِ تَعَالَى</div><div class="dalil-box">"Setiap pagi sendi-sendi kamu perlu bersedekah... memadai dengan 2 rakaat Dhuha." (Muslim)</div>`,
-                    en: `<h2>Time</h2><p>20 mins after sunrise until before Dhuhr.</p><h2>Intention</h2><div class="ar-text">أُصَلِّي سُنَّةَ الضُّحَى رَكْعَتَيْنِ لِلَّهِ تَعَالَى</div>`
-                }
-            },
-            { 
-                id: 'g08', section: 'ibadah', cat: 'sunat', icon: '🌙',
-                title: { ms: "Solat Sunat Tahajjud", en: "Tahajjud Prayer" },
-                content: {
-                    ms: `<h2>Syarat</h2><p>Dilakukan selepas tidur malam, walaupun sekejap.</p><h2>Niat</h2><div class="ar-text">أُصَلِّي سُنَّةَ التَّهَجُّدِ رَكْعَتَيْنِ لِلَّهِ تَعَالَى</div>`,
-                    en: `<h2>Condition</h2><p>Must be performed after sleeping.</p><h2>Intention</h2><div class="ar-text">أُصَلِّي سُنَّةَ التَّهَجُّدِ رَكْعَتَيْنِ لِلَّهِ تَعَالَى</div>`
-                }
-            },
-            // --- UMUM ---
-            { 
-                id: 'g09', section: 'ibadah', cat: 'umum', icon: '📿',
-                title: { ms: "Zikir Selepas Solat", en: "Zikir After Prayer" },
-                content: {
-                    ms: `<p>1. Istighfar (3x)<br>2. Ayat Kursi<br>3. Subhanallah (33x)<br>4. Alhamdulillah (33x)<br>5. Allahu Akbar (33x)<br>6. Lailahaillallah...</p>`,
-                    en: `<p>1. Istighfar (3x)<br>2. Ayatul Kursi<br>3. Subhanallah (33x)<br>4. Alhamdulillah (33x)<br>5. Allahu Akbar (33x)<br>6. Lailahaillallah...</p>`
-                }
-            },
-            { 
-                id: 'g10', section: 'ibadah', cat: 'umum', icon: '🍽️',
-                title: { ms: "Niat Puasa", en: "Fasting Intentions" },
-                content: {
-                    ms: `<h2>Ramadhan (Harian)</h2><div class="ar-text">نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ رَمَضَانَ هَذِهِ السَّنَةِ لِلَّهِ تَعَالَى</div><h2>Ganti (Qada)</h2><div class="ar-text">نَوَيْتُ صَوْمَ غَدٍ عَنْ قَضَاءِ فَرْضِ رَمَضَانَ لِلَّهِ تَعَالَى</div>`,
-                    en: `<h2>Ramadan (Daily)</h2><div class="ar-text">نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ رَمَضَانَ هَذِهِ السَّنَةِ لِلَّهِ تَعَالَى</div>`
-                }
-            },
-            // --- ADAB HARIAN ---
-            { 
-                id: 'g11', section: 'adab', cat: 'harian', icon: '🌅',
-                title: { ms: "Adab Bangun Tidur", en: "Waking Up Etiquette" },
-                content: {
-                    ms: `<ol><li>Sapu muka hilangkan kesan tidur.</li><li>Baca doa bangun tidur.</li><li>Bersugi (gosok gigi).</li><li>Basuh tangan 3 kali.</li></ol><div class="dalil-box">"Apabila Nabi SAW bangun... baginda menggosok wajahnya dan membersihkan mulutnya." (Al-Bukhari)</div>`,
-                    en: `<ol><li>Wipe face.</li><li>Recite Dua.</li><li>Use Siwak/Brush teeth.</li><li>Wash hands 3 times.</li></ol>`
-                }
-            },
-            { 
-                id: 'g12', section: 'adab', cat: 'harian', icon: '🏡',
-                title: { ms: "Adab Masuk Rumah", en: "Entering Home" },
-                content: {
-                    ms: `<p>Masuk kaki <strong>Kanan</strong> dan beri Salam walaupun tiada orang.</p><div class="ar-text">بِسْمِ اللهِ وَلَجْنَا، وَ بِسْمِ اللهِ خَرَجْنَا...</div>`,
-                    en: `<p>Enter with <strong>Right</strong> foot and say Salam even if empty.</p>`
-                }
-            },
-            { 
-                id: 'g13', section: 'adab', cat: 'harian', icon: '🚽',
-                title: { ms: "Adab Tandas", en: "Toilet Etiquette" },
-                content: {
-                    ms: `<p>Masuk Kaki Kiri, Pakai alas kaki, Tutup kepala.</p><h2>Doa Masuk</h2><div class="ar-text">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ</div>`,
-                    en: `<p>Enter Left Foot, Wear slippers, Cover head.</p><h2>Dua Entering</h2><div class="ar-text">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ</div>`
-                }
-            },
-            // --- ADAB SOSIAL ---
-            { 
-                id: 'g14', section: 'adab', cat: 'sosial', icon: '👨‍👩‍👧',
-                title: { ms: "Adab Ibu Bapa", en: "Parents Etiquette" },
-                content: {
-                    ms: `<p>Jangan kata "Ah" (Uff). Cakap dengan suara lembut. Sentiasa doakan mereka.</p><div class="dalil-box">"Dan rendahkanlah dirimu terhadap mereka berdua dengan penuh kesayangan." (Al-Isra: 24)</div>`,
-                    en: `<p>Don't say "Uff". Speak softly. Pray for them.</p><div class="dalil-box">"And lower to them the wing of humility out of mercy." (Al-Isra: 24)</div>`
-                }
-            },
-        
-                // --- RARE / SITUATIONAL (Panic Button Topics) ---
-            
-            // 1. DEATH MANAGEMENT (Critical when it happens)
-            { 
-                id: 'x01', section: 'ibadah', cat: 'fardhu', icon: '⚰️',
-                title: { ms: "Pengurusan Jenazah (Asas)", en: "Funeral Management Basics" },
-                content: {
-                    ms: `<h2>4 Kewajipan Terhadap Jenazah</h2><ol><li><strong>Mandi:</strong> Meratakan air ke seluruh tubuh mayat.</li><li><strong>Kafan:</strong> Membalut dengan kain putih (3 lapis lelaki, 5 wanita).</li><li><strong>Solat:</strong> Solat Jenazah (4 Takbir).</li><li><strong>Kebumi:</strong> Menanam dalam liang lahad/liang cempaka.</li></ol><div class="dalil-box">"Segerakanlah pengurusan jenazah..." (Al-Bukhari)</div>`,
-                    en: `<h2>4 Obligations</h2><ol><li><strong>Washing (Ghusl):</strong> Cleaning the body.</li><li><strong>Shrouding (Kafan):</strong> Wrapping in white cloth.</li><li><strong>Prayer:</strong> Janazah Prayer.</li><li><strong>Burial:</strong> Burying in the grave.</li></ol>`
-                }
-            },
-
-            // 2. FORGETFULNESS IN PRAYER (Very Common)
-            { 
-                id: 'x02', section: 'ibadah', cat: 'sunat', icon: '🙇',
-                title: { ms: "Sujud Sahwi (Terlupa)", en: "Sujud Sahwi (Forgetfulness)" },
-                content: {
-                    ms: `<h2>Bila Perlu Buat?</h2><p>Jika tertinggal Tahiyat Awal atau ragu bilangan rakaat.</p><h2>Cara:</h2><p>Sujud 2 kali <strong>sebelum</strong> memberi salam.</p><h2>Bacaan</h2><div class="ar-text">سُبْحَانَ مَنْ لَا يَنَامُ وَلَا يَسْهُو</div><p>"Maha Suci Allah yang tidak tidur dan tidak lupa."</p>`,
-                    en: `<h2>When?</h2><p>If you missed the First Tashahhud or doubt the rak'ah count.</p><h2>How:</h2><p>Prostrate 2 times <strong>before</strong> Salam.</p><h2>Recitation</h2><div class="ar-text">سُبْحَانَ مَنْ لَا يَنَامُ وَلَا يَسْهُو</div>`
-                }
-            },
-
-            // 3. NIGHTMARES (Scary Moments)
-            { 
-                id: 'x03', section: 'adab', cat: 'harian', icon: '😱',
-                title: { ms: "Mimpi Buruk/Ngeri", en: "Bad Dreams/Nightmares" },
-                content: {
-                    ms: `<h2>Apa Perlu Buat?</h2><ol><li>Ludah (isyarat tanpa air) ke kiri 3 kali.</li><li>Baca Ta'awudz (A'uzubillah...).</li><li>Ubah posisi tidur.</li><li>Jangan cerita pada orang lain.</li></ol><div class="dalil-box">"Mimpi buruk itu dari syaitan..." (Muslim)</div>`,
-                    en: `<h2>What to do?</h2><ol><li>Spit (dry/symbolic) to the left 3 times.</li><li>Seek refuge (A'uzubillah...).</li><li>Change sleeping position.</li><li>Do not tell anyone.</li></ol>`
-                }
-            },
-
-            // 4. FINDING LOST ITEMS (Moral Dilemma)
-            { 
-                id: 'x04', section: 'adab', cat: 'sosial', icon: '💰',
-                title: { ms: "Jumpa Barang Hilang (Luqatah)", en: "Finding Lost Items" },
-                content: {
-                    ms: `<h2>Barang Remeh (Pen, duit syiling)</h2><p>Boleh diambil dan dimanfaatkan.</p><h2>Barang Berharga (Dompet, Emas)</h2><p>Wajib dihebahkan selama setahun. Jika tiada tuntutan selepas setahun, baru boleh dimilik/sedekah.</p>`,
-                    en: `<h2>Trivial Items (Pen, coins)</h2><p>Can be kept or used.</p><h2>Valuable Items (Wallet, Gold)</h2><p>Must be announced/advertised for one year. Only after that can it be kept or donated.</p>`
-                }
-            },
-
-            // 5. NEWBORN BABY (New Dad Panic)
-            { 
-                id: 'x05', section: 'adab', cat: 'sosial', icon: '👶',
-                title: { ms: "Sambut Bayi Baru Lahir", en: "Newborn Protocols" },
-                content: {
-                    ms: `<ol><li><strong>Azan:</strong> Diazankan telinga kanan (sunat).</li><li><strong>Tahnik:</strong> Belah mulut dengan kurma/benda manis.</li><li><strong>Nama:</strong> Beri nama baik (hari ke-7).</li><li><strong>Aqiqah:</strong> Sembelihan kambing (hari ke-7).</li></ol>`,
-                    en: `<ol><li><strong>Adhan:</strong> Call to prayer in right ear.</li><li><strong>Tahnik:</strong> Rubbing gums with dates/sweet.</li><li><strong>Naming:</strong> Good name (Day 7).</li><li><strong>Aqiqah:</strong> Sacrifice (Day 7).</li></ol>`
-                }
-            },
-
-                        // 6. ECLIPSE (Rare Event)
-            { 
-                id: 'x06', section: 'ibadah', cat: 'sunat', icon: '🌑',
-                title: { ms: "Solat Gerhana (Kusuf)", en: "Eclipse Prayer" },
-                content: {
-                    ms: `<h2>Cara Ringkas</h2><p>Solat 2 rakaat seperti biasa, ATAU;</p><h2>Cara Sempurna</h2><p>2 Rakaat, setiap rakaat ada <strong>2 kali Rukuk</strong> (Rukuk, Iktidal, Baca Fatihah lagi, Rukuk, Iktidal, Sujud).</p>`,
-                    en: `<h2>Simple Way</h2><p>Pray 2 rak'ah as normal, OR;</p><h2>Perfect Way</h2><p>2 Rak'ah, each rak'ah has <strong>2 Bowings (Ruku')</strong>.</p>`
-                }
-            }, // <--- THIS COMMA WAS MISSING!
-
-            // --- DAILY GUIDES EXPANSION (Routine) ---
-
-            // 1. EATING & DRINKING (3 Times a Day)
-            { 
-                id: 'h01', section: 'adab', cat: 'harian', icon: '🍽️',
-
-                title: { ms: "Adab Makan & Minum", en: "Eating & Drinking" },
-                content: {
-                    ms: `<h2>Adab Utama</h2><ol><li><strong>Basuh Tangan:</strong> Sebelum & selepas.</li><li><strong>Bismillah:</strong> Baca doa makan.</li><li><strong>Tangan Kanan:</strong> Wajib guna tangan kanan.</li><li><strong>Duduk:</strong> Jangan makan/minum berdiri.</li></ol><div class="dalil-box">"Wahai anak, sebutlah nama Allah, makanlah dengan tangan kananmu, dan makanlah makanan yang dekat denganmu." (Al-Bukhari)</div>`,
-                    en: `<h2>Key Etiquette</h2><ol><li><strong>Wash Hands:</strong> Before & after.</li><li><strong>Bismillah:</strong> Recite Dua.</li><li><strong>Right Hand:</strong> Mandatory to use right hand.</li><li><strong>Sit Down:</strong> Do not eat/drink while standing.</li></ol>`
-                }
-            },
-
-            // 2. DRESSING (Morning Routine)
-            { 
-                id: 'h02', section: 'adab', cat: 'harian', icon: '👕',
-                title: { ms: "Adab Berpakaian", en: "Dressing Etiquette" },
-                content: {
-                    ms: `<h2>Cara Pakai & Buka</h2><p><strong>Memakai:</strong> Mulakan anggota KANAN (baju/seluar/kasut).<br><strong>Membuka:</strong> Mulakan anggota KIRI.</p><h2>Syarat Pakaian</h2><p>Menutup aurat, tidak ketat, dan tidak menyerupai jantina lawan.</p><div class="ar-text">اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ خَيْرِهِ وَخَيْرِ مَا هُوَ لَهُ</div>`,
-                    en: `<h2>Wearing & Removing</h2><p><strong>Wear:</strong> Start with RIGHT limb.<br><strong>Remove:</strong> Start with LEFT limb.</p><h2>Conditions</h2><p>Cover Awrah, not tight, and does not imitate the opposite gender.</p>`
-                }
-            },
-
-            // 3. LEAVING HOME (Safety & Tawakkal)
-            { 
-                id: 'h03', section: 'adab', cat: 'harian', icon: '🚪',
-                title: { ms: "Adab Keluar Rumah", en: "Leaving Home" },
-                content: {
-                    ms: `<h2>Amalan</h2><p>Langkah keluar dengan kaki <strong>Kiri</strong> (sebaliknya dari masjid/rumah). Pandang ke langit dan baca doa tawakkal.</p><h2>Doa Power</h2><div class="ar-text">بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ</div><p>"Dengan nama Allah, aku bertawakkal kepada-Nya..."</p>`,
-                    en: `<h2>Practice</h2><p>Step out with <strong>Left</strong> foot (opposite of mosque/entering). Look at the sky and recite Dua.</p><h2>The Dua</h2><div class="ar-text">بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ</div>`
-                }
-            },
-
-            // 4. SNEEZING & YAWNING (Social Reflexes)
-            { 
-                id: 'h04', section: 'adab', cat: 'sosial', icon: '🤧',
-                title: { ms: "Bersin & Menguap", en: "Sneezing & Yawning" },
-                content: {
-                    ms: `<h2>Bersin (Rahmat)</h2><p>Ucap <strong>Alhamdulillah</strong>. Orang yang dengar jawab <strong>Yarhamukallah</strong>. Kita balas <strong>Yahdikumullah</strong>.</p><h2>Menguap (Malas)</h2><p>Tutup mulut dengan tangan kiri (belakang tapak tangan). Tahan bunyi "Aaa".</p>`,
-                    en: `<h2>Sneezing (Mercy)</h2><p>Say <strong>Alhamdulillah</strong>. Listener says <strong>Yarhamukallah</strong>. You reply <strong>Yahdikumullah</strong>.</p><h2>Yawning (Laziness)</h2><p>Cover mouth with left hand. Suppress the noise.</p>`
-                }
-            },
-
-                     // 5. SLEEPING (Closing the Day)
-            { 
-                id: 'h05', section: 'adab', cat: 'harian', icon: '🛌',
-                title: { ms: "Adab Tidur Lengkap", en: "Full Sleeping Guide" },
-                content: {
-                    ms: `<h2>Sunnah Nabi SAW</h2><ol><li><strong>Wudhu:</strong> Tidur dalam keadaan suci.</li><li><strong>Kibas:</strong> Kibas tempat tidur 3 kali.</li><li><strong>Posisi:</strong> Mengiring ke kanan, tapak tangan di pipi kanan.</li><li><strong>Bacaan:</strong> 3 Qul (Al-Ikhlas, Al-Falaq, An-Nas) & Ayatul Kursi.</li></ol><div class="ar-text">بِسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا</div>`,
-                    en: `<h2>Sunnah of Prophet SAW</h2><ol><li><strong>Wudhu:</strong> Sleep in a state of purity.</li><li><strong>Dusting:</strong> Dust the bed 3 times.</li><li><strong>Position:</strong> Lie on right side, palm under cheek.</li><li><strong>Recite:</strong> 3 Quls & Ayatul Kursi.</li></ol><div class="ar-text">بِسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا</div>`
-                }
-            }
-        ]; // <--- CLOSE THE ARRAY HERE
-
-        // 3. UI TEXT CONSTANTS
         const TEXT = {
-            en: {
-                pageTitle: "Knowledge", btnIbadah: "Guides", btnAdab: "Etiquette", btnFav: "Favorites",
-                search: "Search topics...", all: "All", spotlight: "Daily Read",
-                cats: { asas: "Basics", fardhu: "Obligatory", sunat: "Voluntary", umum: "General", harian: "Daily", sosial: "Social", sunnah: "Sunnah" }
-            },
-            ms: {
-                pageTitle: "Pustaka Ilmu", btnIbadah: "Panduan", btnAdab: "Adab", btnFav: "Pilihan",
-                search: "Cari topik...", all: "Semua", spotlight: "Bacaan Hari Ini",
-                cats: { asas: "Asas", fardhu: "Fardhu", sunat: "Sunat", umum: "Umum", harian: "Harian", sosial: "Sosial", sunnah: "Sunnah" }
-            }
+            ms: { cats: { all: "Semua", asas: "Asas", fardhu: "Fardhu", sunat: "Solat Sunat", sirah: "Sirah", tokoh: "Tokoh", surah: "Surah", doa: "Doa", adab: "Adab" } },
+            en: { cats: { all: "All", asas: "Basics", fardhu: "Obligatory", sunat: "Voluntary Prayers", sirah: "History", tokoh: "Figures", surah: "Surah", doa: "Dua", adab: "Etiquette" } }
         };
 
+        // --- 2. EXPANDED DATABASE (REAL STEP-BY-STEP CONTENT) ---
+        const LIBRARY = [
+            // === ASAS (BASICS) ===
+            { 
+                id: 'a1', cat: 'asas', icon: '💧', 
+                t: {ms:"Cara Ambil Wudhu (Lengkap)", en:"How to Perform Wudhu (Step-by-Step)"}, 
+                c: {
+                    ms:`<p>Berikut adalah cara wudhu yang sempurna mengikut sunnah:</p>
+                        <ol class="step-list">
+                            <li><b>Niat & Membasuh Tangan:</b> Baca Bismillah & basuh tangan hingga pergelangan (3x).</li>
+                            <li><b>Berkumur:</b> Masukkan air ke mulut & kumur (3x).</li>
+                            <li><b>Memasukkan Air ke Hidung:</b> Sedut air ke hidung & hembus keluar (3x).</li>
+                            <li><b>Membasuh Muka:</b> Basuh seluruh muka dari anak rambut ke dagu, telinga ke telinga (3x) sambil berniat di hati: <br><span class="arabic-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَصْغَرِ لِلهِ تَعَالَى</span><br><i>(Sahaja aku mengangkat hadas kecil kerana Allah Taala)</i></li>
+                            <li><b>Membasuh Tangan:</b> Basuh tangan kanan hingga siku (3x), kemudian tangan kiri (3x). Pastikan air rata.</li>
+                            <li><b>Menyapu Kepala:</b> Sapu sebahagian kepala atau keseluruhan rambut dengan air (1x).</li>
+                            <li><b>Membasuh Telinga:</b> Sapu telinga dalam & luar (3x).</li>
+                            <li><b>Membasuh Kaki:</b> Basuh kaki kanan hingga buku lali (3x), kemudian kaki kiri (3x). Gosok celah jari.</li>
+                            <li><b>Tertib:</b> Lakukan mengikut urutan.</li>
+                        </ol>
+                        <div class="highlight-box"><b>Doa Selepas Wudhu:</b><br>Asyhadu an la ilaha illallah wahdahu la syarikalah...</div>`,
+                    en:`<p>Steps for a complete Wudhu according to Sunnah:</p>
+                        <ol class="step-list">
+                            <li><b>Intention & Hands:</b> Say Bismillah & wash hands to wrists (3x).</li>
+                            <li><b>Mouth:</b> Rinse mouth thoroughly (3x).</li>
+                            <li><b>Nose:</b> Sniff water into nose & blow out (3x).</li>
+                            <li><b>Face:</b> Wash entire face (hairline to chin) (3x) while making intention inside heart.</li>
+                            <li><b>Arms:</b> Wash right arm up to elbow (3x), then left arm (3x).</li>
+                            <li><b>Head:</b> Wipe part or all of the head with wet hands (1x).</li>
+                            <li><b>Ears:</b> Wipe inside and outside of ears (3x).</li>
+                            <li><b>Feet:</b> Wash right foot up to ankle (3x), then left (3x). Wash between toes.</li>
+                            <li><b>Order:</b> Must be done in this sequence.</li>
+                        </ol>`
+                } 
+            },
+            { 
+                id: 'a2', cat: 'asas', icon: '🛁', 
+                t: {ms:"Cara Mandi Wajib", en:"Ghusl (Major Ablution)"}, 
+                c: {
+                    ms:`<p>Mandi wajib diperlukan selepas haid, nifas, atau keluar mani.</p>
+                        <h4 class="bold-term">Rukun (Wajib Buat):</h4>
+                        <ol class="step-list">
+                            <li><b>Niat:</b> <span class="arabic-text">نَوَيْتُ رَفْعَ الْحَدَثِ الْأَكْبَرِ لِلهِ تَعَالَى</span> (Sahaja aku mengangkat hadas besar kerana Allah Taala).</li>
+                            <li><b>Meratakan Air:</b> Air mesti sampai ke seluruh anggota badan, kulit, dan rambut (celah lipatan, pusat, rambut tebal).</li>
+                        </ol>
+                        <h4 class="bold-term">Sunnah Mandi:</h4>
+                        <ul class="step-list">
+                            <li>Basuh tangan & kemaluan dahulu (hilangkan najis).</li>
+                            <li>Ambil wudhu sebelum mula mandi.</li>
+                            <li>Dahulukan anggota kanan.</li>
+                            <li>Gosok badan (Dalk).</li>
+                        </ul>`,
+                    en:`<p>Required after menstruation, postpartum, or sexual impurity.</p>
+                        <h4 class="bold-term">Integrals (Must Do):</h4>
+                        <ol class="step-list">
+                            <li><b>Intention:</b> (I intend to remove the major impurity for the sake of Allah).</li>
+                            <li><b>Covering the body:</b> Water must reach every part of the body, skin, and hair roots.</li>
+                        </ol>`
+                } 
+            },
+            { 
+                id: 'a3', cat: 'asas', icon: '🏜️', 
+                t: {ms:"Cara Tayammum", en:"How to Perform Tayammum"}, 
+                c: {
+                    ms:`<p>Gunakan debu tanah yang suci apabila tiada air atau sakit menghalang guna air.</p>
+                        <ol class="step-list">
+                            <li><b>Niat:</b> <i>Sahaja aku bertayammum untuk mengharuskan solat kerana Allah Taala.</i></li>
+                            <li><b>Tepuk Debu (1):</b> Tepuk kedua tangan ke tanah/debu, nipiskan debu (tepuk tangan sisi).</li>
+                            <li><b>Sapu Muka:</b> Sapu seluruh muka dengan debu tadi.</li>
+                            <li><b>Tepuk Debu (2):</b> Tepuk kali kedua di tempat debu yang baru.</li>
+                            <li><b>Sapu Tangan:</b> Sapu tangan kanan hingga siku, kemudian tangan kiri hingga siku.</li>
+                            <li><b>Tertib.</b></li>
+                        </ol>`,
+                    en:`<p>Use clean dust/earth when water is unavailable or harmful.</p>
+                        <ol class="step-list">
+                            <li><b>Intention:</b> I intend to perform Tayammum to permit prayer.</li>
+                            <li><b>Strike 1:</b> Strike hands on dust, shake off excess.</li>
+                            <li><b>Face:</b> Wipe the entire face once.</li>
+                            <li><b>Strike 2:</b> Strike hands on new dust.</li>
+                            <li><b>Arms:</b> Wipe right arm to elbow, then left arm to elbow.</li>
+                        </ol>`
+                } 
+            },
 
-        // 4. CORE FUNCTIONS
+            // === FARDHU (OBLIGATORY) ===
+            { 
+                id: 'f1', cat: 'fardhu', icon: '🕌', 
+                t: {ms:"Panduan Solat (Lengkap)", en:"Complete Guide to Salah"}, 
+                c: {
+                    ms:`<p>Turutan rukun fi'li (perbuatan) dalam solat:</p>
+                        <ol class="step-list">
+                            <li><b>Berdiri Tegak & Niat:</b> Berdiri bagi yang mampu. Niat dalam hati mengikut waktu solat.</li>
+                            <li><b>Takbiratul Ihram:</b> Angkat tangan paras telinga, sebut "Allahu Akbar". Mata pandang tempat sujud.</li>
+                            <li><b>Membaca Al-Fatihah:</b> Wajib dibaca dengan tertib dan tajwid setiap rakaat. (Bismillah adalah sebahagian Fatihah).</li>
+                            <li><b>Rukuk:</b> Bungkuk badan 90 darjah, tangan pegang lutut. Baca tasbih 3x.</li>
+                            <li><b>Iktidal:</b> Bangun tegak semula. Baca "Sami'allahu liman hamidah...".</li>
+                            <li><b>Sujud:</b> Dahi, hidung, dua tapak tangan, dua lutut & perut jari kaki mesti kena lantai. Baca tasbih 3x.</li>
+                            <li><b>Duduk Antara Dua Sujud:</b> Duduk iftirasy. Baca "Rabbighfirli...".</li>
+                            <li><b>Sujud Kedua.</b></li>
+                            <li><b>Tahiyat Akhir:</b> Duduk tawarruk, baca Tahiyat & Selawat Nabi.</li>
+                            <li><b>Salam:</b> Beri salam kanan (wajib) & kiri (sunat).</li>
+                        </ol>`,
+                    en:`<p>Sequence of actions in Prayer:</p>
+                        <ol class="step-list">
+                            <li><b>Stand & Intention:</b> Stand upright facing Qibla. Intend specifically for the prayer.</li>
+                            <li><b>Takbiratul Ihram:</b> Raise hands and say "Allahu Akbar".</li>
+                            <li><b>Al-Fatihah:</b> Recite Surah Al-Fatihah (Obligatory in every rakaat).</li>
+                            <li><b>Ruku' (Bowing):</b> Bow until back is level. Hands on knees.</li>
+                            <li><b>Iktidal (Standing):</b> Return to standing position.</li>
+                            <li><b>Sujud (Prostration):</b> 7 body parts must touch ground (Forehead, palms, knees, toes).</li>
+                            <li><b>Sitting:</b> Sit between prostrations.</li>
+                            <li><b>Final Tashahhud:</b> Recite Tahiyat and Salawat.</li>
+                            <li><b>Salam:</b> Turn head to right (Peace be upon you).</li>
+                        </ol>`
+                } 
+            },
+            { 
+                id: 'f2', cat: 'fardhu', icon: '⚰️', 
+                t: {ms:"Cara Solat Jenazah", en:"Funeral Prayer Guide"}, 
+                c: {
+                    ms:`<p>Solat ini tiada Rukuk dan Sujud. Ia dilakukan berdiri dengan 4 Takbir.</p>
+                        <ol class="step-list">
+                            <li><b>Niat:</b> Sahaja aku solat jenazah (lelaki/perempuan) 4 takbir fardhu kifayah...</li>
+                            <li><b>Takbir Pertama:</b> Baca <b>Surah Al-Fatihah</b>.</li>
+                            <li><b>Takbir Kedua:</b> Baca <b>Selawat Ibrahimiyah</b> (Allahumma salli ala Muhammad...).</li>
+                            <li><b>Takbir Ketiga:</b> Baca <b>Doa untuk Jenazah</b>.<br><i>(Allahummaghfirlahu warhamhu wa'afihi wa'fu 'anhu)</i></li>
+                            <li><b>Takbir Keempat:</b> Baca doa kesejahteraan & Beri Salam kanan/kiri.</li>
+                        </ol>`,
+                    en:`<p>No bowing or prostration. Performed standing with 4 Takbirs.</p>
+                        <ol class="step-list">
+                            <li><b>Intention & Takbir 1:</b> Recite <b>Al-Fatihah</b>.</li>
+                            <li><b>Takbir 2:</b> Recite <b>Salawat</b> (Blessings on Prophet).</li>
+                            <li><b>Takbir 3:</b> Recite <b>Dua for Deceased</b> (O Allah forgive him/her...).</li>
+                            <li><b>Takbir 4:</b> Recite final dua and give Salam.</li>
+                        </ol>`
+                } 
+            },
+
+            // === SUNAT (EXTRA) ===
+            { 
+                id: 's1', cat: 'sunat', icon: '🌤️', 
+                t: {ms:"Cara Solat Dhuha", en:"How to perform Dhuha"}, 
+                c: {
+                    ms:`<p>Waktu: Selepas matahari naik (syuruk) hingga sebelum Zohor. Paling afdhal pukul 9-11 pagi.</p>
+                        <ol class="step-list">
+                            <li><b>Rakaat 1:</b> Baca Al-Fatihah & As-Syams (atau Al-Kafirun).</li>
+                            <li><b>Rakaat 2:</b> Baca Al-Fatihah & Ad-Dhuha (atau Al-Ikhlas).</li>
+                            <li>Lakukan seperti solat biasa 2 rakaat dan salam. Boleh buat 2, 4, 8 hingga 12 rakaat.</li>
+                        </ol>
+                        <div class="highlight-box"><b>Doa Dhuha:</b><br>Allahumma innad dhuha-a dhuha-uka... (Ya Allah, sesungguhnya waktu Dhuha itu Dhuha-Mu...)</div>`,
+                    en:`<p>Time: After sunrise until just before Dhuhr. Best around 9-11 AM.</p>
+                        <ol class="step-list">
+                            <li><b>Rakaat 1:</b> Fatihah + Surah Ash-Shams.</li>
+                            <li><b>Rakaat 2:</b> Fatihah + Surah Ad-Dhuha.</li>
+                            <li>Perform like normal 2 rakaat prayer.</li>
+                        </ol>`
+                } 
+            },
+
+            // === DOA (SUPPLICATIONS) ===
+             { 
+                id: 'd1', cat: 'doa', icon: '🤲', 
+                t: {ms:"Himpunan Doa Harian", en:"Daily Duas Collection"}, 
+                c: {
+                    ms:`<ul class="step-list">
+                            <li><b>Sebelum Makan:</b><br><span class="arabic-text">اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ</span></li>
+                            <li><b>Selepas Makan:</b><br>Alhamdulillahilladzi at'amana wasaqana waja'alana minal muslimin.</li>
+                            <li><b>Masuk Tandas:</b><br>Allahumma inni a'uzubika minal khubuthi wal khaba'ith.</li>
+                            <li><b>Keluar Tandas:</b><br>Ghufranaka. Alhamdulillahilladzi azhaba 'annil aza wa'afani.</li>
+                            <li><b>Naik Kenderaan:</b><br>Subhanalladzi sakhara lana haza wama kunna lahu muqrinin.</li>
+                        </ul>`,
+                    en:`<ul class="step-list">
+                            <li><b>Before Eating:</b> Allahumma barik lana fima razaqtana...</li>
+                            <li><b>Toilet Entry:</b> O Allah, I seek refuge from male/female syaitans.</li>
+                            <li><b>Vehicle:</b> Glory to Him who has subjected this to us...</li>
+                        </ul>`
+                } 
+            },
+
+            // === SIRAH (HISTORY) ===
+            { 
+                id: 'h1', cat: 'sirah', icon: '📜', 
+                t: {ms:"Ringkasan Sirah Nabi SAW", en:"Prophet Muhammad's Life Summary"}, 
+                c: {
+                    ms:`<p>Peristiwa penting dalam kehidupan Rasulullah SAW:</p>
+                        <ol class="step-list">
+                            <li><b>Kelahiran (Tahun Gajah):</b> Lahir di Mekah, Isnin 12 Rabiul Awal. Yatim sejak dalam kandungan (Bapa: Abdullah meninggal).</li>
+                            <li><b>Wahyu Pertama (Umur 40):</b> Di Gua Hira'. Malaikat Jibril menyampaikan Surah Al-Alaq (Ayat 1-5). Bermulanya kenabian.</li>
+                            <li><b>Dakwah (13 Tahun di Mekah):</b> 3 tahun secara rahsia, 10 tahun secara terang-terangan. Banyak penindasan berlaku.</li>
+                            <li><b>Hijrah (Tahun 1H):</b> Perintah Allah berhijrah ke Madinah. Permulaan Kalendar Islam & pembinaan Negara Islam pertama.</li>
+                            <li><b>Fathu Makkah (Tahun 8H):</b> Pembebasan Kota Mekah tanpa pertumpahan darah. Kaabah dibersihkan dari berhala.</li>
+                            <li><b>Wafat (Tahun 11H):</b> Baginda wafat di Madinah pada usia 63 tahun.</li>
+                        </ol>`,
+                    en:`<p>Key events in the Prophet's life:</p>
+                        <ol class="step-list">
+                            <li><b>Birth:</b> Born in Mecca, 12 Rabiul Awal. Orphaned at birth.</li>
+                            <li><b>First Revelation (Age 40):</b> Cave Hira. Surah Al-Alaq. Beginning of Prophethood.</li>
+                            <li><b>Migration (Hijrah):</b> Moved to Madinah. Start of Islamic Calendar.</li>
+                            <li><b>Conquest of Mecca:</b> Peaceful liberation of Mecca in 8AH.</li>
+                            <li><b>Passing (Age 63):</b> Passed away in Madinah in 11AH.</li>
+                        </ol>`
+                } 
+            },
+
+            // === TOKOH (FIGURES) ===
+            { 
+                id: 't1', cat: 'tokoh', icon: '🌟', 
+                t: {ms:"5 Rasul Ulul Azmi", en:"The 5 Ulul Azmi Prophets"}, 
+                c: {
+                    ms:`<p>Gelaran bagi Rasul yang mempunyai ketabahan luar biasa semasa berdakwah:</p>
+                        <ul class="step-list">
+                            <li><b>Nabi Nuh AS:</b> Berdakwah selama 950 tahun tetapi sedikit pengikut. Diuji dengan banjir besar & isteri/anak yang ingkar.</li>
+                            <li><b>Nabi Ibrahim AS:</b> Bapa para Nabi. Diuji dibakar Raja Namrud & perintah menyembelih anaknya Ismail. Membina Kaabah.</li>
+                            <li><b>Nabi Musa AS:</b> Berhadapan dengan Firaun. Mukjizat membelah laut & Kitab Taurat.</li>
+                            <li><b>Nabi Isa AS:</b> Lahir tanpa bapa. Mukjizat menghidupkan orang mati & menyembuhkan penyakit. Kitab Injil.</li>
+                            <li><b>Nabi Muhammad SAW:</b> Penutup segala Nabi. Mukjizat Al-Quran & Isra' Mikraj.</li>
+                        </ul>`,
+                    en:`<p>Prophets known for their extraordinary patience and resolve:</p>
+                        <ul class="step-list">
+                            <li><b>Nuh (Noah):</b> Preached for 950 years. The Great Flood.</li>
+                            <li><b>Ibrahim (Abraham):</b> The Fire test & Sacrifice test. Built the Kaaba.</li>
+                            <li><b>Musa (Moses):</b> Confronted Pharaoh. Split the Sea.</li>
+                            <li><b>Isa (Jesus):</b> Healing the sick. The Gospel.</li>
+                            <li><b>Muhammad (SAW):</b> The Final Prophet. The Quran.</li>
+                        </ul>`
+                } 
+            },
+
+            // === SURAH (QURAN) ===
+            { 
+                id: 'q1', cat: 'surah', icon: '📖', 
+                t: {ms:"Ayatul Kursi & Kelebihan", en:"Ayatul Kursi & Benefits"}, 
+                c: {
+                    ms:`<div class="highlight-box" style="text-align:center;">
+                            <span class="arabic-text" style="font-size:24px; line-height:2.2;">
+                            اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ...
+                            </span>
+                        </div>
+                        <p><b>Kelebihan Mengamalkannya:</b></p>
+                        <ul class="step-list">
+                            <li><b>Selepas Solat:</b> Tiada penghalang antaranya dan Syurga melainkan mati. (Hadis Nasai)</li>
+                            <li><b>Sebelum Tidur:</b> Allah melantik pelindung & syaitan tidak mendekati hingga subuh. (Hadis Bukhari)</li>
+                            <li>Merupakan ayat paling agung dalam Al-Quran.</li>
+                        </ul>`,
+                    en:`<p><b>Benefits of Recitation:</b></p>
+                        <ul class="step-list">
+                            <li><b>After Prayer:</b> Only death stands between him and Paradise.</li>
+                            <li><b>Before Sleep:</b> Protection from Allah; Satan cannot approach until dawn.</li>
+                            <li>The greatest verse in the Quran.</li>
+                        </ul>`
+                } 
+            },
+            { 
+                id: 'q2', cat: 'surah', icon: '👑', 
+                t: {ms:"Surah Al-Mulk (Tabarak)", en:"Surah Al-Mulk"}, 
+                c: {
+                    ms:`<p>Surah ke-67, 30 Ayat.</p>
+                        <ul class="step-list">
+                            <li><b>Waktu Bacaan:</b> Sangat dianjurkan membaca setiap malam sebelum tidur.</li>
+                            <li><b>Fadhilat:</b> Menjadi penghalang dan penyelamat daripada seksaan kubur.</li>
+                            <li>Rasulullah SAW tidak akan tidur melainkan setelah membaca Surah As-Sajdah dan Al-Mulk. (Tirmidhi)</li>
+                        </ul>`,
+                    en:`<p>Surah 67, 30 Verses.</p>
+                        <ul class="step-list">
+                            <li><b>Time:</b> Recommended every night before sleep.</li>
+                            <li><b>Benefit:</b> Intercedes for the reciter and protects from the punishment of the grave.</li>
+                        </ul>`
+                } 
+            },
+
+            // === ADAB (ETIQUETTE) ===
+            { 
+                id: 'ad1', cat: 'adab', icon: '🛌', 
+                t: {ms:"Adab Tidur Mengikut Sunnah", en:"Sunnah of Sleeping"}, 
+                c: {
+                    ms:`<ol class="step-list">
+                            <li><b>Berwudhu:</b> Tidur dalam keadaan suci.</li>
+                            <li><b>Kibas Tempat Tidur:</b> Kibas 3 kali sambil baca Bismillah.</li>
+                            <li><b>Posisi:</b> Tidur mengiring ke kanan, tapak tangan kanan di bawah pipi.</li>
+                            <li><b>Bacaan:</b> 
+                                <ul>
+                                    <li>Ayatul Kursi</li>
+                                    <li>3 Qul (Al-Ikhlas, Al-Falaq, An-Nas) - Tiup tapak tangan & sapu badan.</li>
+                                    <li>Doa Tidur: <i>Bismika Allahumma amutu wa ahya.</i></li>
+                                </ul>
+                            </li>
+                            <li><b>Niat:</b> Berniat bangun awal untuk solat Tahajjud/Subuh.</li>
+                        </ol>`,
+                    en:`<ol class="step-list">
+                            <li><b>Wudhu:</b> Sleep in a state of purity.</li>
+                            <li><b>Dust the Bed:</b> Dust 3x saying Bismillah.</li>
+                            <li><b>Position:</b> Lie on right side, right palm under cheek.</li>
+                            <li><b>Recitations:</b> Ayatul Kursi, 3 Quls, Sleeping Dua.</li>
+                        </ol>`
+                } 
+            },
+            { 
+                id: 'ad2', cat: 'adab', icon: '🍽️', 
+                t: {ms:"Adab Makan & Minum", en:"Etiquette of Eating"}, 
+                c: {
+                    ms:`<ol class="step-list">
+                            <li><b>Basuh Tangan:</b> Pastikan kebersihan sebelum jamah makanan.</li>
+                            <li><b>Mulakan dengan Bismillah:</b> Jika lupa, baca <i>"Bismillahi awwalahu wa akhirahu"</i>.</li>
+                            <li><b>Guna Tangan Kanan:</b> Nabi melarang makan dengan tangan kiri (perbuatan syaitan).</li>
+                            <li><b>Ambil Yang Hampir:</b> Makan lauk yang dekat dengan kita dahulu.</li>
+                            <li><b>Jangan Mencela Makanan:</b> Jika suka makan, jika tidak suka tinggalkan tanpa hina.</li>
+                            <li><b>Akhiri dengan Alhamdulillah.</b></li>
+                        </ol>`,
+                    en:`<ol class="step-list">
+                            <li><b>Wash Hands:</b> Hygiene first.</li>
+                            <li><b>Say Bismillah:</b> Use right hand only.</li>
+                            <li><b>Eat what is near:</b> Don't reach over others.</li>
+                            <li><b>Don't Criticize Food:</b> Eat if you like, leave it if you don't.</li>
+                            <li><b>Say Alhamdulillah</b> after finishing.</li>
+                        </ol>`
+                }
+            },            // === TAMBAHAN FARDHU (OBLIGATORY ADDITIONS) ===
+            { 
+                id: 'f3', cat: 'fardhu', icon: '🌙', 
+                t: {ms:"Panduan Puasa Ramadhan", en:"Guide to Ramadan Fasting"}, 
+                c: {
+                    ms:`<p>Puasa adalah menahan diri dari lapar, dahaga, dan perkara yang membatalkan dari terbit fajar hingga terbenam matahari.</p>
+                        <h4 class="bold-term">Niat Puasa (Harian):</h4>
+                        <span class="arabic-text">نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ رَمَضَانَ هَذِهِ السَّنَةِ لِلَّهِ تَعَالَى</span>
+                        <i>"Sahaja aku berpuasa esok hari menunaikan fardhu Ramadhan tahun ini kerana Allah Taala."</i>
+                        <h4 class="bold-term">Amalan Sunnah:</h4>
+                        <ul class="step-list">
+                            <li>Bersahur (lewatkan sahur).</li>
+                            <li>Menyegerakan berbuka apabila masuk waktu Maghrib.</li>
+                            <li>Berbuka dengan kurma atau air.</li>
+                            <li>Membaca doa berbuka: <i>Allahumma laka sumtu...</i></li>
+                        </ul>`,
+                    en:`<p>Fasting is abstaining from food, drink, and invalidators from dawn to sunset.</p>
+                        <h4 class="bold-term">Intention (Daily):</h4>
+                        <i>"I intend to fast tomorrow for the obligation of Ramadan this year for the sake of Allah."</i>
+                        <h4 class="bold-term">Sunnah Acts:</h4>
+                        <ul class="step-list">
+                            <li>Have Sahur (Pre-dawn meal).</li>
+                            <li>Break fast immediately at Maghrib.</li>
+                            <li>Break fast with dates or water.</li>
+                        </ul>`
+                } 
+            },
+
+            // === TAMBAHAN SUNAT (VOLUNTARY PRAYERS) ===
+            { 
+                id: 's2', cat: 'sunat', icon: '🌌', 
+                t: {ms:"Cara Solat Tahajjud", en:"How to perform Tahajjud"}, 
+                c: {
+                    ms:`<p>Dilakukan pada sepertiga malam terakhir selepas terjaga dari tidur. Ia adalah solat sunat yang paling afdhal.</p>
+                        <ol class="step-list">
+                            <li><b>Niat:</b> <i>Sahaja aku solat sunat Tahajjud dua rakaat kerana Allah Taala.</i></li>
+                            <li><b>Rakaat 1:</b> Baca Al-Fatihah & Surah Al-Kafirun.</li>
+                            <li><b>Rakaat 2:</b> Baca Al-Fatihah & Surah Al-Ikhlas.</li>
+                            <li><b>Sujud Terakhir:</b> Digalakkan memperbanyakkan doa.</li>
+                            <li><b>Salam.</b></li>
+                        </ol>
+                        <div class="highlight-box">Disarankan membaca doa khusus Tahajjud atau doa memohon keampunan (Istighfar).</div>`,
+                    en:`<p>Performed in the last third of the night after waking up from sleep.</p>
+                        <ol class="step-list">
+                            <li><b>Intention:</b> <i>I intend to perform two rakaats of Tahajjud prayer for Allah.</i></li>
+                            <li><b>Recitation:</b> Fatihah + Al-Kafirun (1st), Fatihah + Al-Ikhlas (2nd).</li>
+                            <li><b>Last Sujood:</b> Recommended to make abundant Dua.</li>
+                        </ol>`
+                } 
+            },
+            { 
+                id: 's3', cat: 'sunat', icon: '1️⃣', 
+                t: {ms:"Cara Solat Witir", en:"How to perform Witr"}, 
+                c: {
+                    ms:`<p>Solat penutup bagi solat malam. Bilangan rakaat ganjil (1, 3, 5, dll).</p>
+                        <h4 class="bold-term">Cara 3 Rakaat (2 Salam):</h4>
+                        <ol class="step-list">
+                            <li><b>2 Rakaat Pertama:</b> Niat solat sunat Witir 2 rakaat. Baca Surah Al-A'la & Al-Kafirun. Salam.</li>
+                            <li><b>1 Rakaat Terakhir:</b> Niat solat sunat Witir 1 rakaat. Baca 3 Qul (Al-Ikhlas, Al-Falaq, An-Nas).</li>
+                            <li><b>Doa Qunut:</b> Disunatkan membaca Qunut pada rakaat terakhir bermula separuh kedua Ramadhan.</li>
+                        </ol>`,
+                    en:`<p>The closing prayer for the night. Performed in odd numbers.</p>
+                        <h4 class="bold-term">Method for 3 Rakaats:</h4>
+                        <ol class="step-list">
+                            <li><b>First 2 Rakaats:</b> Recite Al-A'la & Al-Kafirun. Give Salam.</li>
+                            <li><b>Last 1 Rakaat:</b> Recite 3 Quls. Give Salam.</li>
+                            <li><b>Qunut:</b> Recommended in the second half of Ramadan.</li>
+                        </ol>`
+                } 
+            },
+            { 
+                id: 's4', cat: 'sunat', icon: '🤲', 
+                t: {ms:"Cara Solat Hajat", en:"How to perform Solat Hajat"}, 
+                c: {
+                    ms:`<p>Dilakukan apabila mempunyai hajat atau kesulitan.</p>
+                        <ol class="step-list">
+                            <li><b>Niat:</b> <i>Sahaja aku solat sunat Hajat dua rakaat kerana Allah Taala.</i></li>
+                            <li><b>Rakaat 1:</b> Al-Fatihah & Ayatul Kursi (1x atau 7x).</li>
+                            <li><b>Rakaat 2:</b> Al-Fatihah & Al-Ikhlas (1x atau 11x).</li>
+                            <li><b>Selepas Salam:</b> Sujud sekali lagi dan baca tasbih Nabi Yunus: <br><i>La ilaha illa anta subhanaka inni kuntu minaz zalimin.</i></li>
+                        </ol>`,
+                    en:`<p>Performed when in need or difficulty.</p>
+                        <ol class="step-list">
+                            <li><b>Intention:</b> Solat Hajat 2 rakaats.</li>
+                            <li><b>Recitation:</b> Fatihah + Ayatul Kursi (R1), Fatihah + Ikhlas (R2).</li>
+                            <li><b>After Salam:</b> Prostrate again and recite Prophet Yunus's Tasbih.</li>
+                        </ol>`
+                } 
+            },
+
+            // === TAMBAHAN TOKOH (FIGURES ADDITIONS) ===
+            { 
+                id: 't2', cat: 'tokoh', icon: '⚔️', 
+                t: {ms:"4 Khulafa Ar-Rasyidin", en:"The 4 Rightly Guided Caliphs"}, 
+                c: {
+                    ms:`<p>Sahabat Nabi yang memimpin umat Islam selepas kewafatan Baginda:</p>
+                        <ul class="step-list">
+                            <li><b>Abu Bakar As-Siddiq:</b> Sahabat paling rapat. Memerangi golongan murtad & nabi palsu. Mengumpul Al-Quran.</li>
+                            <li><b>Umar Al-Khattab:</b> Digelar Al-Faruq (Pemisah Hak & Batil). Meluaskan empayar Islam (Parsi & Rom). Memulakan kalendar Hijrah.</li>
+                            <li><b>Uthman Affan:</b> Digelar Zunnurain (Pemilik 2 Cahaya). Membukukan Al-Quran (Mushaf Uthmani). Dermawan.</li>
+                            <li><b>Ali Abi Talib:</b> Sepupu & menantu Nabi. Kanak-kanak pertama memeluk Islam. Terkenal dengan ilmu & keberanian.</li>
+                        </ul>`,
+                    en:`<p>Leaders of the Ummah after the Prophet:</p>
+                        <ul class="step-list">
+                            <li><b>Abu Bakr:</b> Closest companion. Compiled the Quran.</li>
+                            <li><b>Umar:</b> The Faruq. Expanded the empire. Established Hijri calendar.</li>
+                            <li><b>Uthman:</b> Zunnurain. Standardized the Quran text.</li>
+                            <li><b>Ali:</b> Cousin of Prophet. Known for wisdom and bravery.</li>
+                        </ul>`
+                } 
+            },
+
+            // === TAMBAHAN ADAB (ETIQUETTE ADDITIONS) ===
+            { 
+                id: 'ad3', cat: 'adab', icon: '🕌', 
+                t: {ms:"Adab Masuk Masjid", en:"Mosque Etiquette"}, 
+                c: {
+                    ms:`<ol class="step-list">
+                            <li><b>Masuk Kaki Kanan:</b> Baca doa <i>Allahummaftah li abwaba rahmatik</i>.</li>
+                            <li><b>Jangan Duduk Terus:</b> Lakukan solat sunat Tahiyatul Masjid 2 rakaat.</li>
+                            <li><b>Jaga Kebersihan:</b> Pastikan pakaian bersih dan tidak berbau (seperti rokok/bawang).</li>
+                            <li><b>Niat Iktikaf:</b> <i>Sahaja aku beriktikaf di masjid ini kerana Allah Taala.</i></li>
+                            <li><b>Keluar Kaki Kiri:</b> Baca doa <i>Allahumma inni as'aluka min fadlik</i>.</li>
+                        </ol>`,
+                    en:`<ol class="step-list">
+                            <li><b>Enter with Right Foot:</b> Recite entrance dua.</li>
+                            <li><b>Tahiyatul Masjid:</b> Pray 2 rakaats before sitting.</li>
+                            <li><b>Cleanliness:</b> Ensure clothes are clean and smell good.</li>
+                            <li><b>Exit with Left Foot:</b> Recite exit dua.</li>
+                        </ol>`
+                } 
+            },
+            { 
+                id: 'ad4', cat: 'adab', icon: '🚽', 
+                t: {ms:"Adab Masuk Tandas", en:"Toilet Etiquette"}, 
+                c: {
+                    ms:`<ol class="step-list">
+                            <li><b>Tutup Kepala:</b> Memakai alas kepala dan alas kaki.</li>
+                            <li><b>Baca Doa:</b> Sebelum masuk, baca doa berlindung dari syaitan.</li>
+                            <li><b>Masuk Kaki Kiri:</b> Dahulukan kaki kiri semasa masuk.</li>
+                            <li><b>Jaga Aurat:</b> Jangan bercakap atau menyanyi di dalam tandas.</li>
+                            <li><b>Keluar Kaki Kanan:</b> Baca <i>Ghufranaka</i> (Aku memohon keampunan-Mu).</li>
+                        </ol>`,
+                    en:`<ol class="step-list">
+                            <li><b>Cover Head & Feet:</b> Wear slippers.</li>
+                            <li><b>Recite Dua:</b> Before entering.</li>
+                            <li><b>Enter Left, Exit Right.</b></li>
+                            <li><b>Silence:</b> Do not talk or sing inside.</li>
+                        </ol>`
+                } 
+            },
+                // === TAMBAHAN SUNAT (MORE VOLUNTARY PRAYERS) ===
+            { 
+                id: 's5', cat: 'sunat', icon: '😭', 
+                t: {ms:"Cara Solat Taubat", en:"How to perform Solat Taubat"}, 
+                c: {
+                    ms:`<p>Dilakukan apabila seseorang menyedari dosa dan ingin kembali kepada Allah.</p>
+                        <ol class="step-list">
+                            <li><b>Niat:</b> <i>Sahaja aku solat sunat Taubat dua rakaat kerana Allah Taala.</i></li>
+                            <li><b>Rakaat 1:</b> Baca Al-Fatihah & Al-Kafirun.</li>
+                            <li><b>Rakaat 2:</b> Baca Al-Fatihah & Al-Ikhlas.</li>
+                            <li><b>Sujud Terakhir:</b> Beristighfar dalam hati bersungguh-sungguh.</li>
+                            <li><b>Selepas Salam:</b> Baca "Astaghfirullahal 'adzim" (100x) dan doa taubat nasuha.</li>
+                        </ol>`,
+                    en:`<p>Performed when repenting for sins.</p>
+                        <ol class="step-list">
+                            <li><b>Intention:</b> Solat Sunat Taubat 2 rakaats.</li>
+                            <li><b>Recitation:</b> Fatihah + Al-Kafirun (R1), Fatihah + Al-Ikhlas (R2).</li>
+                            <li><b>After Salam:</b> Recite "Astaghfirullah" 100x and make sincere dua.</li>
+                        </ol>`
+                } 
+            },
+            { 
+                id: 's6', cat: 'sunat', icon: '✨', 
+                t: {ms:"Cara Solat Istikharah", en:"Solat Istikharah (Guidance)"}, 
+                c: {
+                    ms:`<p>Dilakukan apabila keliru membuat pilihan (jodoh, kerjaya, dll).</p>
+                        <ol class="step-list">
+                            <li><b>Niat:</b> <i>Sahaja aku solat sunat Istikharah dua rakaat kerana Allah Taala.</i></li>
+                            <li><b>Rakaat 1:</b> Baca Al-Fatihah & Al-Kafirun.</li>
+                            <li><b>Rakaat 2:</b> Baca Al-Fatihah & Al-Ikhlas.</li>
+                            <li><b>Selepas Salam:</b> Baca <b>Doa Istikharah</b> (Allahumma inni astakhiruka...).</li>
+                        </ol>
+                        <div class="highlight-box">Jawapan mungkin datang melalui mimpi, ketenangan hati, atau dipermudahkan urusan.</div>`,
+                    en:`<p>Performed when seeking guidance on a decision.</p>
+                        <ol class="step-list">
+                            <li><b>Recitation:</b> Fatihah + Al-Kafirun (R1), Fatihah + Al-Ikhlas (R2).</li>
+                            <li><b>After Salam:</b> Read the specific Dua Istikharah.</li>
+                            <li><b>Result:</b> Look for peace of heart or ease in affairs.</li>
+                        </ol>`
+                } 
+            },
+
+            // === TAMBAHAN FARDHU (MORE OBLIGATORY) ===
+            { 
+                id: 'f4', cat: 'fardhu', icon: '💰', 
+                t: {ms:"Panduan Zakat Fitrah", en:"Guide to Zakat Fitrah"}, 
+                c: {
+                    ms:`<p>Wajib dikeluarkan pada bulan Ramadhan sebelum Solat Raya.</p>
+                        <ul class="step-list">
+                            <li><b>Kadar:</b> Satu gantang Baghdad (anggaran 2.7kg beras atau nilai wang ditentukan kerajaan negeri).</li>
+                            <li><b>Waktu Wajib:</b> Terbenam matahari akhir Ramadhan.</li>
+                            <li><b>Waktu Afdhal:</b> Pagi raya sebelum solat sunat Aidilfitri.</li>
+                            <li><b>Niat (Diri Sendiri):</b> <i>Inilah wang bagi menggantikan beras fitrah yang wajib ke atas diriku pada tahun ini kerana Allah Taala.</i></li>
+                        </ul>`,
+                    en:`<p>Obligatory charity paid in Ramadan before Eid Prayer.</p>
+                        <ul class="step-list">
+                            <li><b>Rate:</b> Equivalent to 2.7kg of staple food (rice) or cash value set by authority.</li>
+                            <li><b>Best Time:</b> Morning of Eid before prayer.</li>
+                        </ul>`
+                } 
+            },
+
+            // === TAMBAHAN SURAH ===
+            { 
+                id: 'q3', cat: 'surah', icon: '⛰️', 
+                t: {ms:"Kelebihan Surah Al-Kahfi", en:"Benefits of Surah Al-Kahfi"}, 
+                c: {
+                    ms:`<p>Disunatkan membaca pada hari Jumaat (Malam Jumaat hingga sebelum Maghrib hari Jumaat).</p>
+                        <ul class="step-list">
+                            <li><b>Dilindungi Dajjal:</b> Menghafal 10 ayat awal (atau akhir) akan dilindungi dari fitnah Dajjal. (Hadis Muslim)</li>
+                            <li><b>Cahaya (Nur):</b> Allah akan menerangi antaranya dan Kaabah (atau dua Jumaat) dengan cahaya.</li>
+                        </ul>`,
+                    en:`<p>Recommended to read on Fridays.</p>
+                        <ul class="step-list">
+                            <li><b>Protection:</b> Memorizing first 10 verses protects from Dajjal.</li>
+                            <li><b>Light:</b> Allah provides spiritual light between two Fridays.</li>
+                        </ul>`
+                } 
+            },
+            { 
+                id: 'q4', cat: 'surah', icon: '❤️', 
+                t: {ms:"Kelebihan Surah Yasin", en:"Benefits of Surah Yasin"}, 
+                c: {
+                    ms:`<p>Digelar "Jantung Al-Quran".</p>
+                        <ul class="step-list">
+                            <li><b>Keampunan:</b> Sesiapa membacanya pada malam hari mencari redha Allah, diampunkan dosanya.</li>
+                            <li><b>Memudahkan Urusan:</b> Sering dibaca untuk memohon hajat atau memudahkan sakaratul maut.</li>
+                        </ul>`,
+                    en:`<p>Known as the "Heart of the Quran".</p>
+                        <ul class="step-list">
+                            <li><b>Forgiveness:</b> Reciting at night seeks Allah's pleasure and forgiveness.</li>
+                            <li><b>Ease:</b> Often recited for needs or easing death.</li>
+                        </ul>`
+                } 
+            },
+
+            // === TAMBAHAN ADAB ===
+            { 
+                id: 'ad5', cat: 'adab', icon: '👕', 
+                t: {ms:"Adab Berpakaian", en:"Etiquette of Dressing"}, 
+                c: {
+                    ms:`<ol class="step-list">
+                            <li><b>Menutup Aurat:</b> Syarat wajib bagi lelaki dan wanita.</li>
+                            <li><b>Mulakan Kanan:</b> Masukkan tangan/kaki kanan dahulu semasa memakai.</li>
+                            <li><b>Tanggalkan Kiri:</b> Mulakan kiri semasa membuka pakaian.</li>
+                            <li><b>Baca Doa:</b> <i>Allahumma inni as'aluka min khairihi...</i> (Ya Allah aku minta kebaikan pakaian ini).</li>
+                            <li><b>Tidak Sombong:</b> Jangan memakai pakaian untuk menunjuk-nunjuk (Riya').</li>
+                        </ol>`,
+                    en:`<ol class="step-list">
+                            <li><b>Cover Aurat:</b> Obligatory for both genders.</li>
+                            <li><b>Right First:</b> Put on right limb first.</li>
+                            <li><b>Left Last:</b> Take off left limb first.</li>
+                            <li><b>Modesty:</b> Do not dress to show off arrogance.</li>
+                        </ol>`
+                } 
+            },
+             { 
+                id: 'ad6', cat: 'adab', icon: '🤝', 
+                t: {ms:"Adab Ziarah & Tetamu", en:"Etiquette of Visiting"}, 
+                c: {
+                    ms:`<ol class="step-list">
+                            <li><b>Beri Salam:</b> Ucap salam sebelum masuk rumah (maksimum 3 kali).</li>
+                            <li><b>Masa Sesuai:</b> Elakkan waktu tidur atau istirahat tuan rumah.</li>
+                            <li><b>Jaga Pandangan:</b> Jangan melilau melihat isi rumah orang.</li>
+                            <li><b>Muliakan Tetamu:</b> Tuan rumah wajib memuliakan tetamu (sediakan air/makanan semampu boleh).</li>
+                        </ol>`,
+                    en:`<ol class="step-list">
+                            <li><b>Salam:</b> Announce arrival with Salam (max 3 times).</li>
+                            <li><b>Timing:</b> Avoid rest times.</li>
+                            <li><b>Gaze:</b> Do not spy on the house interior.</li>
+                            <li><b>Honor Guest:</b> Host should serve food/drink.</li>
+                        </ol>`
+                } 
+            }
+
+          
+        ];
+
+        // --- 3. FUNCTIONS ---
         function init() {
-            updateLangUI();
-            
-            // Random Spotlight
-            const rand = Math.floor(Math.random() * ALL_DATA.length);
-            STATE.spotlightIndex = rand;
-            const spotItem = ALL_DATA[rand];
-            document.getElementById('spotlightTitle').textContent = spotItem.title[STATE.lang];
-            document.getElementById('spotlightBadge').textContent = TEXT[STATE.lang].spotlight;
-            
-            renderCategories();
-            renderList();
-            
-            // Header Scroll Effect
-            window.addEventListener('scroll', () => {
-                const h = document.getElementById('mainHeader');
-                if(window.scrollY > 20) h.classList.add('scrolled');
-                else h.classList.remove('scrolled');
-            });
-        }
-
-        function updateLangUI() {
-            const t = TEXT[STATE.lang];
-            document.getElementById('langBtn').textContent = STATE.lang.toUpperCase();
-            document.getElementById('pageTitle').textContent = t.pageTitle;
-            document.getElementById('btn-ibadah').textContent = t.btnIbadah;
-            document.getElementById('btn-adab').textContent = t.btnAdab;
-            document.getElementById('btn-fav').textContent = t.btnFav;
-            document.getElementById('searchInput').placeholder = t.search;
+            document.documentElement.setAttribute('data-theme', state.theme);
+            document.getElementById('langBtn').textContent = state.lang.toUpperCase();
+            renderCats();
+            renderLibrary();
         }
 
         function toggleLang() {
-            STATE.lang = STATE.lang === 'en' ? 'ms' : 'en';
-            localStorage.setItem('wsl_lang', STATE.lang);
-            init();
+            state.lang = state.lang === 'en' ? 'ms' : 'en';
+            localStorage.setItem('p100_lang', state.lang);
+            document.getElementById('langBtn').textContent = state.lang.toUpperCase();
+            renderCats();
+            renderLibrary();
         }
 
-        function switchSection(sec) {
-            STATE.section = sec;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${sec}`).classList.add('active');
-            
-            // Hide/Show Search & Spotlight based on Favorites view
-            const isFav = sec === 'fav';
-            document.getElementById('spotlightArea').style.display = isFav ? 'none' : 'block';
-            document.getElementById('catContainer').style.display = isFav ? 'none' : 'flex';
-            
-            renderCategories();
-            renderList();
+        function toggleTheme() {
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('p100_theme', state.theme);
+            document.documentElement.setAttribute('data-theme', state.theme);
         }
 
-        function renderCategories() {
-            const container = document.getElementById('catContainer');
-            if(STATE.section === 'fav') return; // No cats for favs
-
-            const t = TEXT[STATE.lang];
-            let cats = STATE.section === 'ibadah' 
-                ? ['asas', 'fardhu', 'sunat', 'umum'] 
-                : ['harian', 'sosial', 'sunnah'];
-
-            let html = `<div class="cat-pill ${STATE.cat==='all'?'active':''}" onclick="filterCat('all')">${t.all}</div>`;
-            cats.forEach(c => {
-                html += `<div class="cat-pill cat-${c} ${STATE.cat===c?'active':''}" onclick="filterCat('${c}')">
-                    <span class="tag-dot"></span> ${t.cats[c] || c}
-                </div>`;
-            });
-            container.innerHTML = html;
+        function renderCats() {
+            const c = document.getElementById('catContainer');
+            const map = TEXT[state.lang].cats;
+            const keys = ['all', 'asas', 'fardhu', 'sunat', 'surah', 'doa', 'sirah', 'tokoh', 'adab'];
+            c.innerHTML = keys.map(k => `<div class="nav-pill ${state.currentCat===k?'active':''}" onclick="setCat('${k}')">${map[k]}</div>`).join('');
         }
 
-        function filterCat(cat) {
-            STATE.cat = cat;
-            renderCategories();
-            renderList();
-        }
+        function setCat(k) { state.currentCat = k; renderCats(); renderLibrary(); }
 
-        function renderList() {
-            const container = document.getElementById('guideListContainer');
+        function renderLibrary() {
+            const g = document.getElementById('libraryGrid');
             const q = document.getElementById('searchInput').value.toLowerCase();
+            const list = LIBRARY.filter(i => (state.currentCat==='all' || i.cat===state.currentCat) && (i.t[state.lang].toLowerCase().includes(q)));
             
-            let filtered;
+            document.getElementById('libStats').textContent = `${list.length} Articles`;
             
-            if (STATE.section === 'fav') {
-                filtered = ALL_DATA.filter(item => STATE.favorites.includes(item.id));
-                if (filtered.length === 0) {
-                    container.innerHTML = `<div style="text-align:center;padding:40px;opacity:0.6;">
-                        <div style="font-size:40px;margin-bottom:10px;">💔</div>
-                        ${STATE.lang==='en'?'No favorites yet.':'Tiada simpanan.'}
-                    </div>`;
-                    return;
-                }
-            } else {
-                filtered = ALL_DATA.filter(item => {
-                    if(item.section !== STATE.section) return false;
-                    if(STATE.cat !== 'all' && item.cat !== STATE.cat) return false;
-                    return item.title[STATE.lang].toLowerCase().includes(q);
-                });
-            }
+            if(!list.length) { g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;opacity:0.6">No results</div>'; return; }
 
-            let html = '';
-            filtered.forEach(item => {
-                const isFav = STATE.favorites.includes(item.id);
-                // Highlight logic
-                let displayTitle = item.title[STATE.lang];
-                if(q) {
-                    const re = new RegExp(`(${q})`, "gi");
-                    displayTitle = displayTitle.replace(re, '<span class="highlight">$1</span>');
-                }
-
-                html += `
-                <div class="guide-card cat-${item.cat}" onclick="openArticle('${item.id}')">
-                    <div class="card-icon"><span>${item.icon}</span></div>
-                    <div class="card-content">
-                        <div class="card-title">${displayTitle}</div>
-                        <div class="card-meta">
-                            <span class="tag-dot"></span>
-                            ${(TEXT[STATE.lang].cats[item.cat] || item.cat).toUpperCase()}
-                        </div>
+            g.innerHTML = list.map(i => {
+                const isSaved = state.saved.includes(i.id) ? 'saved' : '';
+                return `
+                <div class="book-card ${isSaved}" onclick="openRead('${i.id}')">
+                    <div class="saved-badge">♥</div>
+                    <div class="book-icon">${i.icon}</div>
+                    <div class="book-info">
+                        <div class="book-title">${i.t[state.lang]}</div>
+                        <span class="tag tag-${i.cat}">${TEXT[state.lang].cats[i.cat]}</span>
                     </div>
-                    <button class="fav-btn ${isFav?'active':''}" onclick="toggleFav(event, '${item.id}')">
-                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                    </button>
                 </div>`;
-            });
-            container.innerHTML = html || `<div style="text-align:center;padding:20px;opacity:0.5;">No results.</div>`;
+            }).join('');
         }
 
-        function filterGuides() { renderList(); }
-
-        function toggleFav(e, id) {
-            e.stopPropagation();
-            const idx = STATE.favorites.indexOf(id);
-            if(idx > -1) STATE.favorites.splice(idx, 1);
-            else STATE.favorites.push(id);
-            
-            localStorage.setItem('wsl_fav_guides', JSON.stringify(STATE.favorites));
-            
-            // Animation for button
-            const btn = e.currentTarget;
-            btn.classList.toggle('active');
-            
-            if(STATE.section === 'fav') renderList(); // Refresh if in fav view
+        // --- UPDATED READER FUNCTIONS WITH HISTORY SUPPORT ---
+        function openRead(id) {
+            addHistoryState(); // Add history entry so back button works
+            const item = LIBRARY.find(i => i.id === id);
+            state.currentId = id;
+            document.getElementById('artTitle').innerHTML = item.t[state.lang];
+            document.getElementById('artContent').innerHTML = item.c[state.lang];
+            document.getElementById('readerModal').classList.add('open');
+            updBtn();
         }
 
-        // 5. READER FUNCTIONS
-        function openSpotlight() { openArticle(ALL_DATA[STATE.spotlightIndex].id); }
-
-        function openArticle(id) {
-            const item = ALL_DATA.find(x => x.id === id);
-            if(!item) return;
-
-            document.getElementById('artTitle').textContent = item.title[STATE.lang];
-            document.getElementById('artContent').innerHTML = item.content[STATE.lang];
-            
-            const modal = document.getElementById('articleView');
-            modal.style.display = 'flex';
-            
-            // Reset Font
-            STATE.fontSize = 16;
-            document.getElementById('articleBody').style.fontSize = '16px';
-        }
-
-        function closeArticle() { document.getElementById('articleView').style.display = 'none'; }
-
-        function adjustFont(delta) {
-            STATE.fontSize += delta;
-            if(STATE.fontSize < 12) STATE.fontSize = 12;
-            if(STATE.fontSize > 24) STATE.fontSize = 24;
-            document.getElementById('articleBody').style.fontSize = STATE.fontSize + 'px';
-        }
-
-        function shareArticle() {
-            const title = document.getElementById('artTitle').textContent;
-            const text = document.getElementById('artContent').innerText.substring(0, 100) + "...";
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: title,
-                    text: title + "\n\n" + text + "\n\nRead more on Mukmin.com",
-                    url: window.location.href
-                });
+        function closeReader() {
+            // Check if we have history state to pop (Smart Closing)
+            if (history.state && history.state.modal) {
+                history.back(); // This triggers onpopstate, which closes the modal
             } else {
-                alert("Share copied to clipboard!");
+                // Fallback if opened without history
+                document.getElementById('readerModal').classList.remove('open');
             }
         }
 
-        // Start App
-        init();
+        function toggleSaveCurrent() {
+            if(!state.currentId) return;
+            const idx = state.saved.indexOf(state.currentId);
+            if(idx > -1) state.saved.splice(idx,1); else state.saved.push(state.currentId);
+            localStorage.setItem('p100_saved', JSON.stringify(state.saved));
+            updBtn(); renderLibrary(); renderSaved();
+            showToast(idx > -1 ? "Removed" : "Saved");
+        }
 
+        function updBtn() {
+            const isSaved = state.saved.includes(state.currentId);
+            const btn = document.getElementById('bookmarkBtn');
+            btn.style.color = isSaved ? 'var(--primary)' : 'var(--text)';
+        }
+
+        function switchView(v) {
+            document.getElementById('mainView').style.display = v==='home'?'block':'none';
+            document.getElementById('savedView').style.display = v==='saved'?'block':'none';
+            document.getElementById('nav-home').className = `nav-item ${v==='home'?'active':''}`;
+            document.getElementById('nav-saved').className = `nav-item ${v==='saved'?'active':''}`;
+            if(v==='saved') renderSaved();
+        }
+
+        function renderSaved() {
+            const g = document.getElementById('savedGrid');
+            const list = LIBRARY.filter(i => state.saved.includes(i.id));
+            if(!list.length) { g.innerHTML = '<div style="text-align:center;opacity:0.5;padding:20px">No saved items</div>'; return; }
+            g.innerHTML = list.map(i => `
+                <div class="book-card saved" onclick="openRead('${i.id}')">
+                    <div class="saved-badge">♥</div>
+                    <div class="book-icon">${i.icon}</div>
+                    <div class="book-info"><div class="book-title">${i.t[state.lang]}</div><span class="tag tag-${i.cat}">${TEXT[state.lang].cats[i.cat]}</span></div>
+                </div>`).join('');
+        }
+
+        function adjustFont() {
+            state.fontSize = state.fontSize >= 24 ? 16 : state.fontSize + 2;
+            document.getElementById('artContent').style.fontSize = state.fontSize + 'px';
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(()=>t.classList.remove('show'), 2000);
+        }
+
+        // --- BACK BUTTON LOGIC ---
+        function addHistoryState() {
+            history.pushState({modal: true}, null, window.location.href);
+        }
+
+        window.onpopstate = function(event) {
+            const reader = document.getElementById('readerModal');
+            if(reader && reader.classList.contains('open')) {
+                reader.classList.remove('open');
+            }
+        };
+
+        init();
     </script>
 </body>
 </html>
