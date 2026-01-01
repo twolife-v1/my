@@ -2850,48 +2850,106 @@ window.closeFocusModal = function(e) {
 }
 
 // 3. SHARE SCREENSHOT LOGIC
+// --- ROBUST SHARE FUNCTION (Fixes Blank Image) ---
 window.shareFocusCard = async function() {
     const btnShare = document.getElementById('btnShare');
     const spin = document.getElementById('shareSpin');
     const icon = document.getElementById('shareIcon');
     const card = document.querySelector('.screenshot-target');
 
-    spin.style.display = 'block'; icon.style.display = 'none'; btnShare.style.opacity = '0.7';
+    // 1. UI Loading State
+    if(spin) spin.style.display = 'block'; 
+    if(icon) icon.style.display = 'none'; 
+    if(btnShare) btnShare.style.opacity = '0.7';
 
     try {
+        // 2. Create Wrapper (ON TOP of screen to ensure capture)
         const wrapper = document.createElement('div');
         Object.assign(wrapper.style, {
-            position: 'fixed', top: '0', left: '0', width: '500px',
-            padding: '100px 50px', zIndex: '-1000',
-            background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+            position: 'fixed',
+            left: '0',
+            top: '0',
+            width: '100vw',
+            height: '100vh',
+            zIndex: '10000', // Ensure it sits on top of everything
+            background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)', // Clean BG
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: "'Inter', sans-serif"
         });
 
+        // 3. Clone Card
         const clone = card.cloneNode(true);
-        clone.style.transform = 'none'; clone.style.margin = '0'; clone.style.boxShadow = '0 30px 60px rgba(0,0,0,0.15)';
-        clone.querySelector('.btn-close-focus').style.display = 'none';
-        clone.querySelector('.focus-actions').style.display = 'none';
-        clone.querySelector('.screenshot-brand').style.display = 'block';
+        clone.style.transform = 'scale(1)'; // Reset scale
+        clone.style.margin = '0';
+        clone.style.boxShadow = '0 30px 60px rgba(0,0,0,0.2)';
+        clone.style.maxWidth = '400px'; // Ensure good width
+        clone.style.background = document.documentElement.getAttribute('data-theme') === 'dark' ? '#1E1E1E' : '#FFFFFF';
         
+        // 4. Clean up Clone (Hide buttons, show branding)
+        const closeBtn = clone.querySelector('.btn-close-focus');
+        if(closeBtn) closeBtn.style.display = 'none';
+        
+        const actions = clone.querySelector('.focus-actions');
+        if(actions) actions.style.display = 'none';
+        
+        const brand = clone.querySelector('.screenshot-brand');
+        if(brand) brand.style.display = 'block';
+        
+        // 5. Add "Generating..." Text so user knows what's happening
+        const loadingText = document.createElement('div');
+        loadingText.innerText = "Generating Image...";
+        loadingText.style.cssText = "position:absolute; bottom:50px; font-weight:bold; color:var(--primary); font-size:14px;";
+        wrapper.appendChild(loadingText);
+
         wrapper.appendChild(clone);
         document.body.appendChild(wrapper);
 
-        // Capture
-        const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true });
-        document.body.removeChild(wrapper);
+        // 6. Wait a tiny bit for the DOM to paint
+        await new Promise(resolve => setTimeout(resolve, 300));
 
+        // 7. Capture
+        const canvas = await html2canvas(wrapper, {
+            scale: 2, // High Quality
+            useCORS: true,
+            backgroundColor: null // Let CSS handle BG
+        });
+        
+        document.body.removeChild(wrapper); // Remove immediately
+
+        // 8. Share/Download Logic
         canvas.toBlob(async (blob) => {
             const file = new File([blob], "share.png", { type: "image/png" });
+            
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try { await navigator.share({ files: [file] }); } catch(e){}
+                try { await navigator.share({ files: [file] }); } catch(e) { console.log("Share closed"); }
             } else {
-                const link = document.createElement('a'); link.download = 'share.png'; link.href = canvas.toDataURL(); link.click();
+                const link = document.createElement('a'); 
+                link.download = 'share.png'; 
+                link.href = canvas.toDataURL(); 
+                link.click();
             }
-            spin.style.display = 'none'; icon.style.display = 'block'; btnShare.style.opacity = '1';
+            // Reset UI
+            if(spin) spin.style.display = 'none'; 
+            if(icon) icon.style.display = 'block'; 
+            if(btnShare) btnShare.style.opacity = '1';
         });
 
-    } catch (e) { alert("Error generating image."); spin.style.display = 'none'; icon.style.display = 'block'; }
+    } catch (e) {
+        console.error(e);
+        alert("Error generating image.");
+        if(spin) spin.style.display = 'none'; 
+        if(icon) icon.style.display = 'block'; 
+        if(btnShare) btnShare.style.opacity = '1';
+        // Cleanup if error
+        const w = document.querySelector('div[style*="z-index: 10000"]');
+        if(w) document.body.removeChild(w);
+    }
 }
+
+
 /* =========================================
    BACK BUTTON MANAGER (Fixes Redirect Issue)
    ========================================= */
