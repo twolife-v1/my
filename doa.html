@@ -1,513 +1,446 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Himpunan Doa</title>
+    <title>Himpunan Doa Premium</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
     <style>
-        /* --- THEME VARIABLES (MATCHING INDUK.HTML) --- */
+        /* --- 1. SHARED THEME VARIABLES --- */
         :root[data-theme="light"] { 
-            --primary:#A67734; 
-            --primary-light:#FDF8F0; 
-            --bg:#F8F9FA; 
-            --surface:#FFFFFF; 
-            --text:#1F2937; 
-            --text-muted:#6B7280; 
-            --border:#E5E7EB; 
-            --glass: rgba(255, 255, 255, 0.85);
+            --primary:#A67734; --primary-light:#FDF8F0; --bg:#F8F9FA; 
+            --surface:#FFFFFF; --text:#1F2937; --text-muted:#6B7280; 
+            --border:#E5E7EB; --glass: rgba(255, 255, 255, 0.95);
         }
         :root[data-theme="dark"] { 
-            --primary:#D4AF37; 
-            --primary-light:#2A2012; 
-            --bg:#121212; 
-            --surface:#1E1E1E; 
-            --text:#F3F4F6; 
-            --text-muted:#9CA3AF; 
-            --border:#374151; 
-            --glass: rgba(30, 30, 30, 0.85);
+            --primary:#D4AF37; --primary-light:#2A2012; --bg:#121212; 
+            --surface:#1E1E1E; --text:#F3F4F6; --text-muted:#9CA3AF; 
+            --border:#374151; --glass: rgba(18, 18, 18, 0.95);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            /* Padding for bottom safety if needed */
-            padding-bottom: 40px; 
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
+
+        /* --- 2. HEADER & SEARCH --- */
+        .sticky-header {
+            position: sticky; top: 0; z-index: 50;
+            background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border); padding: 15px 20px 5px 20px;
         }
 
-        /* --- STICKY GLASS HEADER --- */
-        .app-header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: var(--glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 15px 20px 10px 20px;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .header-title h1 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .header-title p {
-            margin: 2px 0 0;
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* --- SEARCH INPUT --- */
-        .search-container { position: relative; margin-bottom: 5px; }
-        
+        .search-box { position: relative; margin-bottom: 15px; }
         .search-input {
-            width: 100%;
-            padding: 12px 12px 12px 40px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s;
+            width: 100%; padding: 12px 12px 12px 40px; border-radius: 12px;
+            border: 1px solid var(--border); background: var(--surface); color: var(--text);
+            font-size: 14px; outline: none; transition: 0.2s;
         }
-        
-        .search-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; }
 
-        .search-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-        }
-
-        /* --- CATEGORIES --- */
-        .category-scroll {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 10px 0;
-            scrollbar-width: none;
-        }
-        .category-scroll::-webkit-scrollbar { display: none; }
-
+        .cat-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        .cat-scroll::-webkit-scrollbar { display: none; }
         .cat-pill {
-            white-space: nowrap;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background: var(--surface);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            transition: all 0.2s;
+            white-space: nowrap; padding: 6px 14px; border-radius: 50px; font-size: 11px; font-weight: 700;
+            background: var(--surface); color: var(--text-muted); border: 1px solid var(--border);
+            text-transform: uppercase; cursor: pointer; transition: 0.2s;
         }
+        .cat-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* --- 3. LIST VIEW --- */
+        .container { padding: 15px 20px; }
         
-        .cat-pill.active {
-            background: var(--primary);
-            color: #fff; /* Always white for contrast on active */
-            border-color: var(--primary);
+        .doa-item {
+            display: flex; align-items: center; padding: 16px; 
+            background: var(--surface); margin-bottom: 10px; 
+            border-radius: 16px; border: 1px solid var(--border); 
+            cursor: pointer; transition: transform 0.1s, background 0.1s;
         }
-
-        /* --- CARDS --- */
-        .content-area { padding: 10px 20px; max-width: 800px; margin: 0 auto; }
-
-        .doa-card {
-            background: var(--surface);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .doa-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .doa-item:active { transform: scale(0.98); background: var(--primary-light); }
         
-        .doa-badge {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 800;
-            color: var(--primary);
-            background: var(--primary-light);
-            padding: 4px 8px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            display: inline-block;
-        }
-
-        .doa-title { font-size: 16px; font-weight: 700; color: var(--text); margin: 0; }
-
-        .doa-actions { display: flex; gap: 8px; }
-
-        .action-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            width: 32px; height: 32px;
-            border-radius: 50%;
+        .doa-icon-box {
+            background: var(--primary-light); color: var(--primary);
+            width: 40px; height: 40px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            margin-right: 15px; font-size: 18px; flex-shrink: 0;
         }
         
-        .action-btn:hover { background: var(--bg); color: var(--primary); }
-        .action-btn.active-fav { color: #EF4444; fill: #EF4444; }
-        .action-btn.active-audio { color: var(--primary); background: var(--primary-light); }
-        
-        /* Icons */
-        .icon { width: 18px; height: 18px; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; stroke: currentColor; }
+        .doa-info { flex: 1; min-width: 0; }
+        .doa-title { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .doa-meta { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        .doa-cat-badge { background: var(--bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); text-transform: uppercase; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; }
 
-        /* Arabic */
-        .doa-arabic {
-            font-family: 'Amiri', serif;
-            font-size: 26px;
-            text-align: right;
-            line-height: 2.2;
-            color: var(--text);
-            margin: 10px 0 20px 0;
+        /* --- 4. FOCUS MODAL & SCREENSHOT TARGET --- */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center;
+            padding: 20px; animation: fadeIn 0.3s ease;
         }
+        .modal-overlay.open { display: flex; }
 
-        .doa-translation {
-            background: var(--bg);
-            padding: 15px;
-            border-radius: 14px;
+        .focus-card {
+            width: 100%; max-width: 400px;
+            background: var(--surface); border-radius: 24px;
             border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 30px 25px; position: relative;
+            transform: scale(0.9); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 85vh; overflow-y: auto;
         }
-        
-        .doa-rumi {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-style: italic;
+        .modal-overlay.open .focus-card { transform: scale(1); opacity: 1; }
+
+        /* Content Styles */
+        .focus-icon {
+            width: 50px; height: 50px; border-radius: 16px;
+            background: var(--primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 15px;
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2);
         }
+        .focus-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); font-weight: 800; margin-bottom: 5px; }
+        .focus-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 25px; line-height: 1.3; }
         
-        .doa-mean {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-muted);
+        .focus-arabic { font-family: 'Amiri', serif; font-size: 26px; line-height: 2.2; color: var(--text); margin-bottom: 15px; width: 100%; direction: rtl; }
+        .focus-rumi { font-size: 13px; font-weight: 600; color: var(--primary); font-style: italic; margin-bottom: 15px; line-height: 1.5; }
+        .focus-mean { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px; }
+
+        /* BRANDING (Hidden normally, visible in screenshot) */
+        .screenshot-brand {
+            display: none; margin-top: 20px; 
+            border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; width: 100%;
+        }
+        .brand-flex { display: flex; justify-content: space-between; align-items: center; }
+        .brand-name { font-size: 12px; font-weight: 800; color: var(--primary); letter-spacing: 1px; text-transform: uppercase; }
+
+        /* Actions */
+        .focus-actions { display: flex; gap: 8px; width: 100%; }
+        .btn-action {
+            flex: 1; padding: 12px; border-radius: 12px; border: none;
+            font-weight: 700; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: transform 0.1s;
+        }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-primary { background: var(--text); color: var(--bg); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        
+        .btn-close {
+            position: absolute; top: 15px; right: 15px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--bg); border: none; color: var(--text-muted);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
-        /* Toast */
-        #toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: #1F2937; color: #fff; padding: 12px 24px; border-radius: 50px;
-            font-size: 12px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 100;
-        }
-        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        /* Spinner for sharing */
+        .spin { animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <header class="app-header">
-        <div class="header-top">
-            <div class="header-title">
-                <h1 id="lbl-title">Himpunan Doa</h1>
-                <p id="lbl-subtitle">Panduan Harian Mukmin</p>
+    <div class="sticky-header">
+        <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search..." onkeyup="filterList()">
+        </div>
+        <div class="cat-scroll" id="catContainer"></div>
+    </div>
+
+    <div class="container" id="listContainer"></div>
+
+    <div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="focus-card screenshot-target" onclick="event.stopPropagation()">
+            <button class="btn-close" onclick="closeModal()">&times;</button>
+            
+            <div class="focus-icon">🤲</div>
+            <div class="focus-cat" id="mCat">CATEGORY</div>
+            <div class="focus-title" id="mTitle">Doa Title</div>
+            
+            <div class="focus-arabic" id="mArab">...</div>
+            <div class="focus-rumi" id="mRumi">...</div>
+            <div class="focus-mean" id="mMean">...</div>
+
+            <div class="screenshot-brand">
+                <div class="brand-flex">
+                    <div class="brand-name">MUKMIN.COM</div>
+                    <div style="font-size:10px; opacity:0.7;">Daily Doa App</div>
+                </div>
             </div>
-            <div style="font-size:10px; font-weight:800; color:var(--text-muted); border:1px solid var(--border); padding:4px 8px; border-radius:8px;" id="lang-badge">MS</div>
+
+            <div class="focus-actions">
+                <button class="btn-action btn-outline" id="btnPlay" onclick="toggleAudio()">
+                    <span id="iconPlay">▶</span> <span>Audio</span>
+                </button>
+                <button class="btn-action btn-outline" onclick="toggleFav()">
+                    <span id="iconFav">♥</span> <span id="txtFav">Save</span>
+                </button>
+                <button class="btn-action btn-primary" id="btnShare" onclick="shareCard()">
+                    <svg class="spin" id="shareSpin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                    <svg id="shareIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                    <span>Share</span>
+                </button>
+            </div>
         </div>
-
-        <div class="search-container">
-            <svg class="search-icon icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="searchInput" class="search-input" placeholder="Cari doa..." onkeyup="handleSearch()">
-        </div>
-
-        <div class="category-scroll" id="categoryWrapper"></div>
-    </header>
-
-    <div class="content-area" id="doaContainer"></div>
-    <div id="toast">Disalin</div>
+    </div>
 
     <script>
-        // --- TRANSLATION MAPS ---
-        const UI_TEXT = {
-            ms: { title: "Himpunan Doa", subtitle: "Panduan Harian Mukmin", search: "Cari doa...", copied: "Teks disalin", fav_add: "Ditambah ke kegemaran", fav_rem: "Dibuang dari kegemaran", empty: "Tiada doa dijumpai." },
-            en: { title: "Daily Duas", subtitle: "Believer's Daily Guide", search: "Search duas...", copied: "Text copied", fav_add: "Added to favorites", fav_rem: "Removed from favorites", empty: "No duas found." }
-        };
-
-        const CATEGORIES = {
-            "Semua": { en: "All" },
-            "Kegemaran": { en: "Saved" },
-            "Harian": { en: "Daily" },
-            "Diri": { en: "Self" },
-            "Makan": { en: "Food" },
-            "Ibadah": { en: "Worship" },
-            "Keluarga": { en: "Family" },
-            "Ilmu": { en: "Knowledge" },
-            "Rezeki": { en: "Provision" },
-            "Emosi": { en: "Emotion" },
-            "Perjalanan": { en: "Travel" },
-            "Kesihatan": { en: "Health" },
-            "Alam": { en: "Nature" },
-            "Majlis": { en: "Gathering" },
-            "Sosial": { en: "Social" }
-        };
-
-        // --- DUAL LANGUAGE DATA (Sampled for brevity, full structure applied) ---
+        // --- DATASET ---
         const doaData = [
-            // HARIAN
-            { id: 1, cat: "Harian", title_ms: "Bangun Tidur", title_en: "Waking Up", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ", rumi: "Alhamdullillahillazi ahyana ba'da ma amatana wa ilaihin nusyur", mean_ms: "Segala puji bagi Allah yang menghidupkan kami selepas mematikan kami dan kepada-Nya kami akan kembali.", mean_en: "All praise is for Allah who gave us life after having taken it from us and unto Him is the resurrection." },
+            { id: 1, cat: "Harian", title_ms: "Bangun Tidur", title_en: "Upon Waking Up", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ", rumi: "Alhamdullillahillazi ahyana ba'da ma amatana wa ilaihin nusyur", mean_ms: "Segala puji bagi Allah yang menghidupkan kami selepas mematikan kami dan kepada-Nya kami akan kembali.", mean_en: "All praise is for Allah who gave us life after having taken it from us and unto Him is the resurrection." },
             { id: 2, cat: "Harian", title_ms: "Sebelum Tidur", title_en: "Before Sleeping", arab: "بِسْمِكَ اللّهُمَّ أَحْيَا وَبِسْمِكَ أَمُوتُ", rumi: "Bismika Allahumma ahya wa bismika amut", mean_ms: "Dengan nama-Mu Ya Allah aku hidup dan dengan nama-Mu aku mati.", mean_en: "In Your name O Allah, I live and I die." },
-            { id: 3, cat: "Harian", title_ms: "Zikir Pagi Hari", title_en: "Morning Zikr", arab: "اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا...", rumi: "Allahumma bika asbahna wa bika amsaina...", mean_ms: "Ya Allah, dengan-Mu kami berpagi-pagi...", mean_en: "O Allah, by You we enter the morning and by You we enter the evening..." },
-            { id: 5, cat: "Harian", title_ms: "Masuk Rumah", title_en: "Entering Home", arab: "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا...", rumi: "Bismillahi walajna...", mean_ms: "Dengan nama Allah kami masuk...", mean_en: "In the name of Allah we enter, and in the name of Allah we leave..." },
-            { id: 6, cat: "Harian", title_ms: "Keluar Rumah", title_en: "Leaving Home", arab: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ...", rumi: "Bismillahi tawakkaltu 'alallah...", mean_ms: "Dengan nama Allah, aku bertawakkal...", mean_en: "In the name of Allah, I place my trust in Allah..." },
-            
-            // MAKAN
-            { id: 13, cat: "Makan", title_ms: "Sebelum Makan", title_en: "Before Eating", arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا...", rumi: "Allahumma barik lana...", mean_ms: "Ya Allah, berkatilah rezeki...", mean_en: "O Allah, bless us in what You have provided us..." },
-            { id: 14, cat: "Makan", title_ms: "Selepas Makan", title_en: "After Eating", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا...", rumi: "Alhamdulillahillazi at'amana...", mean_ms: "Segala puji bagi Allah yang telah memberi makan...", mean_en: "Praise be to Allah Who has fed us and given us drink..." },
-
-            // DIRI
-            { id: 8, cat: "Diri", title_ms: "Masuk Tandas", title_en: "Entering Toilet", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ", rumi: "Allahumma inni a'uzubika...", mean_ms: "Ya Allah, aku berlindung dengan-Mu...", mean_en: "O Allah, I seek protection in You from the male and female unclean spirits." },
-            { id: 10, cat: "Diri", title_ms: "Melihat Cermin", title_en: "Looking in Mirror", arab: "اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي", rumi: "Allahumma kama hassanta khalqi...", mean_ms: "Ya Allah, sebagaimana Engkau perelokkan rupaku...", mean_en: "O Allah, just as You have made my external features beautiful, make my character beautiful as well." },
-
-            // IBADAH
-            { id: 18, cat: "Ibadah", title_ms: "Masuk Masjid", title_en: "Entering Mosque", arab: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ", rumi: "Allahummaftah li abwaba rahmatik", mean_ms: "Ya Allah, bukakanlah untukku pintu rahmat-Mu.", mean_en: "O Allah, open for me the doors of Your mercy." },
-            { id: 20, cat: "Ibadah", title_ms: "Sayyidul Istighfar", title_en: "Master of Istighfar", arab: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ...", rumi: "Allahumma anta rabbi...", mean_ms: "Ya Allah, Engkaulah Tuhanku...", mean_en: "O Allah, You are my Lord, there is no deity except You..." },
-            
-            // KELUARGA
-            { id: 21, cat: "Keluarga", title_ms: "Untuk Ibu Bapa", title_en: "For Parents", arab: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ...", rumi: "Rabbighfir li wa liwalidayya...", mean_ms: "Wahai Tuhanku, ampunilah dosaku...", mean_en: "My Lord, forgive me and my parents and have mercy on them..." },
-            { id: 22, cat: "Keluarga", title_ms: "Kebahagiaan Keluarga", title_en: "Family Happiness", arab: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا...", rumi: "Rabbana hablana min azwajina...", mean_ms: "Wahai Tuhan kami, kurniakanlah...", mean_en: "Our Lord, grant us from among our wives and offspring comfort to our eyes..." },
-
-            // REZEKI
-            { id: 25, cat: "Rezeki", title_ms: "Memohon Rezeki", title_en: "Seeking Provision", arab: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ...", rumi: "Allahummak fini bihalalika...", mean_ms: "Ya Allah, cukupkanlah aku dengan rezeki-Mu...", mean_en: "O Allah, suffice me with Your lawful against Your prohibited..." },
-            { id: 27, cat: "Rezeki", title_ms: "Dunia Akhirat", title_en: "Goodness in Both Worlds", arab: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً...", rumi: "Rabbana atina fiddunya...", mean_ms: "Wahai Tuhan kami, berilah kami kebaikan...", mean_en: "Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good..." },
-
-            // EMOSI
-            { id: 28, cat: "Emosi", title_ms: "Ketika Marah", title_en: "When Angry", arab: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ", rumi: "A'uzubillahi minasy-syaitanir-rajim", mean_ms: "Aku berlindung kepada Allah...", mean_en: "I seek refuge in Allah from the accursed Satan." },
-            { id: 30, cat: "Emosi", title_ms: "Nabi Yunus (Kesulitan)", title_en: "Prophet Yunus (Distress)", arab: "لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ...", rumi: "La ilaha illa anta subhanaka...", mean_ms: "Tiada Tuhan melainkan Engkau...", mean_en: "There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers." },
-
-            // PERJALANAN
-            { id: 32, cat: "Perjalanan", title_ms: "Naik Kenderaan", title_en: "Boarding Vehicle", arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا...", rumi: "Subhanallazi sakh-khara lana...", mean_ms: "Maha Suci Tuhan yang memudahkan...", mean_en: "Glory to Him who has subjected this to us..." },
-            
-            // KESIHATAN
-            { id: 34, cat: "Kesihatan", title_ms: "Ketika Sakit", title_en: "When Sick", arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ...", rumi: "Allahumma rabban-nas...", mean_ms: "Ya Allah, Tuhan manusia...", mean_en: "O Allah, Lord of mankind, remove the severity and cure..." }
+            { id: 3, cat: "Harian", title_ms: "Keluar Rumah", title_en: "Leaving Home", arab: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ", rumi: "Bismillahi tawakkaltu 'alallah, wa la hawla wa la quwwata illa billah", mean_ms: "Dengan nama Allah, aku bertawakkal kepada Allah, dan tiada daya serta upaya melainkan dengan Allah.", mean_en: "In the name of Allah, I place my trust in Allah, and there is no might nor power except with Allah." },
+            { id: 4, cat: "Harian", title_ms: "Masuk Rumah", title_en: "Entering Home", arab: "بِسْمِ اللهِ وَلَجْنَا، وَبِسْمِ اللهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا", rumi: "Bismillahi walajna, wa bismillahi kharajna, wa 'ala rabbina tawakkalna", mean_ms: "Dengan nama Allah kami masuk, dan dengan nama Allah kami keluar, dan kepada Tuhan kami, kami bertawakkal.", mean_en: "In the name of Allah we enter, and in the name of Allah we leave, and upon our Lord we place our trust." },
+            { id: 5, cat: "Harian", title_ms: "Memakai Pakaian", title_en: "Dressing Up", arab: "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ", rumi: "Alhamdulillahillazi kasani haza wa razaqanihi min ghairi hawlin minni wa la quwwah", mean_ms: "Segala puji bagi Allah yang memakaikan aku pakaian ini dan memberikannya kepadaku tanpa daya dan kekuatanku.", mean_en: "Praise be to Allah Who has clothed me with this garment and provided it for me, with no power nor might from myself." },
+            { id: 6, cat: "Harian", title_ms: "Masuk Tandas", title_en: "Entering Toilet", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ", rumi: "Allahumma inni a'uzubika minal khubuthi wal khaba'ith", mean_ms: "Ya Allah, aku berlindung dengan-Mu daripada gangguan syaitan jantan dan syaitan betina.", mean_en: "O Allah, I seek protection in You from the male and female unclean spirits." },
+            { id: 7, cat: "Harian", title_ms: "Keluar Tandas", title_en: "Leaving Toilet", arab: "غُفْرَانَكَ الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنِّي الْأَذَى وَعَافَانِي", rumi: "Ghufranaka. Alhamdulillahillazi azhaba 'annil aza wa 'afani", mean_ms: "Aku memohon keampunan-Mu. Segala puji bagi Allah yang telah menghilangkan penyakit daripadaku dan menyihatkanku.", mean_en: "I seek Your forgiveness. Praise be to Allah Who removed harm from me and gave me health." },
+            { id: 8, cat: "Harian", title_ms: "Lihat Cermin", title_en: "Looking in Mirror", arab: "اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي", rumi: "Allahumma kama hassanta khalqi fa-hassin khuluqi", mean_ms: "Ya Allah, sebagaimana Engkau perelokkan rupaku, perelokkanlah juga akhlakku.", mean_en: "O Allah, just as You have made my external features beautiful, make my character beautiful as well." },
+            { id: 10, cat: "Makan", title_ms: "Sebelum Makan", title_en: "Before Eating", arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ", rumi: "Allahumma barik lana fima razaqtana waqina 'azaban-nar", mean_ms: "Ya Allah, berkatilah rezeki yang Engkau kurniakan kepada kami dan peliharalah kami dari azab neraka.", mean_en: "O Allah, bless us in what You have provided us and protect us from the punishment of the Fire." },
+            { id: 11, cat: "Makan", title_ms: "Selepas Makan", title_en: "After Eating", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ", rumi: "Alhamdulillahillazi at'amana wa saqana wa ja'alana muslimin", mean_ms: "Segala puji bagi Allah yang telah memberi makan dan minum kepada kami, serta menjadikan kami orang-orang Islam.", mean_en: "Praise be to Allah Who has fed us and given us drink and made us Muslims." },
+            { id: 15, cat: "Ilmu", title_ms: "Penerang Hati", title_en: "Enlightenment", arab: "اللَّهُمَّ افْتَحْ عَلَيْنَا حِكْمَتَكَ وَانْشُرْ عَلَيْنَا مِنْ خَزَائِنِ رَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ", rumi: "Allahummaftah 'alaina hikmataka wansyur 'alaina min khaza'ini rahmatika ya arhamar rahimin", mean_ms: "Ya Allah, bukakanlah hikmah-Mu kepada kami dan bentangkanlah rahmat-Mu, wahai Tuhan Yang Maha Pengasih.", mean_en: "O Allah, open Your wisdom to us and spread Your mercy upon us, O Most Merciful of the merciful." },
+            { id: 16, cat: "Ilmu", title_ms: "Doa Belajar", title_en: "Prayer for Study", arab: "رَبِّ زِدْنِي عِلْمًا وَارْزُقْنِي فَهْمًا", rumi: "Rabbi zidni 'ilman warzuqni fahman", mean_ms: "Wahai Tuhanku, tambahkanlah ilmuku dan kurniakanlah aku kefahaman.", mean_en: "My Lord, increase me in knowledge and grant me understanding." },
+            { id: 17, cat: "Ilmu", title_ms: "Penenang Hati", title_en: "Ease My Task", arab: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي يَفْقَهُوا قَوْلِي", rumi: "Rabbisyrah li sadri, wa yassir li amri, wahlul 'uqdatan min lisani, yafqahu qauli", mean_ms: "Wahai Tuhanku, lapangkanlah dadaku, mudahkanlah urusanku, dan lepaskanlah kekakuan lidahku supaya mereka faham perkataanku.", mean_en: "My Lord, expand for me my breast, ease for me my task, and untie the knot from my tongue that they may understand my speech." },
+            { id: 21, cat: "Keluarga", title_ms: "Untuk Ibu Bapa", title_en: "For Parents", arab: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا", rumi: "Rabbighfir li wa liwalidayya warhamhuma kama rabbayani saghira", mean_ms: "Wahai Tuhanku, ampunilah dosaku dan dosa kedua ibu bapaku serta kasihanilah mereka sebagaimana mereka mengasuhku sewaktu kecil.", mean_en: "My Lord, forgive me and my parents and have mercy on them as they brought me up [when I was] small." },
+            { id: 22, cat: "Keluarga", title_ms: "Kebahagiaan Keluarga", title_en: "Family Happiness", arab: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا", rumi: "Rabbana hablana min azwajina wa zurriyyatina qurrata a'yunin waj'alna lil muttaqina imama", mean_ms: "Wahai Tuhan kami, kurniakanlah kepada kami pasangan dan zuriat keturunan sebagai penyejuk mata, dan jadikanlah kami pemimpin bagi orang-orang yang bertakwa.", mean_en: "Our Lord, grant us from among our wives and offspring comfort to our eyes and make us an example for the righteous." },
+            { id: 30, cat: "Rezeki", title_ms: "Memohon Rezeki", title_en: "Seeking Provision", arab: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ", rumi: "Allahummak fini bihalalika 'an haramika, wa aghnini bifadlika 'amman siwaka", mean_ms: "Ya Allah, cukupkanlah aku dengan rezeki-Mu yang halal daripada yang haram, dan kayakanlah aku dengan kurniaan-Mu daripada meminta kepada selain-Mu.", mean_en: "O Allah, suffice me with Your lawful against Your prohibited, and make me independent of all those besides You." },
+            { id: 31, cat: "Rezeki", title_ms: "Dunia Akhirat", title_en: "Goodness Both Worlds", arab: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ", rumi: "Rabbana atina fiddunya hasanah wa fil akhirati hasanah waqina 'azaban-nar", mean_ms: "Wahai Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami dari azab neraka.", mean_en: "Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire." },
+            { id: 40, cat: "Emosi", title_ms: "Ketika Marah", title_en: "When Angry", arab: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ", rumi: "A'uzubillahi minasy-syaitanir-rajim", mean_ms: "Aku berlindung kepada Allah daripada syaitan yang direjam.", mean_en: "I seek refuge in Allah from the accursed Satan." },
+            { id: 41, cat: "Emosi", title_ms: "Nabi Yunus (Kesulitan)", title_en: "Prophet Yunus (Distress)", arab: "لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ", rumi: "La ilaha illa anta subhanaka inni kuntu minaz-zalimin", mean_ms: "Tiada Tuhan melainkan Engkau, Maha Suci Engkau, sesungguhnya aku adalah daripada orang-orang yang zalim.", mean_en: "There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers." },
+            { id: 50, cat: "Ibadah", title_ms: "Masuk Masjid", title_en: "Entering Mosque", arab: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ", rumi: "Allahummaftah li abwaba rahmatik", mean_ms: "Ya Allah, bukakanlah untukku pintu rahmat-Mu.", mean_en: "O Allah, open for me the doors of Your mercy." },
+            { id: 60, cat: "Perjalanan", title_ms: "Naik Kenderaan", title_en: "Boarding Vehicle", arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ", rumi: "Subhanallazi sakh-khara lana haza wa ma kunna lahu muqrinin wa inna ila rabbina lamunqalibun", mean_ms: "Maha Suci Tuhan yang memudahkan kenderaan ini bagi kami...", mean_en: "Glory to Him who has subjected this to us..." },
+            { id: 70, cat: "Kesihatan", title_ms: "Ketika Sakit", title_en: "When Sick", arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ أَنْتَ الشَّافِي لَا شِفَاءَ إِلَّا شِفَاؤُكَ", rumi: "Allahumma rabban-nas azhibil ba'sa isyfi antasy-syafi...", mean_ms: "Ya Allah, Tuhan manusia, hilangkanlah penyakit ini...", mean_en: "O Allah, Lord of mankind, remove the severity and cure..." }
         ];
 
-        // --- GLOBAL STATE ---
-        let currentLang = localStorage.getItem('wsl_lang') || 'ms';
-        let currentTheme = localStorage.getItem('wsl_theme') || 'light';
-        let currentCategory = 'Semua';
-        let searchQuery = '';
-        let favorites = JSON.parse(localStorage.getItem('mukminDoaFavs')) || [];
+        // --- STATE ---
+        let lang = localStorage.getItem('wsl_lang') || 'en';
+        let activeCat = 'All';
+        let favs = JSON.parse(localStorage.getItem('mukminDoaFavs')) || [];
+        let currentId = null;
         let synth = window.speechSynthesis;
-
-        // ICONS
-        const ICONS = {
-            vol: '<svg class="icon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>',
-            heart: '<svg class="icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
-            share: '<svg class="icon" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
-        };
 
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
-            applyTheme();
-            updateLanguage();
-            renderCategories();
-            renderDoas();
-            
-            // Listen for theme changes from other tabs/iframe context if possible
-            window.addEventListener('storage', (e) => {
-                if(e.key === 'wsl_theme') { currentTheme = e.newValue; applyTheme(); }
-                if(e.key === 'wsl_lang') { currentLang = e.newValue; updateLanguage(); renderCategories(); renderDoas(); }
-            });
+            syncTheme();
+            renderCats();
+            renderList();
         });
 
-        function applyTheme() {
-            document.documentElement.setAttribute('data-theme', currentTheme);
+        window.addEventListener('storage', (e) => {
+            if(e.key === 'wsl_theme') syncTheme();
+            if(e.key === 'wsl_lang') { lang = e.newValue; renderList(); renderCats(); }
+        });
+
+        function syncTheme() {
+            const t = localStorage.getItem('wsl_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
         }
 
-        function updateLanguage() {
-            const t = UI_TEXT[currentLang];
-            document.getElementById('lbl-title').textContent = t.title;
-            document.getElementById('lbl-subtitle').textContent = t.subtitle;
-            document.getElementById('searchInput').placeholder = t.search;
-            document.getElementById('lang-badge').textContent = currentLang.toUpperCase();
+        // --- RENDER CATEGORIES ---
+        function renderCats() {
+            const cats = ['All', 'Harian', 'Makan', 'Ilmu', 'Diri', 'Keluarga', 'Rezeki', 'Emosi', 'Ibadah', 'Perjalanan', 'Kesihatan', 'Fav'];
+            const cDiv = document.getElementById('catContainer');
+            cDiv.innerHTML = cats.map(c => {
+                let lbl = c;
+                if(lang === 'ms' && c === 'All') lbl = 'Semua';
+                if(lang === 'ms' && c === 'Fav') lbl = 'Kegemaran';
+                return `<button class="cat-pill ${activeCat===c ? 'active' : ''}" onclick="setCat('${c}')">${lbl}</button>`;
+            }).join('');
         }
 
-        function getCatName(cat) {
-            if (currentLang === 'ms') return cat;
-            return CATEGORIES[cat] ? CATEGORIES[cat].en : cat;
-        }
+        window.setCat = (c) => { activeCat = c; renderCats(); renderList(); };
 
-        function renderCategories() {
-            // Unique categories from data
-            const uniqueCats = [...new Set(doaData.map(item => item.cat))];
-            const allCats = ['Semua', 'Kegemaran', ...uniqueCats];
+        // --- RENDER LIST ---
+        window.filterList = renderList; 
+        function renderList() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const listDiv = document.getElementById('listContainer');
             
-            const wrapper = document.getElementById('categoryWrapper');
-            wrapper.innerHTML = allCats.map(cat => `
-                <div class="cat-pill ${currentCategory === cat ? 'active' : ''}" 
-                     onclick="setCategory('${cat}')">
-                     ${getCatName(cat)}
-                </div>
-            `).join('');
-        }
-
-        function setCategory(cat) {
-            currentCategory = cat;
-            document.getElementById('searchInput').value = '';
-            searchQuery = '';
-            renderCategories(); // Update active state
-            renderDoas();
-        }
-
-        function handleSearch() {
-            searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            renderDoas();
-        }
-
-        function toggleFavorite(id) {
-            if (favorites.includes(id)) {
-                favorites = favorites.filter(favId => favId !== id);
-                showToast(UI_TEXT[currentLang].fav_rem);
-            } else {
-                favorites.push(id);
-                showToast(UI_TEXT[currentLang].fav_add);
-            }
-            localStorage.setItem('mukminDoaFavs', JSON.stringify(favorites));
-            renderDoas();
-        }
-
-        function renderDoas() {
-            const container = document.getElementById('doaContainer');
-            
-            let filtered = doaData.filter(item => {
-                // Get correct language strings
-                const title = currentLang === 'ms' ? item.title_ms : (item.title_en || item.title_ms);
-                const mean = currentLang === 'ms' ? item.mean_ms : (item.mean_en || item.mean_ms);
-                
-                // Search logic (checks both languages regardless of setting for better UX)
-                const matchesSearch = 
-                    title.toLowerCase().includes(searchQuery) || 
-                    mean.toLowerCase().includes(searchQuery) || 
-                    item.rumi.toLowerCase().includes(searchQuery) ||
-                    (item.title_en && item.title_en.toLowerCase().includes(searchQuery)); // Always search English title too
-
-                if (currentCategory === 'Semua') return matchesSearch;
-                if (currentCategory === 'Kegemaran') return favorites.includes(item.id) && matchesSearch;
-                return item.cat === currentCategory && matchesSearch;
+            const filtered = doaData.filter(d => {
+                const t = lang === 'ms' ? d.title_ms : d.title_en;
+                const matchText = t.toLowerCase().includes(q) || d.mean_ms.toLowerCase().includes(q) || d.rumi.toLowerCase().includes(q);
+                const matchCat = activeCat === 'All' ? true : (activeCat === 'Fav' ? favs.includes(d.id) : d.cat === activeCat);
+                return matchText && matchCat;
             });
 
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="empty-state">${UI_TEXT[currentLang].empty}</div>`;
+            if(filtered.length === 0) {
+                listDiv.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-style:italic;">Nothing found.</div>`;
                 return;
             }
 
-            container.innerHTML = filtered.map(item => {
-                const isFav = favorites.includes(item.id);
-                const heartStyle = isFav ? 'fill: #EF4444; stroke: #EF4444;' : '';
-                
-                // Dynamic Text based on Lang
-                const displayTitle = currentLang === 'ms' ? item.title_ms : (item.title_en || item.title_ms);
-                const displayMean = currentLang === 'ms' ? item.mean_ms : (item.mean_en || item.mean_ms);
-                const catLabel = getCatName(item.cat);
-
+            listDiv.innerHTML = filtered.map(d => {
+                const title = lang === 'ms' ? d.title_ms : d.title_en;
                 return `
-                <div class="doa-card">
-                    <div class="doa-top">
-                        <div>
-                            <span class="doa-badge">${catLabel}</span>
-                            <h3 class="doa-title">${displayTitle}</h3>
-                        </div>
-                        <div class="doa-actions">
-                            <button class="action-btn" onclick="playAudio('${item.arab}', this)">${ICONS.vol}</button>
-                            <button class="action-btn ${isFav ? 'active-fav' : ''}" onclick="toggleFavorite(${item.id})">
-                                <svg class="icon" style="${heartStyle}" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                            </button>
-                            <button class="action-btn" onclick="shareDoa(${item.id})">${ICONS.share}</button>
+                <div class="doa-item" onclick="openModal(${d.id})">
+                    <div class="doa-icon-box">🤲</div>
+                    <div class="doa-info">
+                        <div class="doa-title">${title}</div>
+                        <div class="doa-meta">
+                            <span class="doa-cat-badge">${d.cat}</span>
+                            ${favs.includes(d.id) ? '<span style="color:#ef4444;">♥</span>' : ''}
                         </div>
                     </div>
-                    <div class="doa-arabic" dir="rtl" lang="ar">${item.arab}</div>
-                    <div class="doa-translation">
-                        <div class="doa-rumi">${item.rumi}</div>
-                        <div class="doa-mean">"${displayMean}"</div>
-                    </div>
-                </div>
-            `}).join('');
+                    <div style="color:var(--text-muted); opacity:0.5;">›</div>
+                </div>`;
+            }).join('');
         }
 
-        // --- AUDIO (MALE / OFFLINE PRIORITY) ---
-        function playAudio(text, btnElement) {
-            if (synth.speaking) { 
-                synth.cancel(); 
-                if(btnElement.classList.contains('active-audio')) { 
-                    btnElement.classList.remove('active-audio'); return; 
-                } 
-            }
+        // --- MODAL LOGIC ---
+        window.openModal = (id) => {
+            const d = doaData.find(x => x.id === id);
+            currentId = id;
             
-            document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active-audio'));
-            btnElement.classList.add('active-audio');
+            document.getElementById('mCat').textContent = d.cat;
+            document.getElementById('mTitle').textContent = lang === 'ms' ? d.title_ms : d.title_en;
+            document.getElementById('mArab').textContent = d.arab;
+            document.getElementById('mRumi').textContent = d.rumi;
+            document.getElementById('mMean').textContent = lang === 'ms' ? d.mean_ms : d.mean_en;
+            
+            updateFavBtn();
+            resetAudioBtn();
 
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.8; 
-
-            // Voice selection logic
-            const availableVoices = synth.getVoices();
-            const maleKeywords = ['maged', 'tarik', 'hamel', 'male'];
-            let selectedVoice = availableVoices.find(v => v.lang.includes('ar') && maleKeywords.some(k => v.name.toLowerCase().includes(k)));
-            if (!selectedVoice) selectedVoice = availableVoices.find(v => v.lang.includes('ar') && v.localService === true);
-            if (!selectedVoice) selectedVoice = availableVoices.find(v => v.lang.includes('ar'));
-
-            if (selectedVoice) { utterance.voice = selectedVoice; utterance.lang = selectedVoice.lang; } 
-            else { utterance.lang = 'ar-SA'; }
-
-            utterance.onend = () => { btnElement.classList.remove('active-audio'); };
-            utterance.onerror = () => { btnElement.classList.remove('active-audio'); };
-            synth.speak(utterance);
+            document.getElementById('detailModal').classList.add('open');
         }
 
-        function shareDoa(id) {
-            const item = doaData.find(d => d.id === id);
-            const title = currentLang === 'ms' ? item.title_ms : (item.title_en || item.title_ms);
-            const mean = currentLang === 'ms' ? item.mean_ms : (item.mean_en || item.mean_ms);
+        window.closeModal = (e) => {
+            if(e && e.target.id !== 'detailModal' && !e.target.classList.contains('btn-close')) return;
+            document.getElementById('detailModal').classList.remove('open');
+            if(synth.speaking) synth.cancel();
+        }
+
+        // --- ACTIONS ---
+        window.toggleFav = () => {
+            if(favs.includes(currentId)) favs = favs.filter(x => x !== currentId);
+            else favs.push(currentId);
+            localStorage.setItem('mukminDoaFavs', JSON.stringify(favs));
+            updateFavBtn();
+            renderList();
+        }
+
+        function updateFavBtn() {
+            const isFav = favs.includes(currentId);
+            const icon = document.getElementById('iconFav');
+            const txt = document.getElementById('txtFav');
             
-            const shareData = { title: `Doa ${title}`, text: `${title}\n\n${item.arab}\n\n${item.rumi}\n\n"${mean}"\n\n- Mukmin App` };
-            
-            if (navigator.share) { navigator.share(shareData).catch(console.error); }
-            else { 
-                navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}`).then(() => showToast(UI_TEXT[currentLang].copied)); 
+            if(isFav) {
+                icon.style.color = "#ef4444";
+                txt.textContent = lang === 'ms' ? "Saved" : "Saved";
+            } else {
+                icon.style.color = "currentColor";
+                txt.textContent = lang === 'ms' ? "Simpan" : "Save";
             }
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast'); 
-            t.innerText = msg; 
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+        // --- AUDIO ---
+        window.toggleAudio = () => {
+            const d = doaData.find(x => x.id === currentId);
+            const btn = document.getElementById('btnPlay');
+            
+            if(synth.speaking) {
+                synth.cancel();
+                resetAudioBtn();
+            } else {
+                btn.style.borderColor = "var(--primary)";
+                btn.style.color = "var(--primary)";
+                document.getElementById('iconPlay').textContent = "||";
+                
+                const u = new SpeechSynthesisUtterance(d.arab);
+                u.lang = 'ar-SA';
+                u.rate = 0.8;
+                u.onend = resetAudioBtn;
+                synth.speak(u);
+            }
         }
+
+        function resetAudioBtn() {
+            const btn = document.getElementById('btnPlay');
+            btn.style.borderColor = "var(--border)";
+            btn.style.color = "var(--text)";
+            document.getElementById('iconPlay').textContent = "▶";
+        }
+
+        // --- SCREENSHOT & SHARE LOGIC ---
+        window.shareCard = async function() {
+            const btn = document.getElementById('btnShare');
+            const spin = document.getElementById('shareSpin');
+            const icon = document.getElementById('shareIcon');
+            const card = document.querySelector('.screenshot-target');
+
+            // 1. UI Loading State
+            spin.style.display = 'block';
+            icon.style.display = 'none';
+            btn.style.opacity = '0.7';
+
+            try {
+                // 2. Create Wrapper for clean screenshot
+                const wrapper = document.createElement('div');
+                Object.assign(wrapper.style, {
+                    position: 'fixed', top: '0', left: '0', width: '500px',
+                    padding: '80px 40px', zIndex: '-1000',
+                    background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'Inter', sans-serif"
+                });
+
+                // 3. Clone Card
+                const clone = card.cloneNode(true);
+                clone.style.transform = 'none'; 
+                clone.style.margin = '0'; 
+                clone.style.boxShadow = '0 30px 60px rgba(0,0,0,0.15)';
+                clone.style.maxHeight = 'none'; // Expand full text
+                clone.style.overflow = 'visible';
+
+                // 4. Clean up Clone (Remove buttons, show branding)
+                clone.querySelector('.btn-close').style.display = 'none';
+                clone.querySelector('.focus-actions').style.display = 'none';
+                clone.querySelector('.screenshot-brand').style.display = 'block';
+                
+                wrapper.appendChild(clone);
+                document.body.appendChild(wrapper);
+
+                // 5. Capture
+                const canvas = await html2canvas(wrapper, { 
+                    scale: 2, 
+                    useCORS: true,
+                    backgroundColor: null 
+                });
+                document.body.removeChild(wrapper);
+
+                // 6. Share
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], "mukmin_doa.png", { type: "image/png" });
+                    
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try { await navigator.share({ files: [file] }); } catch(e) { console.log('Share dismissed'); }
+                    } else {
+                        // Fallback Download
+                        const link = document.createElement('a');
+                        link.download = 'mukmin_doa.png';
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    }
+                    
+                    // Reset UI
+                    spin.style.display = 'none'; 
+                    icon.style.display = 'block'; 
+                    btn.style.opacity = '1';
+                });
+
+            } catch (e) {
+                console.error(e);
+                alert("Error generating image.");
+                spin.style.display = 'none';
+                icon.style.display = 'block';
+                btn.style.opacity = '1';
+            }
+        }
+
     </script>
 </body>
 </html>
