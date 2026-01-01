@@ -388,13 +388,16 @@
 
             try {
                 const wrapper = document.createElement('div');
-                Object.assign(wrapper.style, {
-                    position: 'fixed', top: '0', left: '0', width: '500px',
-                    padding: '80px 40px', zIndex: '-1000',
-                    background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: "'Inter', sans-serif"
-                });
+                // In doa.html > shareCard function
+Object.assign(wrapper.style, {
+    position: 'fixed', top: '0', left: '0', 
+    width: '100vw', height: '100vh', // Full screen
+    zIndex: '10000', // VISIBLE ON TOP (Fixes blank image)
+    background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    fontFamily: "'Inter', sans-serif"
+});
+
 
                 const clone = card.cloneNode(true);
                 clone.style.transform = 'none'; clone.style.margin = '0'; 
