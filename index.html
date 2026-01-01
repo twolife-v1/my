@@ -2207,9 +2207,24 @@ function manualSelectLoc(lat, lon, name) {
 
 
         
-    function playAyah(url, btn) {
+        function playAyah(url, btn) {
         const ayahBlock = btn.closest('.ayah-block');
         
+        // --- FIX: SAVE LOCATION AUTOMATICALLY ON PLAY ---
+        if(ayahBlock && ayahBlock.id) {
+            const parts = ayahBlock.id.split('-'); // ID is format: ayah-36-10
+            if(parts.length === 3) {
+                const s = parts[1];
+                const a = parts[2];
+                const name = document.getElementById('readerTitle').textContent;
+                
+                const id = `ayah_${s}_${a}`;
+                localStorage.setItem('wsl_last_read', JSON.stringify({ id, surahNum: s, ayahNum: a, surahName: name }));
+                updateLastReadUI(); // Update the home screen card immediately
+            }
+        }
+        // ------------------------------------------------
+
         // Pause/Stop Logic
         if (currentPlayBtn === btn) {
             if (audioPlayer.paused) { 
@@ -2255,6 +2270,7 @@ function manualSelectLoc(lat, lon, name) {
             }
         };
     }
+
 
     // --- CORRECTED RENDER AYAHS FUNCTION ---
     function renderAyahs(num, name, arAyahs, trAyahs) {
@@ -2501,9 +2517,14 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
         if (lr) jumpToAyah(lr.surahNum, lr.surahName, lr.ayahNum);
     }
 
-    async function jumpToAyah(surahNum, surahName, ayahNum) {
+        async function jumpToAyah(surahNum, surahName, ayahNum) {
+        // 1. Switch Tab
         switchTab('quran', document.querySelectorAll('.nav-item')[1]);
+        
+        // 2. Load Surah
         await openSurah(surahNum, surahName);
+        
+        // 3. Scroll to Ayah (FIX: Increased attempts from 20 to 60)
         let attempts = 0;
         const checkScroll = setInterval(() => {
             const block = document.getElementById(`ayah-${surahNum}-${ayahNum}`);
@@ -2513,9 +2534,11 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
                 setTimeout(() => block.classList.remove('playing'), 1000);
                 clearInterval(checkScroll);
             }
-            if(attempts++ > 20) clearInterval(checkScroll);
+            // Wait up to 9 seconds (60 * 150ms)
+            if(attempts++ > 60) clearInterval(checkScroll);
         }, 150);
     }
+
     
     // PWA Logic
     let dp = null; 
@@ -2701,25 +2724,44 @@ function renderRandomHadith() {
 }
 
 // 2. OPEN FOR AYAH (QURAN)
-window.openAyahFocus = function(surahName, ayahNum, arText, trText) {
-    const modal = document.getElementById('focusModal');
-    
-    document.getElementById('fIcon').textContent = "📖";
-    document.getElementById('fTitle').textContent = surahName;
-    document.getElementById('fCat').textContent = `AYAH ${ayahNum}`;
-    
-    const arDiv = document.getElementById('fBodyAr');
-    arDiv.style.display = 'block';
-    arDiv.textContent = arText;
-    
-    document.getElementById('fBody').textContent = trText;
-    document.getElementById('fRef').textContent = "Al-Quran Al-Kareem";
-    
-    // Hide Shuffle
-    document.getElementById('btnExtraAction').style.display = 'none';
-    
-    modal.classList.add('open');
-}
+    window.openAyahFocus = function(surahName, ayahNum, arText, trText) {
+        const modal = document.getElementById('focusModal');
+        
+        // --- FIX: SAVE LOCATION ON CLICK ---
+        // We need to find the Surah Number. We can get it from the header or the active view.
+        // The safest way here without changing arguments is to look at the Header Title's subtitle
+        // or just rely on the user playing audio later. 
+        // HOWEVER, we can extract it from the DOM element that triggered this if we really wanted.
+        // A simpler way: We grab the surah number from the subtitle "Surah 36"
+        try {
+            const sub = document.getElementById('readerSubtitle').textContent; // "Surah 36"
+            const sNum = sub.replace('Surah ', '').trim();
+            if(!isNaN(sNum)) {
+                const id = `ayah_${sNum}_${ayahNum}`;
+                localStorage.setItem('wsl_last_read', JSON.stringify({ id, surahNum: sNum, ayahNum: ayahNum, surahName: surahName }));
+                updateLastReadUI();
+            }
+        } catch(e) { console.log("Could not auto-save reading pos"); }
+        // -----------------------------------
+
+        document.getElementById('fIcon').textContent = "📖";
+        document.getElementById('fTitle').textContent = surahName;
+        document.getElementById('fCat').textContent = `AYAH ${ayahNum}`;
+        
+        const arDiv = document.getElementById('fBodyAr');
+        arDiv.style.display = 'block';
+        arDiv.textContent = arText;
+        
+        document.getElementById('fBody').textContent = trText;
+        document.getElementById('fRef').textContent = "Al-Quran Al-Kareem";
+        
+        // Hide Shuffle
+        document.getElementById('btnExtraAction').style.display = 'none';
+        
+        modal.classList.add('open');
+    }
+
+
 
 window.closeFocusModal = function(e) {
     if (e && e.target.id !== 'focusModal' && !e.target.classList.contains('btn-close-focus')) return;
