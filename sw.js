@@ -1,18 +1,17 @@
 /* =========================================
    ULTIMATE SERVICE WORKER FOR MUKMIN.COM
-   Version: 2.0 (UPDATED TO FORCE INSTALL TRACKING)
+   Version: 4.0 (FORCE UPDATE FIX)
    ========================================= */
 
-// CHANGE 1: Increment this to 'v2' to force everyone's phone to update
-const CACHE_NAME = 'mukmin-app-v2';
-const DYNAMIC_CACHE = 'mukmin-dynamic-v2';
+// CHANGED: Version 4 to force your phone to delete the old cache
+const CACHE_NAME = 'mukmin-app-v4';
+const DYNAMIC_CACHE = 'mukmin-dynamic-v4';
 
-// 1. ASSETS TO PRE-CACHE (The App Shell)
 const ASSETS_TO_CACHE = [
     './',
-    './index.html', // <--- CHANGE 2: Ensure this matches your actual file name (usually index.html)
+    './index.html',  // <--- This MUST match your file name exactly
     './manifest.json',
-    './azan.mp3', 
+    './azan.mp3',
     './qiblat.html',
     './sunnah.html',
     './tracker.html',
@@ -34,9 +33,9 @@ const ASSETS_TO_CACHE = [
     'https://raw.githubusercontent.com/nexus-js/cdn/main/fog-texture.png'
 ];
 
-// 2. INSTALL EVENT
+// 1. INSTALL: Force immediate takeover
 self.addEventListener('install', (event) => {
-    self.skipWaiting(); // Force activation
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(ASSETS_TO_CACHE);
@@ -44,34 +43,31 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// 3. ACTIVATE EVENT (Cleans up v1)
+// 2. ACTIVATE: Delete all old caches (v1, v2, v3)
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keys) => {
             return Promise.all(
                 keys.map((key) => {
-                    // If the cache key is NOT v2, delete it (removes v1)
                     if (key !== CACHE_NAME && key !== DYNAMIC_CACHE) {
-                        console.log('[Service Worker] Removing old cache:', key);
+                        console.log('Deleting old cache:', key);
                         return caches.delete(key);
                     }
                 })
             );
         })
     );
-    return self.clients.claim(); 
+    return self.clients.claim();
 });
 
-// 4. FETCH EVENT
+// 3. FETCH: Network First for HTML
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    // Bypass API requests
-    if (url.origin.includes('api.alquran.cloud') || url.href.includes('nominatim')) {
-        return; 
-    }
+    // Ignore API calls
+    if (url.origin.includes('api.alquran.cloud') || url.href.includes('nominatim')) return;
 
-    // NETWORK FIRST FOR HTML (Ensures updates load)
+    // HTML Pages: Try Network -> Fail to Cache
     if (event.request.mode === 'navigate') {
         event.respondWith(
             fetch(event.request)
@@ -82,23 +78,22 @@ self.addEventListener('fetch', (event) => {
                     });
                 })
                 .catch(() => {
-                    // CHANGE 3: Fallback also needs to match the correct filename
-                    return caches.match('./index.html'); 
+                    // IF OFFLINE: Load the cached index.html
+                    return caches.match('./index.html');
                 })
         );
         return;
     }
 
-    // STALE-WHILE-REVALIDATE FOR ASSETS
+    // Static Assets: Cache First
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
-            const fetchPromise = fetch(event.request).then((networkResponse) => {
+            return cachedResponse || fetch(event.request).then((networkResponse) => {
                 return caches.open(DYNAMIC_CACHE).then((cache) => {
                     cache.put(event.request, networkResponse.clone());
                     return networkResponse;
                 });
             });
-            return cachedResponse || fetchPromise;
         })
     );
 });
