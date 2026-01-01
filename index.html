@@ -716,7 +716,12 @@
 
 </head>
 <body>
-
+<script>
+        // This prevents the button from crashing if the database isn't ready
+        window.trackClick = window.trackClick || function() { 
+            console.log("Tracking skipped (database not ready)"); 
+        };
+</script>
     <header class="header-overlay" id="stickyHeader">
         <div class="header-left">
             <div class="header-greeting" id="greetings">Assalamualaikum</div>
