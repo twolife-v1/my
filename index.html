@@ -2977,18 +2977,28 @@ window.onpopstate = function(event) {
     const userId = getUserId();
     const userRef = ref(db, 'users/' + userId);
 
-    // --- 2. TRACK VISITS (Transaction) ---
-    // Safely increments session count by 1
+        // --- 2. TRACK VISITS (Transaction) ---
+    
+    // Check if running in App Mode (Standalone) RIGHT NOW
+    const isApp = window.matchMedia('(display-mode: standalone)').matches || 
+                  window.navigator.standalone || 
+                  document.referrer.includes('android-app://');
+
+    // Run Transaction to safely update the user
     runTransaction(userRef, (currentUserData) => {
         if (currentUserData) {
+            // RETURNING USER:
+            // Update session count AND fix the 'isInstalled' status
             currentUserData.sessionCount = (currentUserData.sessionCount || 0) + 1;
             currentUserData.lastActive = Date.now();
+            currentUserData.isInstalled = isApp; // <--- FIX: Updates old users too!
         } else {
+            // NEW USER:
             return {
                 sessionCount: 1,
                 lastActive: Date.now(),
                 firstSeen: Date.now(),
-                isInstalled: false,
+                isInstalled: isApp, // <--- Sets correctly for new users
                 platform: navigator.platform || 'unknown'
             };
         }
