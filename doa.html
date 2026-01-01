@@ -379,57 +379,63 @@
 
         // --- SHARE ---
         window.shareCard = async function() {
-            const btn = document.getElementById('btnShare');
-            const spin = document.getElementById('shareSpin');
-            const icon = document.getElementById('shareIcon');
-            const card = document.querySelector('.screenshot-target');
+    const btn = document.getElementById('btnShare');
+    const spin = document.getElementById('shareSpin');
+    const icon = document.getElementById('shareIcon');
+    const card = document.querySelector('.screenshot-target');
 
-            spin.style.display = 'block'; icon.style.display = 'none'; btn.style.opacity = '0.7';
+    spin.style.display = 'block'; icon.style.display = 'none'; btn.style.opacity = '0.7';
 
-            try {
-                const wrapper = document.createElement('div');
-                // In doa.html > shareCard function
-Object.assign(wrapper.style, {
-    position: 'fixed', top: '0', left: '0', 
-    width: '100vw', height: '100vh', // Full screen
-    zIndex: '10000', // VISIBLE ON TOP (Fixes blank image)
-    background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    fontFamily: "'Inter', sans-serif"
-});
+    try {
+        const wrapper = document.createElement('div');
+        Object.assign(wrapper.style, {
+            position: 'fixed', top: '0', left: '0', 
+            width: '100vw', height: '100vh', 
+            zIndex: '10000', 
+            background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Inter', sans-serif"
+        });
 
+        const clone = card.cloneNode(true);
+        // FIX: Force opacity to 1 because the clone is no longer inside .modal-overlay.open
+        clone.style.opacity = '1'; 
+        clone.style.transform = 'none'; 
+        clone.style.margin = '0'; 
+        clone.style.boxShadow = '0 30px 60px rgba(0,0,0,0.15)';
+        clone.style.maxHeight = 'none'; clone.style.overflow = 'visible';
+        
+        clone.querySelector('.btn-close').style.display = 'none';
+        clone.querySelector('.focus-actions').style.display = 'none';
+        clone.querySelector('.screenshot-brand').style.display = 'block';
+        
+        wrapper.appendChild(clone);
+        document.body.appendChild(wrapper);
 
-                const clone = card.cloneNode(true);
-                clone.style.transform = 'none'; clone.style.margin = '0'; 
-                clone.style.boxShadow = '0 30px 60px rgba(0,0,0,0.15)';
-                clone.style.maxHeight = 'none'; clone.style.overflow = 'visible';
-                clone.querySelector('.btn-close').style.display = 'none';
-                clone.querySelector('.focus-actions').style.display = 'none';
-                clone.querySelector('.screenshot-brand').style.display = 'block';
-                
-                wrapper.appendChild(clone);
-                document.body.appendChild(wrapper);
+        // Optional: slight delay to ensure rendering
+        await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 100)));
 
-                const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true, backgroundColor: null });
-                document.body.removeChild(wrapper);
+        const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true, backgroundColor: null });
+        document.body.removeChild(wrapper);
 
-                canvas.toBlob(async (blob) => {
-                    const file = new File([blob], "mukmin_doa.png", { type: "image/png" });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try { await navigator.share({ files: [file] }); } catch(e) {}
-                    } else {
-                        const link = document.createElement('a');
-                        link.download = 'mukmin_doa.png';
-                        link.href = canvas.toDataURL();
-                        link.click();
-                    }
-                    spin.style.display = 'none'; icon.style.display = 'block'; btn.style.opacity = '1';
-                });
-            } catch (e) {
-                alert("Error generating image.");
-                spin.style.display = 'none'; icon.style.display = 'block'; btn.style.opacity = '1';
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], "mukmin_doa.png", { type: "image/png" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try { await navigator.share({ files: [file] }); } catch(e) {}
+            } else {
+                const link = document.createElement('a');
+                link.download = 'mukmin_doa.png';
+                link.href = canvas.toDataURL();
+                link.click();
             }
-        }
+            spin.style.display = 'none'; icon.style.display = 'block'; btn.style.opacity = '1';
+        });
+    } catch (e) {
+        alert("Error generating image.");
+        spin.style.display = 'none'; icon.style.display = 'block'; btn.style.opacity = '1';
+    }
+}
+
     </script>
 </body>
 </html>
