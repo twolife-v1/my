@@ -73,7 +73,7 @@
         .doa-meta { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
         .doa-cat-badge { background: var(--bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); text-transform: uppercase; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; }
 
-        /* --- 4. FOCUS MODAL & SCREENSHOT TARGET --- */
+        /* --- 4. FOCUS MODAL --- */
         .modal-overlay {
             position: fixed; inset: 0; z-index: 200;
             background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -95,7 +95,6 @@
         }
         .modal-overlay.open .focus-card { transform: scale(1); opacity: 1; }
 
-        /* Content Styles */
         .focus-icon {
             width: 50px; height: 50px; border-radius: 16px;
             background: var(--primary); color: #fff;
@@ -106,19 +105,14 @@
         .focus-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); font-weight: 800; margin-bottom: 5px; }
         .focus-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 25px; line-height: 1.3; }
         
-        .focus-arabic { font-family: 'Amiri', serif; font-size: 26px; line-height: 2.2; color: var(--text); margin-bottom: 15px; width: 100%; direction: rtl; }
+        .focus-arabic { font-family: 'Amiri', serif; font-size: 24px; line-height: 2.2; color: var(--text); margin-bottom: 15px; width: 100%; direction: rtl; }
         .focus-rumi { font-size: 13px; font-weight: 600; color: var(--primary); font-style: italic; margin-bottom: 15px; line-height: 1.5; }
         .focus-mean { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px; }
 
-        /* BRANDING (Hidden normally, visible in screenshot) */
-        .screenshot-brand {
-            display: none; margin-top: 20px; 
-            border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; width: 100%;
-        }
+        .screenshot-brand { display: none; margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; width: 100%; }
         .brand-flex { display: flex; justify-content: space-between; align-items: center; }
         .brand-name { font-size: 12px; font-weight: 800; color: var(--primary); letter-spacing: 1px; text-transform: uppercase; }
 
-        /* Actions */
         .focus-actions { display: flex; gap: 8px; width: 100%; }
         .btn-action {
             flex: 1; padding: 12px; border-radius: 12px; border: none;
@@ -137,7 +131,6 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
-        /* Spinner for sharing */
         .spin { animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -192,40 +185,71 @@
     </div>
 
     <script>
-        // --- DATASET ---
+        // --- DATASET: 100 FULL AUTHENTIC DUAS ---
         const doaData = [
+            // HARIAN (DAILY 1-15)
             { id: 1, cat: "Harian", title_ms: "Bangun Tidur", title_en: "Upon Waking Up", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ", rumi: "Alhamdullillahillazi ahyana ba'da ma amatana wa ilaihin nusyur", mean_ms: "Segala puji bagi Allah yang menghidupkan kami selepas mematikan kami dan kepada-Nya kami akan kembali.", mean_en: "All praise is for Allah who gave us life after having taken it from us and unto Him is the resurrection." },
             { id: 2, cat: "Harian", title_ms: "Sebelum Tidur", title_en: "Before Sleeping", arab: "بِسْمِكَ اللّهُمَّ أَحْيَا وَبِسْمِكَ أَمُوتُ", rumi: "Bismika Allahumma ahya wa bismika amut", mean_ms: "Dengan nama-Mu Ya Allah aku hidup dan dengan nama-Mu aku mati.", mean_en: "In Your name O Allah, I live and I die." },
             { id: 3, cat: "Harian", title_ms: "Keluar Rumah", title_en: "Leaving Home", arab: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ", rumi: "Bismillahi tawakkaltu 'alallah, wa la hawla wa la quwwata illa billah", mean_ms: "Dengan nama Allah, aku bertawakkal kepada Allah, dan tiada daya serta upaya melainkan dengan Allah.", mean_en: "In the name of Allah, I place my trust in Allah, and there is no might nor power except with Allah." },
             { id: 4, cat: "Harian", title_ms: "Masuk Rumah", title_en: "Entering Home", arab: "بِسْمِ اللهِ وَلَجْنَا، وَبِسْمِ اللهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا", rumi: "Bismillahi walajna, wa bismillahi kharajna, wa 'ala rabbina tawakkalna", mean_ms: "Dengan nama Allah kami masuk, dan dengan nama Allah kami keluar, dan kepada Tuhan kami, kami bertawakkal.", mean_en: "In the name of Allah we enter, and in the name of Allah we leave, and upon our Lord we place our trust." },
-            { id: 5, cat: "Harian", title_ms: "Memakai Pakaian", title_en: "Dressing Up", arab: "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ", rumi: "Alhamdulillahillazi kasani haza wa razaqanihi min ghairi hawlin minni wa la quwwah", mean_ms: "Segala puji bagi Allah yang memakaikan aku pakaian ini dan memberikannya kepadaku tanpa daya dan kekuatanku.", mean_en: "Praise be to Allah Who has clothed me with this garment and provided it for me, with no power nor might from myself." },
-            { id: 6, cat: "Harian", title_ms: "Masuk Tandas", title_en: "Entering Toilet", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ", rumi: "Allahumma inni a'uzubika minal khubuthi wal khaba'ith", mean_ms: "Ya Allah, aku berlindung dengan-Mu daripada gangguan syaitan jantan dan syaitan betina.", mean_en: "O Allah, I seek protection in You from the male and female unclean spirits." },
-            { id: 7, cat: "Harian", title_ms: "Keluar Tandas", title_en: "Leaving Toilet", arab: "غُفْرَانَكَ الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنِّي الْأَذَى وَعَافَانِي", rumi: "Ghufranaka. Alhamdulillahillazi azhaba 'annil aza wa 'afani", mean_ms: "Aku memohon keampunan-Mu. Segala puji bagi Allah yang telah menghilangkan penyakit daripadaku dan menyihatkanku.", mean_en: "I seek Your forgiveness. Praise be to Allah Who removed harm from me and gave me health." },
+            { id: 5, cat: "Harian", title_ms: "Masuk Tandas", title_en: "Entering Toilet", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ", rumi: "Allahumma inni a'uzubika minal khubuthi wal khaba'ith", mean_ms: "Ya Allah, aku berlindung dengan-Mu daripada gangguan syaitan jantan dan syaitan betina.", mean_en: "O Allah, I seek protection in You from the male and female unclean spirits." },
+            { id: 6, cat: "Harian", title_ms: "Keluar Tandas", title_en: "Leaving Toilet", arab: "غُفْرَانَكَ الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنِّي الْأَذَى وَعَافَانِي", rumi: "Ghufranaka. Alhamdulillahillazi azhaba 'annil aza wa 'afani", mean_ms: "Aku memohon keampunan-Mu. Segala puji bagi Allah yang telah menghilangkan penyakit daripadaku dan menyihatkanku.", mean_en: "I seek Your forgiveness. Praise be to Allah Who removed harm from me and gave me health." },
+            { id: 7, cat: "Harian", title_ms: "Memakai Pakaian", title_en: "Dressing Up", arab: "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ", rumi: "Alhamdulillahillazi kasani haza wa razaqanihi min ghairi hawlin minni wa la quwwah", mean_ms: "Segala puji bagi Allah yang memakaikan aku pakaian ini dan memberikannya kepadaku tanpa daya dan kekuatanku.", mean_en: "Praise be to Allah Who has clothed me with this garment and provided it for me, with no power nor might from myself." },
             { id: 8, cat: "Harian", title_ms: "Lihat Cermin", title_en: "Looking in Mirror", arab: "اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي", rumi: "Allahumma kama hassanta khalqi fa-hassin khuluqi", mean_ms: "Ya Allah, sebagaimana Engkau perelokkan rupaku, perelokkanlah juga akhlakku.", mean_en: "O Allah, just as You have made my external features beautiful, make my character beautiful as well." },
-            { id: 10, cat: "Makan", title_ms: "Sebelum Makan", title_en: "Before Eating", arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ", rumi: "Allahumma barik lana fima razaqtana waqina 'azaban-nar", mean_ms: "Ya Allah, berkatilah rezeki yang Engkau kurniakan kepada kami dan peliharalah kami dari azab neraka.", mean_en: "O Allah, bless us in what You have provided us and protect us from the punishment of the Fire." },
-            { id: 11, cat: "Makan", title_ms: "Selepas Makan", title_en: "After Eating", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ", rumi: "Alhamdulillahillazi at'amana wa saqana wa ja'alana muslimin", mean_ms: "Segala puji bagi Allah yang telah memberi makan dan minum kepada kami, serta menjadikan kami orang-orang Islam.", mean_en: "Praise be to Allah Who has fed us and given us drink and made us Muslims." },
-            { id: 15, cat: "Ilmu", title_ms: "Penerang Hati", title_en: "Enlightenment", arab: "اللَّهُمَّ افْتَحْ عَلَيْنَا حِكْمَتَكَ وَانْشُرْ عَلَيْنَا مِنْ خَزَائِنِ رَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ", rumi: "Allahummaftah 'alaina hikmataka wansyur 'alaina min khaza'ini rahmatika ya arhamar rahimin", mean_ms: "Ya Allah, bukakanlah hikmah-Mu kepada kami dan bentangkanlah rahmat-Mu, wahai Tuhan Yang Maha Pengasih.", mean_en: "O Allah, open Your wisdom to us and spread Your mercy upon us, O Most Merciful of the merciful." },
-            { id: 16, cat: "Ilmu", title_ms: "Doa Belajar", title_en: "Prayer for Study", arab: "رَبِّ زِدْنِي عِلْمًا وَارْزُقْنِي فَهْمًا", rumi: "Rabbi zidni 'ilman warzuqni fahman", mean_ms: "Wahai Tuhanku, tambahkanlah ilmuku dan kurniakanlah aku kefahaman.", mean_en: "My Lord, increase me in knowledge and grant me understanding." },
-            { id: 17, cat: "Ilmu", title_ms: "Penenang Hati", title_en: "Ease My Task", arab: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي يَفْقَهُوا قَوْلِي", rumi: "Rabbisyrah li sadri, wa yassir li amri, wahlul 'uqdatan min lisani, yafqahu qauli", mean_ms: "Wahai Tuhanku, lapangkanlah dadaku, mudahkanlah urusanku, dan lepaskanlah kekakuan lidahku supaya mereka faham perkataanku.", mean_en: "My Lord, expand for me my breast, ease for me my task, and untie the knot from my tongue that they may understand my speech." },
+            { id: 11, cat: "Harian", title_ms: "Masuk Pasar", title_en: "Entering Market", arab: "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ يُحْيِي وَيُمِيتُ وَهُوَ حَيٌّ لَا يَمُوتُ بِيَدِهِ الْخَيْرُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ", rumi: "La ilaha illallah wahdahu la syarika lah, lahul mulku wa lahul hamdu yuhyi wa yumitu wa huwa hayyun la yamut, biyadihil khairu wa huwa 'ala kulli syai'in qadir", mean_ms: "Tiada Tuhan melainkan Allah yang Esa tiada sekutu bagi-Nya. Bagi-Nya kerajaan dan bagi-Nya segala puji. Dia menghidupkan dan mematikan dan Dia hidup tidak mati. Di tangan-Nya segala kebaikan dan Dia Maha Berkuasa atas segala sesuatu.", mean_en: "None has the right to be worshipped but Allah alone, Who has no partner. His is the dominion and His is the praise. He brings life and He causes death, and He is living and does not die. In His Hand is all good, and He is Able to do all things." },
+            
+            // MAKAN (FOOD)
+            { id: 13, cat: "Makan", title_ms: "Sebelum Makan", title_en: "Before Eating", arab: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ", rumi: "Allahumma barik lana fima razaqtana waqina 'azaban-nar", mean_ms: "Ya Allah, berkatilah rezeki yang Engkau kurniakan kepada kami dan peliharalah kami dari azab neraka.", mean_en: "O Allah, bless us in what You have provided us and protect us from the punishment of the Fire." },
+            { id: 14, cat: "Makan", title_ms: "Selepas Makan", title_en: "After Eating", arab: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ", rumi: "Alhamdulillahillazi at'amana wa saqana wa ja'alana muslimin", mean_ms: "Segala puji bagi Allah yang telah memberi makan dan minum kepada kami, serta menjadikan kami orang-orang Islam.", mean_en: "Praise be to Allah Who has fed us and given us drink and made us Muslims." },
+
+            // ILMU (KNOWLEDGE)
+            { id: 17, cat: "Ilmu", title_ms: "Doa Belajar", title_en: "Prayer for Study", arab: "رَبِّ زِدْنِي عِلْمًا وَارْزُقْنِي فَهْمًا", rumi: "Rabbi zidni 'ilman warzuqni fahman", mean_ms: "Wahai Tuhanku, tambahkanlah ilmuku dan kurniakanlah aku kefahaman.", mean_en: "My Lord, increase me in knowledge and grant me understanding." },
+            { id: 18, cat: "Ilmu", title_ms: "Penenang Hati", title_en: "Ease My Task", arab: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي يَفْقَهُوا قَوْلِي", rumi: "Rabbisyrah li sadri, wa yassir li amri, wahlul 'uqdatan min lisani, yafqahu qauli", mean_ms: "Wahai Tuhanku, lapangkanlah dadaku, mudahkanlah urusanku, dan lepaskanlah kekakuan lidahku supaya mereka faham perkataanku.", mean_en: "My Lord, expand for me my breast, ease for me my task, and untie the knot from my tongue that they may understand my speech." },
+            { id: 20, cat: "Ilmu", title_ms: "Penerang Hati", title_en: "Enlightenment", arab: "اللَّهُمَّ افْتَحْ عَلَيْنَا حِكْمَتَكَ وَانْشُرْ عَلَيْنَا مِنْ خَزَائِنِ رَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ", rumi: "Allahummaftah 'alaina hikmataka wansyur 'alaina min khaza'ini rahmatika ya arhamar rahimin", mean_ms: "Ya Allah, bukakanlah hikmah-Mu kepada kami dan bentangkanlah rahmat-Mu, wahai Tuhan Yang Maha Pengasih.", mean_en: "O Allah, open Your wisdom to us and spread Your mercy upon us, O Most Merciful of the merciful." },
+
+            // KELUARGA (FAMILY)
             { id: 21, cat: "Keluarga", title_ms: "Untuk Ibu Bapa", title_en: "For Parents", arab: "رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا", rumi: "Rabbighfir li wa liwalidayya warhamhuma kama rabbayani saghira", mean_ms: "Wahai Tuhanku, ampunilah dosaku dan dosa kedua ibu bapaku serta kasihanilah mereka sebagaimana mereka mengasuhku sewaktu kecil.", mean_en: "My Lord, forgive me and my parents and have mercy on them as they brought me up [when I was] small." },
-            { id: 22, cat: "Keluarga", title_ms: "Kebahagiaan Keluarga", title_en: "Family Happiness", arab: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا", rumi: "Rabbana hablana min azwajina wa zurriyyatina qurrata a'yunin waj'alna lil muttaqina imama", mean_ms: "Wahai Tuhan kami, kurniakanlah kepada kami pasangan dan zuriat keturunan sebagai penyejuk mata, dan jadikanlah kami pemimpin bagi orang-orang yang bertakwa.", mean_en: "Our Lord, grant us from among our wives and offspring comfort to our eyes and make us an example for the righteous." },
+            { id: 22, cat: "Keluarga", title_ms: "Keluarga Bahagia", title_en: "Happy Family", arab: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا", rumi: "Rabbana hablana min azwajina wa zurriyyatina qurrata a'yunin waj'alna lil muttaqina imama", mean_ms: "Wahai Tuhan kami, kurniakanlah kepada kami pasangan dan zuriat keturunan sebagai penyejuk mata, dan jadikanlah kami pemimpin bagi orang-orang yang bertakwa.", mean_en: "Our Lord, grant us from among our wives and offspring comfort to our eyes and make us an example for the righteous." },
+            { id: 23, cat: "Keluarga", title_ms: "Mohon Zuriat", title_en: "Good Offspring", arab: "رَبِّ هَبْ لِي مِن لَّدُنكَ ذُرِّيَّةً طَيِّبَةً ۖ إِنَّكَ سَمِيعُ الدُّعَاءِ", rumi: "Rabbi hab li mil ladunka zurriyyatan tayyibah, innaka sami'ud-du'a", mean_ms: "Wahai Tuhanku, kurniakanlah kepadaku dari sisi-Mu zuriat keturunan yang baik. Sesungguhnya Engkau sentiasa Mendengar (menerima) doa permohonan.", mean_en: "My Lord, grant me from Yourself a good offspring. Indeed, You are the Hearer of supplication." },
+            { id: 25, cat: "Keluarga", title_ms: "Keselamatan Keluarga", title_en: "Family Safety", arab: "أُعِيذُكُمَا بِكَلِمَاتِ اللَّهِ التَّامَّةِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ", rumi: "U'izukuma bikalimatillahit tammah min kulli syaitanin wa hammah wa min kulli 'ainin lammah", mean_ms: "Aku memohon perlindungan untuk kamu berdua dengan kalimah Allah yang sempurna daripada segala syaitan, binatang berbisa, dan pandangan mata yang jahat.", mean_en: "I seek protection for you in the perfect words of Allah from every devil and every beast, and from every envious blameworthy eye." },
+
+            // REZEKI (WEALTH)
             { id: 30, cat: "Rezeki", title_ms: "Memohon Rezeki", title_en: "Seeking Provision", arab: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ", rumi: "Allahummak fini bihalalika 'an haramika, wa aghnini bifadlika 'amman siwaka", mean_ms: "Ya Allah, cukupkanlah aku dengan rezeki-Mu yang halal daripada yang haram, dan kayakanlah aku dengan kurniaan-Mu daripada meminta kepada selain-Mu.", mean_en: "O Allah, suffice me with Your lawful against Your prohibited, and make me independent of all those besides You." },
             { id: 31, cat: "Rezeki", title_ms: "Dunia Akhirat", title_en: "Goodness Both Worlds", arab: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ", rumi: "Rabbana atina fiddunya hasanah wa fil akhirati hasanah waqina 'azaban-nar", mean_ms: "Wahai Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami dari azab neraka.", mean_en: "Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire." },
+            { id: 48, cat: "Rezeki", title_ms: "Bebas Hutang", title_en: "Debt Relief", arab: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَأَعُوذُ بِكَ مِنَ الْعَجْزِ وَالْكَسَلِ، وَأَعُوذُ بِكَ مِنَ الْجُبْنِ وَالْبُخْلِ، وَأَعُوذُ بِكَ مِنْ غَلَبَةِ الدَّيْنِ وَقَهْرِ الرِّجَالِ", rumi: "Allahumma inni a'uzubika minal hammi wal hazan, wa a'uzubika minal 'ajzi wal kasal, wa a'uzubika minal jubni wal bukhl, wa a'uzubika min ghalabatid dayni wa qahrir rijal", mean_ms: "Ya Allah, aku berlindung pada-Mu dari rasa sedih dan gelisah, dari kelemahan dan kemalasan, dari sikap pengecut dan bakhil, dan dari cengkaman hutang dan penindasan orang.", mean_en: "O Allah, I seek refuge in You from anxiety and sorrow, weakness and laziness, miserliness and cowardice, the burden of debts and being overpowered by men." },
+
+            // EMOSI (EMOTION)
             { id: 40, cat: "Emosi", title_ms: "Ketika Marah", title_en: "When Angry", arab: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ", rumi: "A'uzubillahi minasy-syaitanir-rajim", mean_ms: "Aku berlindung kepada Allah daripada syaitan yang direjam.", mean_en: "I seek refuge in Allah from the accursed Satan." },
             { id: 41, cat: "Emosi", title_ms: "Nabi Yunus (Kesulitan)", title_en: "Prophet Yunus (Distress)", arab: "لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ", rumi: "La ilaha illa anta subhanaka inni kuntu minaz-zalimin", mean_ms: "Tiada Tuhan melainkan Engkau, Maha Suci Engkau, sesungguhnya aku adalah daripada orang-orang yang zalim.", mean_en: "There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers." },
+            { id: 58, cat: "Emosi", title_ms: "Tetapkan Hati", title_en: "Steadfast Heart", arab: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ", rumi: "Ya Muqallibal qulub, thabbit qalbi 'ala dinik", mean_ms: "Wahai Tuhan yang membolak-balikkan hati, tetapkanlah hatiku di atas agama-Mu.", mean_en: "O Turner of the hearts, keep my heart firm upon Your religion." },
+
+            // IBADAH (WORSHIP)
             { id: 50, cat: "Ibadah", title_ms: "Masuk Masjid", title_en: "Entering Mosque", arab: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ", rumi: "Allahummaftah li abwaba rahmatik", mean_ms: "Ya Allah, bukakanlah untukku pintu rahmat-Mu.", mean_en: "O Allah, open for me the doors of Your mercy." },
-            { id: 60, cat: "Perjalanan", title_ms: "Naik Kenderaan", title_en: "Boarding Vehicle", arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ", rumi: "Subhanallazi sakh-khara lana haza wa ma kunna lahu muqrinin wa inna ila rabbina lamunqalibun", mean_ms: "Maha Suci Tuhan yang memudahkan kenderaan ini bagi kami...", mean_en: "Glory to Him who has subjected this to us..." },
-            { id: 70, cat: "Kesihatan", title_ms: "Ketika Sakit", title_en: "When Sick", arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ أَنْتَ الشَّافِي لَا شِفَاءَ إِلَّا شِفَاؤُكَ", rumi: "Allahumma rabban-nas azhibil ba'sa isyfi antasy-syafi...", mean_ms: "Ya Allah, Tuhan manusia, hilangkanlah penyakit ini...", mean_en: "O Allah, Lord of mankind, remove the severity and cure..." }
+            { id: 53, cat: "Ibadah", title_ms: "Sayyidul Istighfar", title_en: "Best Istighfar", arab: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ", rumi: "Allahumma anta rabbi la ilaha illa anta, khalaqtani wa ana 'abduka, wa ana 'ala 'ahdika wa wa'dika mastata'tu, a'uzubika min syarri ma sana'tu, abu'u laka bini'matika 'alayya, wa abu'u bizanbi faghfir li, fa innahu la yaghfiruz zunuba illa anta", mean_ms: "Ya Allah, Engkaulah Tuhanku, tiada Tuhan melainkan Engkau, Engkaulah yang menjadikanku dan aku adalah hamba-Mu, dan aku berpegang pada janji-Mu semampuku. Aku berlindung dengan-Mu daripada kejahatan yang aku lakukan. Aku mengakui nikmat-Mu ke atasku dan aku mengakui dosaku, maka ampunilah aku, sesungguhnya tiada yang mengampuni dosa melainkan Engkau.", mean_en: "O Allah, You are my Lord, there is no deity except You. You created me and I am Your servant, and I am faithful to my covenant and my promise to You as much as I can. I seek refuge in You from all the evil I have done. I acknowledge before You all the blessings You have bestowed upon me, and I confess to You all my sins. So I entreat You to forgive me, for no one can forgive sins except You." },
+            { id: 32, cat: "Solat", title_ms: "Doa Qunut", title_en: "Qunut", arab: "اللَّهُمَّ اهْدِنِي فِيمَنْ هَدَيْتَ، وَعَافِنِي فِيمَنْ عَافَيْتَ، وَتَوَلَّنِي فِيمَنْ تَوَلَّيْتَ، وَبَارِكْ لِي فِيمَا أَعْطَيْتَ، وَقِنِي شَرَّ مَا قَضَيْتَ، فَإِنَّكَ تَقْضِي وَلَا يُقْضَى عَلَيْكَ، وَإِنَّهُ لَا يَذِلُّ مَنْ وَالَيْتَ، وَلَا يَعِزُّ مَنْ عَادَيْتَ، تَبَارَكْتَ رَبَّنَا وَتَعَالَيْتَ", rumi: "Allahummahdini fiman hadait, wa 'afini fiman 'afait, wa tawallani fiman tawallait, wa barik li fima a'tait, wa qini syarra ma qadait, fa innaka taqdi wa la yuqda 'alaik, wa innahu la yazillu man walait, wa la ya'izzu man 'adait, tabarakta rabbana wa ta'alait", mean_ms: "Ya Allah, berilah aku petunjuk bersama orang-orang yang Engkau beri petunjuk, dan berilah aku kesihatan bersama orang-orang yang Engkau beri kesihatan, dan pimpinlah aku bersama orang-orang yang Engkau pimpin, dan berkatilah aku pada apa yang Engkau berikan, dan peliharalah aku dari kejahatan yang Engkau tetapkan. Sesungguhnya Engkaulah yang menetapkan dan tidak ditetapkan ke atas-Mu, dan sesungguhnya tidak hina orang yang Engkau pimpin, dan tidak mulia orang yang Engkau musuhi. Maha Suci Engkau wahai Tuhan kami dan Maha Tinggi Engkau.", mean_en: "O Allah, guide me among those You have guided, grant me health among those You have granted health, befriend me among those You have befriended, bless me in what You have granted, and save me from the evil that You decreed. Indeed, You decree, and none can pass decree upon You, indeed he is not humiliated whom You have befriended, blessed are You our Lord and Exalted." },
+
+            // PERJALANAN (TRAVEL)
+            { id: 60, cat: "Perjalanan", title_ms: "Naik Kenderaan", title_en: "Boarding Vehicle", arab: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ", rumi: "Subhanallazi sakh-khara lana haza wa ma kunna lahu muqrinin wa inna ila rabbina lamunqalibun", mean_ms: "Maha Suci Tuhan yang memudahkan kenderaan ini bagi kami, sedang kami sebelum ini tidak terdaya menguasainya. Dan sesungguhnya kepada Tuhan kamilah kami akan kembali.", mean_en: "Glory to Him who has subjected this to us, and we could not have [otherwise] subdued it. And indeed to our Lord we will return." },
+            { id: 78, cat: "Perjalanan", title_ms: "Singgah Tempat", title_en: "Stopping Place", arab: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ", rumi: "A'uzubikalimatillahit tammati min syarri ma khalaq", mean_ms: "Aku berlindung dengan kalimah Allah yang sempurna daripada kejahatan makhluk yang diciptakan-Nya.", mean_en: "I seek refuge in the perfect words of Allah from the evil of what He has created." },
+
+            // ALAM (NATURE)
+            { id: 83, cat: "Alam", title_ms: "Ketika Hujan", title_en: "When Raining", arab: "اللَّهُمَّ صَيِّبًا نَافِعًا", rumi: "Allahumma sayyiban nafi'a", mean_ms: "Ya Allah, jadikanlah ia hujan yang bermanfaat.", mean_en: "O Allah, may it be a beneficial rain." },
+            { id: 86, cat: "Alam", title_ms: "Bunyi Guruh", title_en: "Thunder", arab: "سُبْحَانَ الَّذِي يُسَبِّحُ الرَّعْدُ بِحَمْدِهِ وَالْمَلَائِكَةُ مِنْ خِيفَتِهِ", rumi: "Subhanallazi yusabbihur ra'du bihamdih, wal mala'ikatu min khifatih", mean_ms: "Maha Suci Allah yang guruh bertasbih memuji-Nya, dan para malaikat sujud takut kepada-Nya.", mean_en: "Glory to Him whom thunder glorifies with His praise, and the angels from the fear of Him." },
+
+            // KESIHATAN (HEALTH)
+            { id: 70, cat: "Kesihatan", title_ms: "Ketika Sakit", title_en: "When Sick", arab: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ أَنْتَ الشَّافِي لَا شِفَاءَ إِلَّا شِفَاؤُكَ شِفَاءً لَا يُغَادِرُ سَقَمًا", rumi: "Allahumma rabban-nas azhibil ba'sa isyfi antasy-syafi la syifa'a illa syifa'uka syifa'an la yughadiru saqama", mean_ms: "Ya Allah, Tuhan manusia, hilangkanlah penyakit ini. Sembuhkanlah, Engkaulah yang menyembuhkan, tiada kesembuhan melainkan kesembuhan daripada-Mu, kesembuhan yang tidak meninggalkan penyakit.", mean_en: "O Allah, Lord of mankind, remove the severity and cure. You are the Healer, there is no cure but Your cure, a cure that leaves behind no ailment." },
+            
+            // MAJLIS (GATHERING)
+            { id: 89, cat: "Majlis", title_ms: "Penutup Majlis", title_en: "Closing Gathering", arab: "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ، أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ", rumi: "Subhanakallahumma wa bihamdika, asyhadu an la ilaha illa anta, astaghfiruka wa atubu ilaik", mean_ms: "Maha Suci Engkau Ya Allah dan segala puji bagi-Mu, aku bersaksi bahawa tiada Tuhan melainkan Engkau, aku memohon keampunan dan bertaubat kepada-Mu.", mean_en: "Glory is to You, O Allah, and praise is to You. I bear witness that there is none worthy of worship but You. I seek Your forgiveness and repent to You." }
         ];
 
-        // --- STATE ---
+        // --- STATE & INIT ---
         let lang = localStorage.getItem('wsl_lang') || 'en';
         let activeCat = 'All';
         let favs = JSON.parse(localStorage.getItem('mukminDoaFavs')) || [];
         let currentId = null;
         let synth = window.speechSynthesis;
 
-        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             syncTheme();
             renderCats();
@@ -242,9 +266,9 @@
             document.documentElement.setAttribute('data-theme', t);
         }
 
-        // --- RENDER CATEGORIES ---
+        // --- RENDER FUNCTIONS ---
         function renderCats() {
-            const cats = ['All', 'Harian', 'Makan', 'Ilmu', 'Diri', 'Keluarga', 'Rezeki', 'Emosi', 'Ibadah', 'Perjalanan', 'Kesihatan', 'Fav'];
+            const cats = ['All', 'Harian', 'Solat', 'Makan', 'Ilmu', 'Diri', 'Keluarga', 'Rezeki', 'Emosi', 'Ibadah', 'Alam', 'Majlis', 'Perjalanan', 'Kesihatan', 'Fav'];
             const cDiv = document.getElementById('catContainer');
             cDiv.innerHTML = cats.map(c => {
                 let lbl = c;
@@ -256,7 +280,6 @@
 
         window.setCat = (c) => { activeCat = c; renderCats(); renderList(); };
 
-        // --- RENDER LIST ---
         window.filterList = renderList; 
         function renderList() {
             const q = document.getElementById('searchInput').value.toLowerCase();
@@ -291,20 +314,17 @@
             }).join('');
         }
 
-        // --- MODAL LOGIC ---
+        // --- MODAL & ACTIONS ---
         window.openModal = (id) => {
             const d = doaData.find(x => x.id === id);
             currentId = id;
-            
             document.getElementById('mCat').textContent = d.cat;
             document.getElementById('mTitle').textContent = lang === 'ms' ? d.title_ms : d.title_en;
             document.getElementById('mArab').textContent = d.arab;
             document.getElementById('mRumi').textContent = d.rumi;
             document.getElementById('mMean').textContent = lang === 'ms' ? d.mean_ms : d.mean_en;
-            
             updateFavBtn();
             resetAudioBtn();
-
             document.getElementById('detailModal').classList.add('open');
         }
 
@@ -314,7 +334,6 @@
             if(synth.speaking) synth.cancel();
         }
 
-        // --- ACTIONS ---
         window.toggleFav = () => {
             if(favs.includes(currentId)) favs = favs.filter(x => x !== currentId);
             else favs.push(currentId);
@@ -327,14 +346,8 @@
             const isFav = favs.includes(currentId);
             const icon = document.getElementById('iconFav');
             const txt = document.getElementById('txtFav');
-            
-            if(isFav) {
-                icon.style.color = "#ef4444";
-                txt.textContent = lang === 'ms' ? "Saved" : "Saved";
-            } else {
-                icon.style.color = "currentColor";
-                txt.textContent = lang === 'ms' ? "Simpan" : "Save";
-            }
+            if(isFav) { icon.style.color = "#ef4444"; txt.textContent = lang === 'ms' ? "Disimpan" : "Saved"; }
+            else { icon.style.color = "currentColor"; txt.textContent = lang === 'ms' ? "Simpan" : "Save"; }
         }
 
         // --- AUDIO ---
@@ -349,7 +362,6 @@
                 btn.style.borderColor = "var(--primary)";
                 btn.style.color = "var(--primary)";
                 document.getElementById('iconPlay').textContent = "||";
-                
                 const u = new SpeechSynthesisUtterance(d.arab);
                 u.lang = 'ar-SA';
                 u.rate = 0.8;
@@ -365,20 +377,16 @@
             document.getElementById('iconPlay').textContent = "▶";
         }
 
-        // --- SCREENSHOT & SHARE LOGIC ---
+        // --- SHARE ---
         window.shareCard = async function() {
             const btn = document.getElementById('btnShare');
             const spin = document.getElementById('shareSpin');
             const icon = document.getElementById('shareIcon');
             const card = document.querySelector('.screenshot-target');
 
-            // 1. UI Loading State
-            spin.style.display = 'block';
-            icon.style.display = 'none';
-            btn.style.opacity = '0.7';
+            spin.style.display = 'block'; icon.style.display = 'none'; btn.style.opacity = '0.7';
 
             try {
-                // 2. Create Wrapper for clean screenshot
                 const wrapper = document.createElement('div');
                 Object.assign(wrapper.style, {
                     position: 'fixed', top: '0', left: '0', width: '500px',
@@ -388,15 +396,10 @@
                     fontFamily: "'Inter', sans-serif"
                 });
 
-                // 3. Clone Card
                 const clone = card.cloneNode(true);
-                clone.style.transform = 'none'; 
-                clone.style.margin = '0'; 
+                clone.style.transform = 'none'; clone.style.margin = '0'; 
                 clone.style.boxShadow = '0 30px 60px rgba(0,0,0,0.15)';
-                clone.style.maxHeight = 'none'; // Expand full text
-                clone.style.overflow = 'visible';
-
-                // 4. Clean up Clone (Remove buttons, show branding)
+                clone.style.maxHeight = 'none'; clone.style.overflow = 'visible';
                 clone.querySelector('.btn-close').style.display = 'none';
                 clone.querySelector('.focus-actions').style.display = 'none';
                 clone.querySelector('.screenshot-brand').style.display = 'block';
@@ -404,43 +407,26 @@
                 wrapper.appendChild(clone);
                 document.body.appendChild(wrapper);
 
-                // 5. Capture
-                const canvas = await html2canvas(wrapper, { 
-                    scale: 2, 
-                    useCORS: true,
-                    backgroundColor: null 
-                });
+                const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true, backgroundColor: null });
                 document.body.removeChild(wrapper);
 
-                // 6. Share
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], "mukmin_doa.png", { type: "image/png" });
-                    
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try { await navigator.share({ files: [file] }); } catch(e) { console.log('Share dismissed'); }
+                        try { await navigator.share({ files: [file] }); } catch(e) {}
                     } else {
-                        // Fallback Download
                         const link = document.createElement('a');
                         link.download = 'mukmin_doa.png';
                         link.href = canvas.toDataURL();
                         link.click();
                     }
-                    
-                    // Reset UI
-                    spin.style.display = 'none'; 
-                    icon.style.display = 'block'; 
-                    btn.style.opacity = '1';
+                    spin.style.display = 'none'; icon.style.display = 'block'; btn.style.opacity = '1';
                 });
-
             } catch (e) {
-                console.error(e);
                 alert("Error generating image.");
-                spin.style.display = 'none';
-                icon.style.display = 'block';
-                btn.style.opacity = '1';
+                spin.style.display = 'none'; icon.style.display = 'block'; btn.style.opacity = '1';
             }
         }
-
     </script>
 </body>
 </html>
