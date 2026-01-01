@@ -29,6 +29,7 @@ const ASSETS_TO_CACHE = [
     './asbab.html',
     './settings.html',
     './Takwim-hijri.html',
+   './twolife.html',
     // External CDNs (Caching these makes the app load faster)
     'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap',
     'https://html2canvas.hertzen.com/dist/html2canvas.min.js',
