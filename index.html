@@ -2948,7 +2948,7 @@ window.onpopstate = function(event) {
 
 </script>
 
-<script type="module">
+        <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getDatabase, ref, update, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
@@ -2977,59 +2977,46 @@ window.onpopstate = function(event) {
     const userId = getUserId();
     const userRef = ref(db, 'users/' + userId);
 
-        // --- 2. TRACK VISITS (Transaction) ---
-    
-    // Check if running in App Mode (Standalone) RIGHT NOW
+    // --- 2. DETECT INSTALLATION STATUS ---
+    // Check if running in Standalone (App) Mode right now
     const isApp = window.matchMedia('(display-mode: standalone)').matches || 
-                  window.navigator.standalone || 
+                  window.navigator.standalone === true || 
                   document.referrer.includes('android-app://');
 
-    // Run Transaction to safely update the user
+    // --- 3. TRACK VISITS & INSTALL STATUS ---
     runTransaction(userRef, (currentUserData) => {
         if (currentUserData) {
-            // RETURNING USER:
-            // Update session count AND fix the 'isInstalled' status
+            // RETURNING USER
             currentUserData.sessionCount = (currentUserData.sessionCount || 0) + 1;
             currentUserData.lastActive = Date.now();
-            currentUserData.isInstalled = isApp; // <--- FIX: Updates old users too!
+            // Force update the install status every time they open the app
+            currentUserData.isInstalled = isApp;
+            // Debug field to see what the phone is reporting
+            currentUserData.debugMode = isApp ? "APP_MODE" : "BROWSER_MODE";
         } else {
-            // NEW USER:
+            // NEW USER
             return {
                 sessionCount: 1,
                 lastActive: Date.now(),
                 firstSeen: Date.now(),
-                isInstalled: isApp, // <--- Sets correctly for new users
+                isInstalled: isApp,
+                debugMode: isApp ? "APP_MODE" : "BROWSER_MODE",
                 platform: navigator.platform || 'unknown'
             };
         }
         return currentUserData;
     });
 
-    // --- 3. TRACK INSTALLS ---
+    // --- 4. LISTEN FOR NEW INSTALLS ---
     window.addEventListener('appinstalled', () => {
         update(userRef, {
             isInstalled: true,
-            installDate: Date.now()
+            installDate: Date.now(),
+            debugMode: "JUST_INSTALLED"
         });
     });
 
-    // --- 4. CLICK TRACKING ---
-    window.trackClick = (featureName) => {
-        update(userRef, { lastAction: featureName });
-    };
-    
-
-    // --- 5. PWA PROMPT LOGIC (Android/iOS) ---
-    // (This part remains exactly the same as before, handling the UI)
-    let deferredPrompt;
-    const pwaEl = document.getElementById('pwaInstall');
-    
-    function shouldShowPWA() {
-        const lastDismiss = localStorage.getItem('pwa_dismissed_time');
-        if (lastDismiss && (Date.now() - parseInt(lastDismiss)) / 36e5 < 24) return false;
-        return true;
-    }
-        // --- 6. MODERN BROADCAST LISTENER ---
+    // --- 5. BROADCAST LISTENER ---
     const broadcastRef = ref(db, 'broadcast');
     const modal = document.getElementById('broadcastModal');
     const msgText = document.getElementById('broadcastText');
@@ -3038,14 +3025,9 @@ window.onpopstate = function(event) {
         const data = snapshot.val();
         if (data && data.active) {
             const lastMsg = localStorage.getItem('last_broadcast_time');
-            // Show only if it's a NEW message
             if (!lastMsg || data.timestamp > parseInt(lastMsg)) {
-                msgText.innerText = data.message; // Use innerText to handle newlines
+                msgText.innerText = data.message;
                 modal.style.display = 'flex';
-                
-                // Save this timestamp so we don't show it again
-                // We save it immediately or on close, depending on preference. 
-                // Here we attach it to the close action to ensure they saw it.
                 window.pendingBroadcastTimestamp = data.timestamp;
             }
         }
@@ -3057,9 +3039,17 @@ window.onpopstate = function(event) {
             localStorage.setItem('last_broadcast_time', window.pendingBroadcastTimestamp);
         }
     };
+
+    // --- 6. PWA LOGIC ---
+    let deferredPrompt;
+    const pwaEl = document.getElementById('pwaInstall');
     
+    function shouldShowPWA() {
+        const lastDismiss = localStorage.getItem('pwa_dismissed_time');
+        if (lastDismiss && (Date.now() - parseInt(lastDismiss)) / 36e5 < 24) return false;
+        return true;
+    }
     
-    // Android Trigger
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -3070,10 +3060,9 @@ window.onpopstate = function(event) {
         }
     });
 
-    // iOS Trigger
+    // iOS Check
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.navigator.standalone || (window.matchMedia('(display-mode: standalone)').matches);
-    if (isIOS && !isStandalone && shouldShowPWA()) {
+    if (isIOS && !isApp && shouldShowPWA()) {
         if(pwaEl) {
             pwaEl.style.display = 'flex';
             const iosDiv = document.getElementById('pwa-ios');
@@ -3093,9 +3082,8 @@ window.onpopstate = function(event) {
         if(pwaEl) pwaEl.style.display = 'none';
         localStorage.setItem('pwa_dismissed_time', Date.now().toString());
     };
-</script>
-<script>
-    // REGISTER SERVICE WORKER FOR OFFLINE CACHE
+    
+    // REGISTER SERVICE WORKER
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
@@ -3103,7 +3091,8 @@ window.onpopstate = function(event) {
                 .catch(err => console.error('SW Failed:', err));
         });
     }
-</script>
+        </script>
+    
 </body>
 
 </html>
