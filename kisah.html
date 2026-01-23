@@ -3,44 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Book Reader</title>
+    <title>Live PDF Reader</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
-    
+
     <style>
-        /* THEME & UI STYLES */
-        :root[data-theme="light"] { --primary:#A67734; --bg:#F8F9FA; --surface:#FFFFFF; --text:#1F2937; --border:#E5E7EB; }
+        /* THEME VARIABLES */
+        :root[data-theme="light"] { --primary:#A67734; --bg:#F2F2F2; --surface:#FFFFFF; --text:#1F2937; --border:#E5E7EB; }
         :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
-        .sticky-header { flex-shrink: 0; z-index: 100; background: rgba(255,255,255,0.9); border-bottom: 1px solid var(--border); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-        :root[data-theme="dark"] .sticky-header { background: rgba(18,18,18,0.9); }
+        .sticky-header { flex-shrink: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text); }
         
-        /* STAGE */
-        .book-stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px; }
+        /* BOOK STAGE */
+        .book-stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px; overflow: hidden; }
+
+        /* PAGE STYLE (Canvas) */
+        .my-page { background-color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        canvas { width: 100%; height: 100%; object-fit: contain; }
 
         /* DOWNLOAD BUTTON */
         #download-btn {
-            display: none; position: absolute; top: 60px; right: 20px; z-index: 90;
+            position: absolute; top: 60px; right: 20px; z-index: 90;
             background: var(--primary); color: white; border: none; padding: 8px 16px; 
             border-radius: 20px; font-weight: bold; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: none; /* Hidden until loaded */
         }
 
         /* LOADER */
         #loader { position: absolute; inset: 0; background: var(--bg); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .bar-bg { width: 70%; height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; margin-top: 15px; }
         .bar-fill { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s; }
+        .status-txt { font-size: 14px; font-weight: 600; margin-bottom: 5px; color: var(--text); }
         
-        /* NAV */
-        .nav-btn { position: absolute; bottom: 20px; background: var(--surface); color: var(--primary); border: 1px solid var(--border); width: 50px; height: 50px; border-radius: 50%; font-size: 22px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 40; display: flex; align-items: center; justify-content: center; }
+        /* CONTROLS */
+        .nav-btn { position: absolute; bottom: 20px; background: var(--surface); color: var(--primary); border: 1px solid var(--border); width: 50px; height: 50px; border-radius: 50%; font-size: 22px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 40; display: flex; align-items: center; justify-content: center; }
         #btn-prev { left: 20px; }
         #btn-next { right: 20px; }
     </style>
@@ -49,173 +54,178 @@
 
     <div class="sticky-header">
         <button class="back-btn" onclick="history.back()">←</button>
-        <div style="font-weight:800; font-size:16px;">Digital Book</div>
+        <div style="font-weight:800; font-size:16px;">HD Reader</div>
         <div style="width:24px"></div>
     </div>
 
-    <button id="download-btn" onclick="downloadBook()">⬇ Save Offline</button>
+    <button id="download-btn" onclick="saveForOffline()">⬇ Save PDF Offline</button>
 
     <div class="book-stage">
         <div id="loader">
-            <div id="status">Checking Storage...</div>
+            <div class="status-txt" id="status">Starting PDF Engine...</div>
             <div class="bar-bg"><div class="bar-fill" id="fill"></div></div>
         </div>
+        
         <div id="book"></div>
+
         <button class="nav-btn" id="btn-prev">←</button>
         <button class="nav-btn" id="btn-next">→</button>
     </div>
 
 <script>
-    // === SETTINGS ===
-    const TOTAL_PAGES = 400; 
-    const BATCH_SIZE = 30;   
-    const FOLDER = 'books'; 
-    // ===============
+    // === CONFIGURATION ===
+    const PDF_PATH = 'books/25_Kisah_Para_Nabi.pdf'; // Make sure this matches your filename!
+    const HD_SCALE = 3.0; // 2.0 = Sharp text. Increase to 3.0 for Ultra Sharp (uses more battery)
+    // =====================
+
+    // PDF.js Worker Setup
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
     const status = document.getElementById('status');
     const fill = document.getElementById('fill');
     const downloadBtn = document.getElementById('download-btn');
     const loader = document.getElementById('loader');
-    let pageFlip;
-
-    // Initialize Database
-    const db = localforage.createInstance({
-        name: "MyBookApp",
-        storeName: "books_store"
-    });
+    
+    let pdfDoc = null;
+    let pageFlip = null;
+    let pdfBlob = null;
 
     // Theme Logic
     let currentTheme = localStorage.getItem('wsl_theme') || 'light';
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    // 1. MAIN LOAD FUNCTION
-    async function loadBook() {
-        const allImages = [];
-        
-        try {
-            // Check if user has already downloaded the book
-            const isOffline = await db.getItem('is_downloaded');
+    // Initialize Database
+    const db = localforage.createInstance({ name: "MyBookApp", storeName: "pdf_store" });
 
-            if (isOffline) {
-                status.innerText = "Loading from Storage...";
-                await loadFromDatabase(allImages);
-                downloadBtn.style.display = 'none'; // Hide button if already saved
+    // 1. MAIN STARTUP
+    async function startApp() {
+        try {
+            // Check Offline Storage first
+            const savedPdf = await db.getItem('cached_pdf');
+            
+            if (savedPdf) {
+                status.innerText = "Loading from Offline Storage...";
+                pdfBlob = savedPdf;
+                downloadBtn.style.display = 'none'; // Already saved
             } else {
-                status.innerText = "Loading from Internet...";
-                await loadFromInternet(allImages);
-                downloadBtn.style.display = 'block'; // Show button to allow save
+                status.innerText = "Downloading PDF...";
+                const response = await fetch(PDF_PATH);
+                if (!response.ok) throw new Error("PDF file not found");
+                
+                // Get data for reading
+                pdfBlob = await response.blob();
+                downloadBtn.style.display = 'block'; // Allow saving
             }
 
-            initFlipbook(allImages);
+            // Convert Blob to ArrayBuffer for PDF.js
+            const arrayBuffer = await pdfBlob.arrayBuffer();
+            
+            // Load into PDF Engine
+            status.innerText = "Parsing PDF Structure...";
+            pdfDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
+            
+            initFlipbook(pdfDoc.numPages);
 
         } catch (err) {
             status.innerText = "Error: " + err.message;
-            status.style.color = 'red';
+            status.style.color = "red";
         }
     }
 
-    // A. LOAD FROM INTERNET (Live Mode)
-    async function loadFromInternet(imageArray) {
-        for (let start = 1; start < TOTAL_PAGES; start += BATCH_SIZE) {
-            let end = start + BATCH_SIZE - 1;
-            const filename = `book_part_${start}_to_${end}.zip`;
-            
-            status.innerText = `Downloading ${filename}...`;
-            
-            const response = await fetch(`${FOLDER}/${filename}`);
-            if (!response.ok) throw new Error("File missing");
-            
-            const blob = await response.blob();
-            await processZip(blob, imageArray);
+    // 2. BUILD FLIPBOOK STRUCTURE
+    function initFlipbook(totalPages) {
+        status.innerText = `Building ${totalPages} pages...`;
+        const bookEl = document.getElementById('book');
 
-            fill.style.width = `${(end / TOTAL_PAGES) * 100}%`;
+        // Create HTML wrappers for every page (but empty content)
+        // This is fast and lightweight
+        for (let i = 1; i <= totalPages; i++) {
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'my-page';
+            pageDiv.id = `page-${i}`;
+            // Add a canvas inside
+            pageDiv.innerHTML = `<canvas id="canvas-${i}"></canvas>`;
+            bookEl.appendChild(pageDiv);
         }
-    }
 
-    // B. LOAD FROM DATABASE (Offline Mode)
-    async function loadFromDatabase(imageArray) {
-        for (let start = 1; start < TOTAL_PAGES; start += BATCH_SIZE) {
-            let end = start + BATCH_SIZE - 1;
-            const key = `part_${start}_to_${end}`;
-            
-            status.innerText = `Reading ${key}...`;
-            
-            // Retrieve blob from DB
-            const blob = await db.getItem(key);
-            if (!blob) throw new Error("Saved file corrupted. Please clear cache.");
-            
-            await processZip(blob, imageArray);
-            fill.style.width = `${(end / TOTAL_PAGES) * 100}%`;
-        }
-    }
-
-    // C. SAVE FUNCTION (Triggered by Button)
-    async function downloadBook() {
-        downloadBtn.innerText = "Saving...";
-        downloadBtn.disabled = true;
-
-        try {
-            for (let start = 1; start < TOTAL_PAGES; start += BATCH_SIZE) {
-                let end = start + BATCH_SIZE - 1;
-                const filename = `book_part_${start}_to_${end}.zip`;
-                const key = `part_${start}_to_${end}`;
-                
-                // Fetch again to ensure we have the data
-                const response = await fetch(`${FOLDER}/${filename}`);
-                const blob = await response.blob();
-                
-                // Save Blob to IndexedDB
-                await db.setItem(key, blob);
-                
-                downloadBtn.innerText = `Saved ${Math.round((end/TOTAL_PAGES)*100)}%`;
-            }
-
-            // Mark as complete
-            await db.setItem('is_downloaded', true);
-            
-            downloadBtn.innerText = "✅ Saved Offline";
-            downloadBtn.style.background = "#28a745";
-            setTimeout(() => downloadBtn.style.display = 'none', 2000);
-
-        } catch (err) {
-            alert("Save Failed: " + err.message);
-            downloadBtn.innerText = "❌ Error";
-            downloadBtn.disabled = false;
-        }
-    }
-
-    // HELPER: Process Zip
-    async function processZip(blob, imageArray) {
-        const zip = await JSZip.loadAsync(blob);
-        const files = Object.keys(zip.files).sort();
-        for (const f of files) {
-            if (f.endsWith('.jpg')) {
-                const d = await zip.files[f].async('blob');
-                imageArray.push(URL.createObjectURL(d));
-            }
-        }
-    }
-
-    // HELPER: Start Book
-    function initFlipbook(images) {
-        status.innerText = "Building Pages...";
-        const el = document.getElementById('book');
-        pageFlip = new St.PageFlip(el, {
-            width: 380, height: 600, size: 'stretch',
+        // Initialize PageFlip
+        pageFlip = new St.PageFlip(bookEl, {
+            width: 400, height: 600, size: 'stretch',
             minWidth: 300, maxWidth: 1000, minHeight: 400, maxHeight: 1200,
             showCover: true, mobileScrollSupport: false
         });
-        pageFlip.loadFromImages(images);
 
-        setTimeout(() => {
-            loader.style.display = 'none';
-        }, 1000);
+        // Load the HTML elements we just created
+        pageFlip.loadFromHTML(document.querySelectorAll('.my-page'));
 
+        // HIDE LOADER
+        setTimeout(() => { loader.style.display = 'none'; }, 1000);
+
+        // 3. RENDER PAGES ON DEMAND (The "Live" part)
+        // We only draw pages when the user flips to them
+        pageFlip.on('flip', (e) => {
+            const currentPage = e.data; // e.g. 0 (cover), 1, 2...
+            // Render visible pages + 1 ahead
+            renderPage(currentPage + 1);
+            renderPage(currentPage + 2);
+            renderPage(currentPage + 3);
+            renderPage(currentPage + 4);
+        });
+
+        // Render first few pages immediately
+        renderPage(1);
+        renderPage(2);
+        
+        // Buttons
         document.getElementById('btn-prev').onclick = () => pageFlip.flipPrev();
         document.getElementById('btn-next').onclick = () => pageFlip.flipNext();
     }
 
-    window.addEventListener('DOMContentLoaded', loadBook);
+    // 4. THE RENDERER (Draws PDF vector to Canvas)
+    async function renderPage(pageNum) {
+        if (pageNum < 1 || pageNum > pdfDoc.numPages) return;
+
+        const canvas = document.getElementById(`canvas-${pageNum}`);
+        if (!canvas) return;
+        
+        // If already drawn, skip (saves battery)
+        if (canvas.getAttribute('data-rendered')) return;
+        
+        // Mark as processing so we don't try twice
+        canvas.setAttribute('data-rendered', 'true');
+
+        try {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: HD_SCALE });
+            const ctx = canvas.getContext('2d');
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            
+        } catch (e) {
+            console.error(e);
+            canvas.removeAttribute('data-rendered'); // Retry on error
+        }
+    }
+
+    // 5. SAVE OFFLINE FUNCTION
+    async function saveForOffline() {
+        if (!pdfBlob) return;
+        downloadBtn.innerText = "Saving...";
+        try {
+            await db.setItem('cached_pdf', pdfBlob);
+            downloadBtn.innerText = "✅ Saved Offline";
+            downloadBtn.style.background = "#28a745";
+            setTimeout(() => downloadBtn.style.display = 'none', 2000);
+        } catch (e) {
+            alert("Could not save: " + e.message);
+        }
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', startApp);
 </script>
 </body>
 </html>
