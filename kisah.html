@@ -3,48 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Live PDF Reader</title>
+    <title>Smart PDF Reader</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
 
     <style>
-        /* THEME VARIABLES */
-        :root[data-theme="light"] { --primary:#A67734; --bg:#F2F2F2; --surface:#FFFFFF; --text:#1F2937; --border:#E5E7EB; }
-        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; }
+        /* THEME */
+        :root[data-theme="light"] { --primary:#A67734; --bg:#E5E5E5; --surface:#FFFFFF; --text:#1F2937; --border:#ccc; --accent:#e74c3c; }
+        :root[data-theme="dark"] { --primary:#D4AF37; --bg:#121212; --surface:#1E1E1E; --text:#F3F4F6; --border:#374151; --accent:#ff6b6b; }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
-        .sticky-header { flex-shrink: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text); }
-        
-        /* BOOK STAGE */
-        .book-stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px; overflow: hidden; }
+        .sticky-header { 
+            flex-shrink: 0; z-index: 100; background: var(--surface); 
+            border-bottom: 1px solid var(--border); padding: 10px 15px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-controls { display: flex; gap: 8px; align-items: center; }
+        .btn { background: var(--bg); border: 1px solid var(--border); padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 12px; cursor: pointer; color: var(--text); }
+        .btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* PAGE STYLE (Canvas) */
-        .my-page { background-color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        canvas { width: 100%; height: 100%; object-fit: contain; }
+        /* BOOKMARK BUTTON STYLE */
+        .bookmark-btn {
+            background: none; border: none; font-size: 20px; cursor: pointer; 
+            color: var(--text); transition: color 0.2s;
+        }
+        .bookmark-btn.saved { color: var(--accent); } /* Red when marked */
+
+        /* JUMP TO MARK ALERT */
+        #jump-toast {
+            position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); border: 1px solid var(--primary);
+            color: var(--primary); padding: 8px 16px; border-radius: 20px;
+            font-size: 13px; font-weight: bold; z-index: 95;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer;
+            display: none; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: translate(-50%, -20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
         /* DOWNLOAD BUTTON */
         #download-btn {
-            position: absolute; top: 60px; right: 20px; z-index: 90;
+            position: absolute; top: 70px; right: 20px; z-index: 90;
             background: var(--primary); color: white; border: none; padding: 8px 16px; 
             border-radius: 20px; font-weight: bold; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            display: none; /* Hidden until loaded */
+            display: none;
         }
 
-        /* LOADER */
-        #loader { position: absolute; inset: 0; background: var(--bg); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .bar-bg { width: 70%; height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; margin-top: 15px; }
-        .bar-fill { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s; }
-        .status-txt { font-size: 14px; font-weight: 600; margin-bottom: 5px; color: var(--text); }
-        
-        /* CONTROLS */
+        /* ZOOM CONTROLS */
+        .zoom-controls { position: absolute; bottom: 80px; right: 20px; z-index: 90; display: flex; flex-direction: column; gap: 10px; }
+        .zoom-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--surface); color: var(--text); font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* STAGE & LOADER */
+        .stage-wrapper { flex: 1; overflow: hidden; position: relative; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+        #zoom-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .my-page { background-color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 5px rgba(0,0,0,0.2); position: relative; }
+        canvas { width: 100%; height: 100%; object-fit: contain; }
+
+        /* VISUAL MARKER ON PAGE (Optional red ribbon corner) */
+        .page-marker {
+            position: absolute; top: 0; right: 20px; width: 30px; height: 40px;
+            background: var(--accent); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+            display: none; z-index: 10;
+        }
+
+        /* NAV */
         .nav-btn { position: absolute; bottom: 20px; background: var(--surface); color: var(--primary); border: 1px solid var(--border); width: 50px; height: 50px; border-radius: 50%; font-size: 22px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 40; display: flex; align-items: center; justify-content: center; }
         #btn-prev { left: 20px; }
         #btn-next { right: 20px; }
@@ -53,20 +83,32 @@
 <body>
 
     <div class="sticky-header">
-        <button class="back-btn" onclick="history.back()">←</button>
-        <div style="font-weight:800; font-size:16px;">HD Reader</div>
-        <div style="width:24px"></div>
+        <button class="back-btn" onclick="history.back()" style="background:none; border:none; font-size:24px;">←</button>
+        
+        <div class="header-controls">
+            <button class="bookmark-btn" id="mark-btn" onclick="toggleBookmark()">🔖</button>
+            <div style="width:10px;"></div> <button class="btn active" id="lang-ms" onclick="switchLang('ms')">MS</button>
+            <button class="btn" id="lang-en" onclick="switchLang('en')">EN</button>
+            <button class="btn" onclick="toggleTheme()">◑</button>
+        </div>
     </div>
 
-    <button id="download-btn" onclick="saveForOffline()">⬇ Save PDF Offline</button>
+    <div id="jump-toast" onclick="jumpToMark()">
+        Go to Bookmark (Page <span id="mark-num">0</span>) ➜
+    </div>
 
-    <div class="book-stage">
-        <div id="loader">
-            <div class="status-txt" id="status">Starting PDF Engine...</div>
-            <div class="bar-bg"><div class="bar-fill" id="fill"></div></div>
+    <button id="download-btn" onclick="saveForOffline()">⬇ Save Offline</button>
+
+    <div class="zoom-controls">
+        <button class="zoom-btn" onclick="handleZoom('in')">+</button>
+        <button class="zoom-btn" onclick="handleZoom('out')">-</button>
+        <button class="zoom-btn" onclick="handleZoom('reset')">↺</button>
+    </div>
+
+    <div class="stage-wrapper">
+        <div id="zoom-container">
+            <div id="book"></div>
         </div>
-        
-        <div id="book"></div>
 
         <button class="nav-btn" id="btn-prev">←</button>
         <button class="nav-btn" id="btn-next">→</button>
@@ -74,158 +116,217 @@
 
 <script>
     // === CONFIGURATION ===
-    const PDF_PATH = 'books/25_Kisah_Para_Nabi.pdf'; // Make sure this matches your filename!
-    const HD_SCALE = 3.0; // 2.0 = Sharp text. Increase to 3.0 for Ultra Sharp (uses more battery)
+    const BOOKS = { ms: 'books/book_ms.pdf', en: 'books/book_en.pdf' };
+    const HD_SCALE = 2.0; 
     // =====================
 
-    // PDF.js Worker Setup
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    const status = document.getElementById('status');
-    const fill = document.getElementById('fill');
+    // UI Elements
+    const markBtn = document.getElementById('mark-btn');
+    const jumpToast = document.getElementById('jump-toast');
+    const markNumSpan = document.getElementById('mark-num');
     const downloadBtn = document.getElementById('download-btn');
-    const loader = document.getElementById('loader');
-    
+    const zoomContainer = document.getElementById('zoom-container');
+
+    // State
     let pdfDoc = null;
     let pageFlip = null;
     let pdfBlob = null;
+    let currentLang = 'ms';
+    let panzoomInstance = null;
+    let savedPage = null; // Store bookmark number
 
-    // Theme Logic
-    let currentTheme = localStorage.getItem('wsl_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', currentTheme);
-
-    // Initialize Database
     const db = localforage.createInstance({ name: "MyBookApp", storeName: "pdf_store" });
 
-    // 1. MAIN STARTUP
-    async function startApp() {
+    // Theme
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    function toggleTheme() {
+        currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+        localStorage.setItem('theme', currentTheme);
+        document.documentElement.setAttribute('data-theme', currentTheme);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        panzoomInstance = Panzoom(zoomContainer, { maxScale: 4, minScale: 1, contain: 'outside', noBind: false });
+        loadBook(currentLang);
+    });
+
+    async function switchLang(lang) {
+        if(lang === currentLang) return;
+        document.getElementById(`lang-${currentLang}`).classList.remove('active');
+        document.getElementById(`lang-${lang}`).classList.add('active');
+        currentLang = lang;
+        if(pageFlip) { pageFlip.destroy(); document.getElementById('book').innerHTML = ""; }
+        await loadBook(lang);
+    }
+
+    async function loadBook(lang) {
         try {
-            // Check Offline Storage first
-            const savedPdf = await db.getItem('cached_pdf');
-            
+            // Load Bookmark
+            savedPage = await db.getItem(`bookmark_${lang}`);
+            updateBookmarkUI();
+
+            const fileName = BOOKS[lang];
+            const storageKey = `cached_pdf_${lang}`;
+            const savedPdf = await db.getItem(storageKey);
+
             if (savedPdf) {
-                status.innerText = "Loading from Offline Storage...";
                 pdfBlob = savedPdf;
-                downloadBtn.style.display = 'none'; // Already saved
+                downloadBtn.style.display = 'none';
             } else {
-                status.innerText = "Downloading PDF...";
-                const response = await fetch(PDF_PATH);
-                if (!response.ok) throw new Error("PDF file not found");
-                
-                // Get data for reading
+                const response = await fetch(fileName);
+                if (!response.ok) throw new Error("PDF missing");
                 pdfBlob = await response.blob();
-                downloadBtn.style.display = 'block'; // Allow saving
+                downloadBtn.style.display = 'block';
             }
 
-            // Convert Blob to ArrayBuffer for PDF.js
             const arrayBuffer = await pdfBlob.arrayBuffer();
-            
-            // Load into PDF Engine
-            status.innerText = "Parsing PDF Structure...";
             pdfDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
             
             initFlipbook(pdfDoc.numPages);
 
         } catch (err) {
-            status.innerText = "Error: " + err.message;
-            status.style.color = "red";
+            alert("Error: " + err.message);
         }
     }
 
-    // 2. BUILD FLIPBOOK STRUCTURE
     function initFlipbook(totalPages) {
-        status.innerText = `Building ${totalPages} pages...`;
         const bookEl = document.getElementById('book');
 
-        // Create HTML wrappers for every page (but empty content)
-        // This is fast and lightweight
         for (let i = 1; i <= totalPages; i++) {
-            const pageDiv = document.createElement('div');
-            pageDiv.className = 'my-page';
-            pageDiv.id = `page-${i}`;
-            // Add a canvas inside
-            pageDiv.innerHTML = `<canvas id="canvas-${i}"></canvas>`;
-            bookEl.appendChild(pageDiv);
+            const d = document.createElement('div');
+            d.className = 'my-page';
+            // Add Ribbon Marker
+            d.innerHTML = `
+                <div class="page-marker" id="marker-${i}"></div>
+                <canvas id="canvas-${i}"></canvas>
+            `;
+            bookEl.appendChild(d);
         }
 
-        // Initialize PageFlip
         pageFlip = new St.PageFlip(bookEl, {
             width: 400, height: 600, size: 'stretch',
-            minWidth: 300, maxWidth: 1000, minHeight: 400, maxHeight: 1200,
+            minWidth: 300, maxWidth: 1000,
             showCover: true, mobileScrollSupport: false
         });
 
-        // Load the HTML elements we just created
         pageFlip.loadFromHTML(document.querySelectorAll('.my-page'));
 
-        // HIDE LOADER
-        setTimeout(() => { loader.style.display = 'none'; }, 1000);
-
-        // 3. RENDER PAGES ON DEMAND (The "Live" part)
-        // We only draw pages when the user flips to them
+        // Event: When page flips, check if it matches bookmark
         pageFlip.on('flip', (e) => {
-            const currentPage = e.data; // e.g. 0 (cover), 1, 2...
-            // Render visible pages + 1 ahead
-            renderPage(currentPage + 1);
-            renderPage(currentPage + 2);
-            renderPage(currentPage + 3);
-            renderPage(currentPage + 4);
+            const p = e.data; // index starts at 0
+            const pageNum = p + 1; // Real page number
+            checkIfPageIsMarked(pageNum);
+            renderPage(pageNum); renderPage(pageNum + 1); renderPage(pageNum + 2);
         });
 
-        // Render first few pages immediately
-        renderPage(1);
-        renderPage(2);
-        
-        // Buttons
+        // Initial check
+        renderPage(1); renderPage(2);
+        checkIfPageIsMarked(1);
+
+        // Show "Jump to Bookmark" if exists
+        if(savedPage && savedPage > 1) {
+            markNumSpan.innerText = savedPage;
+            jumpToast.style.display = 'block';
+            // Auto-hide after 5 seconds
+            setTimeout(() => { jumpToast.style.display = 'none'; }, 5000);
+        }
+
         document.getElementById('btn-prev').onclick = () => pageFlip.flipPrev();
         document.getElementById('btn-next').onclick = () => pageFlip.flipNext();
     }
 
-    // 4. THE RENDERER (Draws PDF vector to Canvas)
-    async function renderPage(pageNum) {
-        if (pageNum < 1 || pageNum > pdfDoc.numPages) return;
-
-        const canvas = document.getElementById(`canvas-${pageNum}`);
-        if (!canvas) return;
+    async function renderPage(num) {
+        if (num < 1 || num > pdfDoc.numPages) return;
+        const canvas = document.getElementById(`canvas-${num}`);
+        if (!canvas || canvas.getAttribute('data-done')) return;
         
-        // If already drawn, skip (saves battery)
-        if (canvas.getAttribute('data-rendered')) return;
-        
-        // Mark as processing so we don't try twice
-        canvas.setAttribute('data-rendered', 'true');
+        canvas.setAttribute('data-done', 'true');
+        const page = await pdfDoc.getPage(num);
+        const viewport = page.getViewport({ scale: HD_SCALE });
+        const ctx = canvas.getContext('2d');
+        canvas.width = viewport.width; canvas.height = viewport.height;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+    }
 
-        try {
-            const page = await pdfDoc.getPage(pageNum);
-            const viewport = page.getViewport({ scale: HD_SCALE });
-            const ctx = canvas.getContext('2d');
+    // === BOOKMARK LOGIC ===
 
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+    function toggleBookmark() {
+        // Get current visible page (Usually pageFlip returns index 0, 2, 4...)
+        // We use the right-side page as the reference for simplicity
+        const currentPageIndex = pageFlip.getCurrentPageIndex(); 
+        const pageNum = currentPageIndex + 1;
 
-            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-            
-        } catch (e) {
-            console.error(e);
-            canvas.removeAttribute('data-rendered'); // Retry on error
+        if (savedPage === pageNum) {
+            // UN-MARK (Remove)
+            savedPage = null;
+            db.removeItem(`bookmark_${currentLang}`);
+            alert("Bookmark Removed");
+        } else {
+            // MARK NEW
+            savedPage = pageNum;
+            db.setItem(`bookmark_${currentLang}`, pageNum);
+            alert(`Page ${pageNum} Marked!`);
+        }
+        updateBookmarkUI();
+        checkIfPageIsMarked(pageNum);
+    }
+
+    function updateBookmarkUI() {
+        // Update the header button icon color
+        if(savedPage) {
+            markBtn.classList.add('saved'); // Turn Red
+        } else {
+            markBtn.classList.remove('saved'); // Turn Normal
         }
     }
 
-    // 5. SAVE OFFLINE FUNCTION
+    function checkIfPageIsMarked(currentPageNum) {
+        // Hide all ribbons first
+        document.querySelectorAll('.page-marker').forEach(el => el.style.display = 'none');
+        
+        // If current page is the saved one, show the button as "Active"
+        if(savedPage === currentPageNum) {
+            markBtn.classList.add('saved');
+            // Show ribbon on that specific page
+            const ribbon = document.getElementById(`marker-${currentPageNum}`);
+            if(ribbon) ribbon.style.display = 'block';
+        } else {
+            // Only remove the red color from button if we are NOT on the marked page
+            // (Wait, logic correction: The button should indicate if THIS page is marked)
+            const ribbon = document.getElementById(`marker-${savedPage}`);
+            if(ribbon) ribbon.style.display = 'block'; // Ensure the saved page always has ribbon
+            
+            if (savedPage === currentPageNum) markBtn.classList.add('saved');
+            else markBtn.classList.remove('saved');
+        }
+    }
+
+    function jumpToMark() {
+        if(savedPage) {
+            pageFlip.turnToPage(savedPage - 1); // Turn uses index (0-based)
+            jumpToast.style.display = 'none';
+        }
+    }
+
+    // === ZOOM & SAVE ===
+    function handleZoom(action) {
+        if (!panzoomInstance) return;
+        if (action === 'in') panzoomInstance.zoomIn();
+        if (action === 'out') panzoomInstance.zoomOut();
+        if (action === 'reset') panzoomInstance.reset();
+    }
     async function saveForOffline() {
         if (!pdfBlob) return;
         downloadBtn.innerText = "Saving...";
         try {
-            await db.setItem('cached_pdf', pdfBlob);
-            downloadBtn.innerText = "✅ Saved Offline";
-            downloadBtn.style.background = "#28a745";
+            await db.setItem(`cached_pdf_${currentLang}`, pdfBlob);
+            downloadBtn.innerText = "✅ Saved";
             setTimeout(() => downloadBtn.style.display = 'none', 2000);
-        } catch (e) {
-            alert("Could not save: " + e.message);
-        }
+        } catch (e) { alert("Error: " + e.message); }
     }
-
-    // Start
-    window.addEventListener('DOMContentLoaded', startApp);
 </script>
 </body>
 </html>
