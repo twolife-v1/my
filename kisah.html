@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart PDF Reader</title>
+    <title>Kisah 25 Rasul</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
@@ -30,22 +30,20 @@
         .header-controls { display: flex; gap: 8px; align-items: center; }
         .btn { background: var(--bg); border: 1px solid var(--border); padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 12px; cursor: pointer; color: var(--text); }
         .btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text); }
 
-        /* BOOKMARK BUTTON STYLE */
-        .bookmark-btn {
-            background: none; border: none; font-size: 20px; cursor: pointer; 
-            color: var(--text); transition: color 0.2s;
-        }
-        .bookmark-btn.saved { color: var(--accent); } /* Red when marked */
+        /* BOOKMARK BUTTON */
+        .bookmark-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); transition: color 0.2s; }
+        .bookmark-btn.saved { color: var(--accent); } 
 
-        /* JUMP TO MARK ALERT */
+        /* TOAST ALERT */
         #jump-toast {
             position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
             background: var(--surface); border: 1px solid var(--primary);
             color: var(--primary); padding: 8px 16px; border-radius: 20px;
             font-size: 13px; font-weight: bold; z-index: 95;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer;
-            display: none; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: none; animation: popIn 0.3s ease;
         }
         @keyframes popIn { from { transform: translate(-50%, -20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
@@ -61,20 +59,25 @@
         .zoom-controls { position: absolute; bottom: 80px; right: 20px; z-index: 90; display: flex; flex-direction: column; gap: 10px; }
         .zoom-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--surface); color: var(--text); font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* STAGE & LOADER */
+        /* STAGE & PAGE */
         .stage-wrapper { flex: 1; overflow: hidden; position: relative; background: var(--bg); display: flex; align-items: center; justify-content: center; }
         #zoom-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         .my-page { background-color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 5px rgba(0,0,0,0.2); position: relative; }
         canvas { width: 100%; height: 100%; object-fit: contain; }
 
-        /* VISUAL MARKER ON PAGE (Optional red ribbon corner) */
+        /* PAGE MARKER RIBBON */
         .page-marker {
             position: absolute; top: 0; right: 20px; width: 30px; height: 40px;
             background: var(--accent); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
             display: none; z-index: 10;
         }
 
-        /* NAV */
+        /* LOADER */
+        #loader { position: absolute; inset: 0; background: var(--bg); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .bar-bg { width: 70%; height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; margin-top: 15px; }
+        .bar-fill { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s; }
+
+        /* NAVIGATION */
         .nav-btn { position: absolute; bottom: 20px; background: var(--surface); color: var(--primary); border: 1px solid var(--border); width: 50px; height: 50px; border-radius: 50%; font-size: 22px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 40; display: flex; align-items: center; justify-content: center; }
         #btn-prev { left: 20px; }
         #btn-next { right: 20px; }
@@ -83,11 +86,13 @@
 <body>
 
     <div class="sticky-header">
-        <button class="back-btn" onclick="history.back()" style="background:none; border:none; font-size:24px;">←</button>
+        <button class="back-btn" onclick="history.back()">←</button>
         
         <div class="header-controls">
             <button class="bookmark-btn" id="mark-btn" onclick="toggleBookmark()">🔖</button>
-            <div style="width:10px;"></div> <button class="btn active" id="lang-ms" onclick="switchLang('ms')">MS</button>
+            <div style="width:10px;"></div>
+            
+            <button class="btn active" id="lang-ms" onclick="switchLang('ms')">MS</button>
             <button class="btn" id="lang-en" onclick="switchLang('en')">EN</button>
             <button class="btn" onclick="toggleTheme()">◑</button>
         </div>
@@ -106,6 +111,11 @@
     </div>
 
     <div class="stage-wrapper">
+        <div id="loader">
+            <div id="status">Starting...</div>
+            <div class="bar-bg"><div class="bar-fill" id="fill"></div></div>
+        </div>
+
         <div id="zoom-container">
             <div id="book"></div>
         </div>
@@ -116,18 +126,21 @@
 
 <script>
     // === CONFIGURATION ===
-    const BOOKS = { ms: 'books/book_ms.pdf', en: 'books/book_en.pdf' };
+    // IMPORTANT: Make sure your PDF files in 'books' folder match these names!
+    const BOOKS = { ms: 'books/25_Kisah_Para_Nabi.pdf', en: 'books/25_Kisah_Para_Nabi.pdf' };
     const HD_SCALE = 2.0; 
     // =====================
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    // UI Elements
+    // Elements
+    const status = document.getElementById('status');
+    const loader = document.getElementById('loader');
+    const downloadBtn = document.getElementById('download-btn');
+    const zoomContainer = document.getElementById('zoom-container');
     const markBtn = document.getElementById('mark-btn');
     const jumpToast = document.getElementById('jump-toast');
     const markNumSpan = document.getElementById('mark-num');
-    const downloadBtn = document.getElementById('download-btn');
-    const zoomContainer = document.getElementById('zoom-container');
 
     // State
     let pdfDoc = null;
@@ -135,9 +148,10 @@
     let pdfBlob = null;
     let currentLang = 'ms';
     let panzoomInstance = null;
-    let savedPage = null; // Store bookmark number
+    let savedPage = null; 
 
-    const db = localforage.createInstance({ name: "MyBookApp", storeName: "pdf_store" });
+    // Database
+    const db = localforage.createInstance({ name: "KisahApp", storeName: "book_data" });
 
     // Theme
     let currentTheme = localStorage.getItem('theme') || 'light';
@@ -148,23 +162,30 @@
         document.documentElement.setAttribute('data-theme', currentTheme);
     }
 
+    // 1. START
     window.addEventListener('DOMContentLoaded', () => {
         panzoomInstance = Panzoom(zoomContainer, { maxScale: 4, minScale: 1, contain: 'outside', noBind: false });
+        // Prevent flip when zooming/panning
+        zoomContainer.addEventListener('panzoomstart', () => { if(pageFlip) pageFlip.updateOrientation('portrait'); }); 
+        
         loadBook(currentLang);
     });
 
+    // 2. LANGUAGE SWITCHER
     async function switchLang(lang) {
         if(lang === currentLang) return;
         document.getElementById(`lang-${currentLang}`).classList.remove('active');
         document.getElementById(`lang-${lang}`).classList.add('active');
         currentLang = lang;
         if(pageFlip) { pageFlip.destroy(); document.getElementById('book').innerHTML = ""; }
+        loader.style.display = 'flex';
         await loadBook(lang);
     }
 
+    // 3. LOAD BOOK
     async function loadBook(lang) {
         try {
-            // Load Bookmark
+            // Load Bookmark from DB
             savedPage = await db.getItem(`bookmark_${lang}`);
             updateBookmarkUI();
 
@@ -173,11 +194,13 @@
             const savedPdf = await db.getItem(storageKey);
 
             if (savedPdf) {
+                status.innerText = "Loading from Storage...";
                 pdfBlob = savedPdf;
                 downloadBtn.style.display = 'none';
             } else {
+                status.innerText = "Downloading PDF...";
                 const response = await fetch(fileName);
-                if (!response.ok) throw new Error("PDF missing");
+                if (!response.ok) throw new Error("File missing: " + fileName);
                 pdfBlob = await response.blob();
                 downloadBtn.style.display = 'block';
             }
@@ -188,21 +211,21 @@
             initFlipbook(pdfDoc.numPages);
 
         } catch (err) {
-            alert("Error: " + err.message);
+            status.innerText = "Error: " + err.message;
+            status.style.color = "red";
         }
     }
 
+    // 4. FLIPBOOK INIT
     function initFlipbook(totalPages) {
+        status.innerText = "Rendering...";
         const bookEl = document.getElementById('book');
 
         for (let i = 1; i <= totalPages; i++) {
             const d = document.createElement('div');
             d.className = 'my-page';
-            // Add Ribbon Marker
-            d.innerHTML = `
-                <div class="page-marker" id="marker-${i}"></div>
-                <canvas id="canvas-${i}"></canvas>
-            `;
+            // Marker Ribbon
+            d.innerHTML = `<div class="page-marker" id="marker-${i}"></div><canvas id="canvas-${i}"></canvas>`;
             bookEl.appendChild(d);
         }
 
@@ -214,23 +237,23 @@
 
         pageFlip.loadFromHTML(document.querySelectorAll('.my-page'));
 
-        // Event: When page flips, check if it matches bookmark
+        setTimeout(() => { loader.style.display = 'none'; }, 500);
+
+        // Events
         pageFlip.on('flip', (e) => {
-            const p = e.data; // index starts at 0
-            const pageNum = p + 1; // Real page number
-            checkIfPageIsMarked(pageNum);
-            renderPage(pageNum); renderPage(pageNum + 1); renderPage(pageNum + 2);
+            const p = e.data + 1;
+            checkIfPageIsMarked(p);
+            renderPage(p); renderPage(p+1); renderPage(p+2);
         });
 
-        // Initial check
+        // Initial Render
         renderPage(1); renderPage(2);
         checkIfPageIsMarked(1);
 
-        // Show "Jump to Bookmark" if exists
+        // Show Toast if Bookmark exists
         if(savedPage && savedPage > 1) {
             markNumSpan.innerText = savedPage;
             jumpToast.style.display = 'block';
-            // Auto-hide after 5 seconds
             setTimeout(() => { jumpToast.style.display = 'none'; }, 5000);
         }
 
@@ -238,6 +261,7 @@
         document.getElementById('btn-next').onclick = () => pageFlip.flipNext();
     }
 
+    // 5. RENDER PAGE (Vector)
     async function renderPage(num) {
         if (num < 1 || num > pdfDoc.numPages) return;
         const canvas = document.getElementById(`canvas-${num}`);
@@ -251,73 +275,54 @@
         await page.render({ canvasContext: ctx, viewport }).promise;
     }
 
-    // === BOOKMARK LOGIC ===
-
+    // 6. BOOKMARK SYSTEM
     function toggleBookmark() {
-        // Get current visible page (Usually pageFlip returns index 0, 2, 4...)
-        // We use the right-side page as the reference for simplicity
         const currentPageIndex = pageFlip.getCurrentPageIndex(); 
-        const pageNum = currentPageIndex + 1;
+        const pageNum = currentPageIndex + 1; // 0-based to 1-based
 
         if (savedPage === pageNum) {
-            // UN-MARK (Remove)
-            savedPage = null;
+            savedPage = null; // Remove
             db.removeItem(`bookmark_${currentLang}`);
             alert("Bookmark Removed");
         } else {
-            // MARK NEW
-            savedPage = pageNum;
+            savedPage = pageNum; // Save
             db.setItem(`bookmark_${currentLang}`, pageNum);
-            alert(`Page ${pageNum} Marked!`);
+            alert(`Marked Page ${pageNum}`);
         }
         updateBookmarkUI();
         checkIfPageIsMarked(pageNum);
     }
 
     function updateBookmarkUI() {
-        // Update the header button icon color
-        if(savedPage) {
-            markBtn.classList.add('saved'); // Turn Red
-        } else {
-            markBtn.classList.remove('saved'); // Turn Normal
-        }
+        if(savedPage) markBtn.classList.add('saved');
+        else markBtn.classList.remove('saved');
     }
 
-    function checkIfPageIsMarked(currentPageNum) {
-        // Hide all ribbons first
+    function checkIfPageIsMarked(current) {
         document.querySelectorAll('.page-marker').forEach(el => el.style.display = 'none');
-        
-        // If current page is the saved one, show the button as "Active"
-        if(savedPage === currentPageNum) {
-            markBtn.classList.add('saved');
-            // Show ribbon on that specific page
-            const ribbon = document.getElementById(`marker-${currentPageNum}`);
-            if(ribbon) ribbon.style.display = 'block';
-        } else {
-            // Only remove the red color from button if we are NOT on the marked page
-            // (Wait, logic correction: The button should indicate if THIS page is marked)
+        if (savedPage) {
             const ribbon = document.getElementById(`marker-${savedPage}`);
-            if(ribbon) ribbon.style.display = 'block'; // Ensure the saved page always has ribbon
-            
-            if (savedPage === currentPageNum) markBtn.classList.add('saved');
-            else markBtn.classList.remove('saved');
+            if(ribbon) ribbon.style.display = 'block';
+            if(savedPage === current) markBtn.classList.add('saved');
         }
     }
 
     function jumpToMark() {
         if(savedPage) {
-            pageFlip.turnToPage(savedPage - 1); // Turn uses index (0-based)
+            pageFlip.turnToPage(savedPage - 1);
             jumpToast.style.display = 'none';
         }
     }
 
-    // === ZOOM & SAVE ===
+    // 7. ZOOM
     function handleZoom(action) {
         if (!panzoomInstance) return;
         if (action === 'in') panzoomInstance.zoomIn();
         if (action === 'out') panzoomInstance.zoomOut();
         if (action === 'reset') panzoomInstance.reset();
     }
+
+    // 8. OFFLINE SAVE
     async function saveForOffline() {
         if (!pdfBlob) return;
         downloadBtn.innerText = "Saving...";
