@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Book</title>
+    <title>Kisah 25 Rasul</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
@@ -27,6 +27,9 @@
             display: flex; justify-content: space-between; align-items: center; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        /* Title Style */
+        .header-title { font-weight: 800; font-size: 18px; color: var(--primary); }
+
         .header-controls { display: flex; gap: 15px; align-items: center; }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text); }
         .btn { background: var(--bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 15px; font-weight: bold; font-size: 12px; cursor: pointer; color: var(--text); }
@@ -87,9 +90,11 @@
     <div class="sticky-header">
         <button class="back-btn" onclick="history.back()">←</button>
         
+        <div class="header-title">Kisah 25 Rasul</div>
+        
         <div class="header-controls">
             <button class="bookmark-btn" id="mark-btn" onclick="toggleBookmark()">🔖</button>
-            <button class="btn" onclick="toggleTheme()">◑ Theme</button>
+            <button class="btn" onclick="toggleTheme()">◑</button>
         </div>
     </div>
 
@@ -121,7 +126,7 @@
 
 <script>
     // === CONFIGURATION ===
-    const PDF_PATH = 'books/25_Kisah_Para_Nabi.pdf'; // Make sure file exists here!
+    const PDF_PATH = 'books/25_Kisah_Para_Nabi.pdf'; // Ensure your PDF is named exactly this!
     const HD_SCALE = 3.0; 
     // =====================
 
@@ -158,7 +163,6 @@
     // 1. START
     window.addEventListener('DOMContentLoaded', () => {
         panzoomInstance = Panzoom(zoomContainer, { maxScale: 4, minScale: 1, contain: 'outside', noBind: false });
-        // Prevent flip when zooming/panning
         zoomContainer.addEventListener('panzoomstart', () => { if(pageFlip) pageFlip.updateOrientation('portrait'); }); 
         
         loadBook();
