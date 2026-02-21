@@ -1476,21 +1476,27 @@ window.SURAH_CACHE = {};
        3. PRAYER CALCULATION ENGINE
        ========================================= */
     const PrayerCalc = {
-                calc: function(lat, lng, timezone, date) {
+                        calc: function(lat, lng, timezone, date) {
             let julianDate = this.julian(date.getFullYear(), date.getMonth() + 1, date.getDate());
             
-            // Calculate Fajr once so Imsak can base exactly off it
-            let fajrTime = this.computeTime(20, julianDate, lat, lng, timezone, 'fajr');
-            
+            // Raw astronomical times
+            let rawFajr = this.computeTime(20, julianDate, lat, lng, timezone, 'fajr');
+            let rawDhuhr = this.computeTime(0, julianDate, lat, lng, timezone, 'dhuhr');
+            let rawAsr = this.computeTime(0, julianDate, lat, lng, timezone, 'asr');
+            let rawMaghrib = this.computeTime(0.833, julianDate, lat, lng, timezone, 'maghrib');
+            let rawIsha = this.computeTime(18, julianDate, lat, lng, timezone, 'isha');
+
+            // Apply JAKIM Ihtiyat (Safety Buffers) in minutes
             return {
-                Imsak: fajrTime - (10/60), // Exactly 10 minutes before Fajr
-                Fajr: fajrTime,
-                Dhuhr: this.computeTime(0, julianDate, lat, lng, timezone, 'dhuhr') + (3/60), // +3 mins JAKIM safety buffer
-                Asr: this.computeTime(0, julianDate, lat, lng, timezone, 'asr'),
-                Maghrib: this.computeTime(0.833, julianDate, lat, lng, timezone, 'maghrib') + (1/60), // +1 min safety
-                Isha: this.computeTime(18, julianDate, lat, lng, timezone, 'isha') + (1/60) // +1 min safety
+                Imsak: rawFajr - (10/60),      // Exactly 10 mins before raw Fajr
+                Fajr: rawFajr + (1/60),        // +1 min buffer
+                Dhuhr: rawDhuhr + (3/60),      // +3 mins buffer (Zenith crossing)
+                Asr: rawAsr + (1/60),          // +1 min buffer
+                Maghrib: rawMaghrib + (1/60),  // +1 min buffer
+                Isha: rawIsha + (1/60)         // +1 min buffer
             };
         },
+
 
         julian: function(year, month, day) {
             if (month <= 2) { year -= 1; month += 12; }
