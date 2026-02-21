@@ -1457,21 +1457,20 @@ window.SURAH_CACHE = {};
         }
     }
 
-
-        function toggleSidePanel() { 
+    function toggleSidePanel() { 
         const panel = document.getElementById('sidePanel');
         const overlay = document.getElementById('sidePanelOverlay');
         
-        // Only add history if we are OPENING it
         if (panel && !panel.classList.contains('open')) {
-            addHistoryState(); // <--- ADD THIS LINE
+            addHistoryState(); // Add history when opening
+        } else {
+            cleanHistoryState(); // Clean history when closing
         }
         
         if(panel) panel.classList.toggle('open'); 
         if(overlay) overlay.classList.toggle('open'); 
     }
-
-
+    
     /* =========================================
        3. PRAYER CALCULATION ENGINE
        ========================================= */
@@ -2467,13 +2466,14 @@ const safeTr = encodeURIComponent(trans).replace(/'/g, "\\'");
         c.innerHTML = html;
     }
 
- 
-
     /* =========================================
        8. UTILITY FUNCTIONS (Modals, Tools)
        ========================================= */
-    function closeReader() { document.getElementById('readerModal').classList.remove('open'); }
-    
+        function closeReader() { 
+        document.getElementById('readerModal').classList.remove('open'); 
+        cleanHistoryState();
+        }
+
         function openReader(t, s, f) {
         addHistoryState(); // <--- ADD THIS LINE
         document.getElementById('readerTitle').textContent = t;
@@ -2502,8 +2502,10 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
         if(!iframe.src) iframe.src = "qiblat.html";
         document.getElementById('qiblaFloatOverlay').style.display = 'flex'; 
     };
-    window.closeQibla = () => { document.getElementById('qiblaFloatOverlay').style.display = 'none'; };
-
+        window.closeQibla = () => { 
+        document.getElementById('qiblaFloatOverlay').style.display = 'none'; 
+        cleanHistoryState();
+    };
     // Hadith Logic
     function openHadithModal() { document.getElementById('hadithModal').style.display = 'flex'; nextHadith(); }
     function closeHadithModal() { document.getElementById('hadithModal').style.display = 'none'; }
@@ -2534,11 +2536,11 @@ window.openQuranEncy = () => openReader("Khazanah Quran", "Fakta & Mukjizat", "k
 
 
     // Update your existing closeHadithModal function
-    function closeHadithModal() { 
+        function closeHadithModal() { 
         document.getElementById('hadithModal').style.display = 'none'; 
         window.currentHadithId = null; // Reset tracker on close
+        cleanHistoryState();
     }
-
 
                 window.toggleHadithBookmark = function(btn) {
         const t = document.getElementById('hadithTextContent').textContent;
@@ -2854,10 +2856,10 @@ function openLocationModal() {
     
     modal.style.display = 'flex';
 }
-
-function closeLocationModal() {
-    document.getElementById('locationModal').style.display = 'none';
-}
+        function closeLocationModal() {
+        document.getElementById('locationModal').style.display = 'none';
+        cleanHistoryState();
+        }
    /* --- FOCUS MODAL LOGIC (Paste in Script) --- */
 /* --- FOCUS MODAL LOGIC (Paste in Script) --- */
 
