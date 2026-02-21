@@ -1875,36 +1875,80 @@ function manualSelectLoc(lat, lon, name) {
     timesDiv.innerHTML = tHtml;
     }
     
-     
-                async function calculateLocalTimes() {
-    // 1. Format the mathematical times to HH:MM
-    const fmt = (t) => { 
-        let totalMinutes = Math.ceil(t * 60); 
-        let h = Math.floor(totalMinutes / 60) % 24;
-        let m = totalMinutes % 60; 
-        return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; 
+     async function calculateLocalTimes() {
+    // 1. Fallback Math Engine (For when the user is offline)
+    const useOfflineMath = () => {
+        const fmt = (t) => { 
+            let totalMinutes = Math.ceil(t * 60); 
+            let h = Math.floor(totalMinutes / 60) % 24;
+            let m = totalMinutes % 60; 
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; 
+        };
+        const date = new Date();
+        const tz = date.getTimezoneOffset() / -60;
+        const raw = PrayerCalc.calc(window.STATE.lat, window.STATE.lon, tz, date);
+        
+        window.STATE.prayerTimes = { 
+            Imsak: fmt(raw.Imsak), Fajr: fmt(raw.Fajr), 
+            Dhuhr: fmt(raw.Dhuhr), Asr: fmt(raw.Asr), 
+            Maghrib: fmt(raw.Maghrib), Isha: fmt(raw.Isha) 
+        };
+        renderHeroPrayers(); 
+        updateHero();
     };
 
-    // 2. Rely entirely on your accurate offline engine
-    const date = new Date();
-    const tz = date.getTimezoneOffset() / -60;
-    const raw = PrayerCalc.calc(window.STATE.lat, window.STATE.lon, tz, date);
-    
-    window.STATE.prayerTimes = { 
-        Imsak: fmt(raw.Imsak), 
-        Fajr: fmt(raw.Fajr), 
-        Dhuhr: fmt(raw.Dhuhr), 
-        Asr: fmt(raw.Asr), 
-        Maghrib: fmt(raw.Maghrib), 
-        Isha: fmt(raw.Isha) 
-    };
-    
-    // 3. Render the UI safely
-    renderHeroPrayers(); 
-    updateHero();
-                }
-    
+    // 2. 100% JAKIM Accurate Zonal Engine (Requires Internet)
+    if (navigator.onLine) {
+        try {
+            // Fetch directly from the Malaysian e-Solat Zonal API
+            const res = await fetch(`https://api.waktusolat.app/v2/solat/gps/${window.STATE.lat}/${window.STATE.lon}`);
+            if (!res.ok) throw new Error("API Network error");
+            
+            const data = await res.json();
+            const prayersData = data.prayers || (data.data && data.data.prayers);
+            
+            if (!prayersData) throw new Error("Invalid API Data");
 
+            // Get today's prayer array (API arrays start at index 0 for Day 1 of the month)
+            const dayIndex = new Date().getDate() - 1;
+            const today = prayersData[dayIndex];
+
+            // Convert Unix Timestamp to HH:MM format locally
+            const fmtUnix = (unix) => {
+                const d = new Date(unix * 1000);
+                return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+            };
+
+            window.STATE.prayerTimes = { 
+                Imsak: fmtUnix(today.imsak), 
+                Fajr: fmtUnix(today.fajr), 
+                Dhuhr: fmtUnix(today.dhuhr), 
+                Asr: fmtUnix(today.asr), 
+                Maghrib: fmtUnix(today.maghrib), 
+                Isha: fmtUnix(today.isha) 
+            };
+
+            // Optional: Update Location Badge to show the Official Zone (e.g., SGR01)
+            const zoneStr = data.zone || (data.data && data.data.zone);
+            if(zoneStr) {
+                const locEl = document.getElementById('locationName');
+                if (locEl) locEl.textContent = `Zon: ${zoneStr}`;
+            }
+
+            renderHeroPrayers(); 
+            updateHero();
+            
+        } catch (error) {
+            console.warn("JAKIM API failed, using offline math", error);
+            useOfflineMath();
+        }
+    } else {
+        // Run Math immediately if user has no internet
+        useOfflineMath();
+    }
+}
+
+                
     /* =========================================
        4. HERO & COSMIC VISUALS (Advanced Engine)
        ========================================= */
