@@ -3039,11 +3039,18 @@ window.shareFocusCard = async function() {
 /* =========================================
    BACK BUTTON MANAGER (Fixes Redirect Issue)
    ========================================= */
-
 // 1. Helper to tell browser we opened a "new page"
 function addHistoryState() {
-    // This creates a fake "history entry" so the back button has something to go back to
-    history.pushState({modal: true}, null, window.location.href);
+    // Only add if it's not already there, and use #modal to prevent 404s
+    if (window.location.hash !== "#modal") {
+        history.pushState({modal: true}, null, "#modal");
+    }
+}
+    // 1.5 Helper to silently clean the URL if user clicks "X" instead of the back button
+function cleanHistoryState() {
+    if (window.location.hash === "#modal") {
+        history.replaceState(null, null, window.location.pathname + window.location.search);
+    }
 }
 
 // 2. Listen for the Back Button press
