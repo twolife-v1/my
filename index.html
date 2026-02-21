@@ -1852,20 +1852,21 @@ function manualSelectLoc(lat, lon, name) {
     closeLocationModal();
 }
 
+    async function calculateLocalTimes() {
+    // 1. Define a helper to format the mathematical fallback times (HH:MM)
+    const fmt = (t) => { 
+        let totalMinutes = Math.ceil(t * 60); 
+        let h = Math.floor(totalMinutes / 60) % 24;
+        let m = totalMinutes % 60; 
+        return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; 
+    };
 
-
-        function calculateLocalTimes() {
+    // 2. The Fallback Function (Your existing offline math)
+    const useOfflineMath = () => {
+        console.log("Using Offline Math Engine");
         const date = new Date();
         const tz = date.getTimezoneOffset() / -60;
         const raw = PrayerCalc.calc(window.STATE.lat, window.STATE.lon, tz, date);
-        
-        // UPGRADED FORMATTER: Rounds up (Math.ceil) to the nearest minute for safety
-        const fmt = (t) => { 
-            let totalMinutes = Math.ceil(t * 60); 
-            let h = Math.floor(totalMinutes / 60) % 24;
-            let m = totalMinutes % 60; 
-            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; 
-        };
         
         window.STATE.prayerTimes = { 
             Imsak: fmt(raw.Imsak), 
@@ -1875,9 +1876,52 @@ function manualSelectLoc(lat, lon, name) {
             Maghrib: fmt(raw.Maghrib), 
             Isha: fmt(raw.Isha) 
         };
+        
         renderHeroPrayers(); 
         updateHero();
+    };
+
+    // 3. Try fetching from the API first
+    if (navigator.onLine) {
+        try {
+            const date = new Date();
+            const timestamp = Math.floor(date.getTime() / 1000);
+            
+            // Fetch using Method 11 (JAKIM Malaysia)
+            const res = await fetch(`https://api.aladhan.com/v1/timings/${timestamp}?latitude=${window.STATE.lat}&longitude=${window.STATE.lon}&method=11`);
+            
+            if (!res.ok) throw new Error("API Network response was not ok");
+            
+            const data = await res.json();
+            const timings = data.data.timings;
+
+            console.log("Using Online API Engine");
+            
+            // Map the API results to your app's state
+            // The API returns times in "HH:MM" format already
+            window.STATE.prayerTimes = { 
+                Imsak: timings.Imsak, 
+                Fajr: timings.Fajr, 
+                Dhuhr: timings.Dhuhr, 
+                Asr: timings.Asr, 
+                Maghrib: timings.Maghrib, 
+                Isha: timings.Isha 
+            };
+
+            renderHeroPrayers(); 
+            updateHero();
+
+        } catch (error) {
+            console.warn("API failed, falling back to math engine:", error);
+            useOfflineMath();
+        }
+    } else {
+        // Automatically use offline math if no internet
+        useOfflineMath();
     }
+}
+
+
 
     /* =========================================
        4. HERO & COSMIC VISUALS (Advanced Engine)
