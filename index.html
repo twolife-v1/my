@@ -1604,10 +1604,11 @@ function getLocation() {
 try {
     updateLocationUI("Finding City...", true);
     
-    // FIX: Add a unique User-Agent or language param to avoid blocking
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`, {
+      // Added app identification to prevent API blocking
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&email=hello@mukmin.com`, {
         headers: {
-            'Accept-Language': 'en'
+            'Accept-Language': 'en',
+            'User-Agent': 'MukminApp/1.0'
         }
     });
     
