@@ -1875,7 +1875,7 @@ function manualSelectLoc(lat, lon, name) {
     timesDiv.innerHTML = tHtml;
     }
     
-     async function calculateLocalTimes() {
+    async function calculateLocalTimes() {
     // 1. Fallback Math Engine (For when the user is offline)
     const useOfflineMath = () => {
         const fmt = (t) => { 
@@ -1909,18 +1909,17 @@ function manualSelectLoc(lat, lon, name) {
             
             if (!prayersData) throw new Error("Invalid API Data");
 
-            // Get today's prayer array (API arrays start at index 0 for Day 1 of the month)
+            // Get today's prayer array
             const dayIndex = new Date().getDate() - 1;
             const today = prayersData[dayIndex];
 
-            // Convert Unix Timestamp to HH:MM format locally
             const fmtUnix = (unix) => {
                 const d = new Date(unix * 1000);
                 return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
             };
 
             window.STATE.prayerTimes = { 
-                Imsak: fmtUnix(today.imsak), 
+                Imsak: fmtUnix(today.fajr - 600), // <-- FIXED: 10 mins before Fajr
                 Fajr: fmtUnix(today.fajr), 
                 Dhuhr: fmtUnix(today.dhuhr), 
                 Asr: fmtUnix(today.asr), 
@@ -1946,8 +1945,8 @@ function manualSelectLoc(lat, lon, name) {
         // Run Math immediately if user has no internet
         useOfflineMath();
     }
-}
-
+    }
+    
                 
     /* =========================================
        4. HERO & COSMIC VISUALS (Advanced Engine)
