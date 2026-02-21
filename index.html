@@ -2709,7 +2709,13 @@ async function searchLocation() {
     
     try {
         // Fetch from OpenStreetMap
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                // Added app identification to prevent API blocking
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&email=hello@mukmin.com`, {
+            headers: {
+                'Accept-Language': 'en',
+                'User-Agent': 'MukminApp/1.0'
+            }
+        });
         const data = await res.json();
         
         if(data.length === 0) {
