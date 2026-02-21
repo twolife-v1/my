@@ -1476,17 +1476,22 @@ window.SURAH_CACHE = {};
        3. PRAYER CALCULATION ENGINE
        ========================================= */
     const PrayerCalc = {
-        calc: function(lat, lng, timezone, date) {
+                calc: function(lat, lng, timezone, date) {
             let julianDate = this.julian(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            
+            // Calculate Fajr once so Imsak can base exactly off it
+            let fajrTime = this.computeTime(20, julianDate, lat, lng, timezone, 'fajr');
+            
             return {
-                Imsak: this.computeTime(19.5, julianDate, lat, lng, timezone, 'fajr') - (10/60), 
-                Fajr: this.computeTime(20, julianDate, lat, lng, timezone, 'fajr'),
-                Dhuhr: this.computeTime(0, julianDate, lat, lng, timezone, 'dhuhr'),
+                Imsak: fajrTime - (10/60), // Exactly 10 minutes before Fajr
+                Fajr: fajrTime,
+                Dhuhr: this.computeTime(0, julianDate, lat, lng, timezone, 'dhuhr') + (3/60), // +3 mins JAKIM safety buffer
                 Asr: this.computeTime(0, julianDate, lat, lng, timezone, 'asr'),
-                Maghrib: this.computeTime(0.833, julianDate, lat, lng, timezone, 'maghrib'),
-                Isha: this.computeTime(18, julianDate, lat, lng, timezone, 'isha')
+                Maghrib: this.computeTime(0.833, julianDate, lat, lng, timezone, 'maghrib') + (1/60), // +1 min safety
+                Isha: this.computeTime(18, julianDate, lat, lng, timezone, 'isha') + (1/60) // +1 min safety
             };
         },
+
         julian: function(year, month, day) {
             if (month <= 2) { year -= 1; month += 12; }
             let A = Math.floor(year / 100);
@@ -1848,24 +1853,29 @@ function manualSelectLoc(lat, lon, name) {
 
 
 
-    function calculateLocalTimes() {
+        function calculateLocalTimes() {
         const date = new Date();
         const tz = date.getTimezoneOffset() / -60;
         const raw = PrayerCalc.calc(window.STATE.lat, window.STATE.lon, tz, date);
-        const fmt = (t) => { let h=Math.floor(t), m=Math.floor((t-h)*60); return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; };
-        window.STATE.prayerTimes = { Imsak: fmt(raw.Imsak), Fajr: fmt(raw.Fajr), Dhuhr: fmt(raw.Dhuhr), Asr: fmt(raw.Asr), Maghrib: fmt(raw.Maghrib), Isha: fmt(raw.Isha) };
-        renderHeroPrayers(); updateHero();
-    }
-
-    function renderHeroPrayers() {
-        const order = ['Imsak','Fajr','Dhuhr','Asr','Maghrib','Isha'];
-        const nDiv = document.getElementById('prayerNames'); const tDiv = document.getElementById('prayerTimes');
-        if(!nDiv || !tDiv) return;
-        nDiv.innerHTML = ''; tDiv.innerHTML = '';
-        order.forEach(k => {
-            nDiv.innerHTML += `<div>${prayerDisplayMap[k].substring(0,3)}</div>`;
-            tDiv.innerHTML += `<div>${window.STATE.prayerTimes[k]}</div>`;
-        });
+        
+        // UPGRADED FORMATTER: Rounds up (Math.ceil) to the nearest minute for safety
+        const fmt = (t) => { 
+            let totalMinutes = Math.ceil(t * 60); 
+            let h = Math.floor(totalMinutes / 60) % 24;
+            let m = totalMinutes % 60; 
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; 
+        };
+        
+        window.STATE.prayerTimes = { 
+            Imsak: fmt(raw.Imsak), 
+            Fajr: fmt(raw.Fajr), 
+            Dhuhr: fmt(raw.Dhuhr), 
+            Asr: fmt(raw.Asr), 
+            Maghrib: fmt(raw.Maghrib), 
+            Isha: fmt(raw.Isha) 
+        };
+        renderHeroPrayers(); 
+        updateHero();
     }
 
     /* =========================================
